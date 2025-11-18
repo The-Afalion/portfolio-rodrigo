@@ -1,9 +1,10 @@
+// --- VERSIÓN FINAL FORZADA PARA VERCEL ---
 "use client";
 import { useState } from "react";
-import { Chess } from "chess.js"; // <--- ¡OJO! Aquí NO debe estar 'Square'
+import { Chess } from "chess.js"; // Importación limpia sin Square
 import { RefreshCw, Cpu } from "lucide-react";
 
-// Definimos el tipo manualmente aquí para que no falle nunca
+// Definición manual de tipos
 type Square = string;
 
 const PIECE_IMAGES: Record<string, string> = {
@@ -36,7 +37,6 @@ export default function ChessGame() {
   function makeRandomMove(gameCopy: Chess) {
     const possibleMoves = gameCopy.moves();
 
-    // Usamos métodos compatibles con la versión 0.13.4
     if (gameCopy.game_over() || gameCopy.in_draw() || possibleMoves.length === 0) {
       setStatus("Juego Terminado.");
       return;
