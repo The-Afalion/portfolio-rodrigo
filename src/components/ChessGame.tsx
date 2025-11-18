@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Chess, Square } from "chess.js";
+import { Chess } from "chess.js"; // <--- ¡OJO! Aquí NO debe estar 'Square'
 import { RefreshCw, Cpu } from "lucide-react";
 
-// Mapeo de piezas a imágenes SVG estándar (Wikimedia Commons)
+// Definimos el tipo manualmente aquí para que no falle nunca
+type Square = string;
+
 const PIECE_IMAGES: Record<string, string> = {
   p: "https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg",
   n: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg",
@@ -34,8 +36,7 @@ export default function ChessGame() {
   function makeRandomMove(gameCopy: Chess) {
     const possibleMoves = gameCopy.moves();
 
-    // CORRECCIÓN AQUÍ: Usamos game_over() en lugar de isGameOver() para v0.13.4
-    // CORRECCIÓN AQUÍ: Usamos in_draw() en lugar de isDraw() para v0.13.4
+    // Usamos métodos compatibles con la versión 0.13.4
     if (gameCopy.game_over() || gameCopy.in_draw() || possibleMoves.length === 0) {
       setStatus("Juego Terminado.");
       return;
@@ -43,49 +44,42 @@ export default function ChessGame() {
 
     const randomIndex = Math.floor(Math.random() * possibleMoves.length);
     gameCopy.move(possibleMoves[randomIndex]);
-    setGame(new Chess(gameCopy.fen())); // Forzar actualización
+    setGame(new Chess(gameCopy.fen()));
     setStatus("Tu turno (Blancas)");
   }
 
   function handleSquareClick(square: Square) {
-    // 1. Si no hay nada seleccionado, intentamos seleccionar
     if (!selectedSquare) {
       const piece = game.get(square);
-      // Solo seleccionamos si hay pieza y es blanca (tu turno)
       if (piece && piece.color === 'w') {
         setSelectedSquare(square);
       }
       return;
     }
 
-    // 2. Si ya hay algo seleccionado, intentamos MOVER
     const gameCopy = new Chess(game.fen());
     try {
       const move = gameCopy.move({
         from: selectedSquare,
         to: square,
-        promotion: 'q', // Siempre reina
+        promotion: 'q',
       });
 
       if (move) {
-        // Movimiento válido
         setGame(gameCopy);
         setSelectedSquare(null);
         setStatus("Pensando...");
         setTimeout(() => makeRandomMove(gameCopy), 300);
       } else {
-        // Movimiento inválido: Deseleccionar o cambiar selección
         const piece = game.get(square);
         if (piece && piece.color === 'w') setSelectedSquare(square);
         else setSelectedSquare(null);
       }
     } catch (e) {
-      // Si falla, reiniciamos selección
       setSelectedSquare(null);
     }
   }
 
-  // Construir el array del tablero
   for (let r = 0; r < 8; r++) {
     for (let f = 0; f < 8; f++) {
       const square = (files[f] + ranks[r]) as Square;
@@ -103,11 +97,6 @@ export default function ChessGame() {
             ${isSelected ? 'ring-4 ring-green-400 inset-0 z-10' : ''}
           `}
         >
-            {/* Coordenadas pequeñas */}
-            {f === 0 && <span className={`absolute top-0 left-1 text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{ranks[r]}</span>}
-            {r === 7 && <span className={`absolute bottom-0 right-1 text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{files[f]}</span>}
-
-            {/* La Pieza */}
             {piece && (
               <img
                 src={PIECE_IMAGES[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]}
@@ -122,25 +111,17 @@ export default function ChessGame() {
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
-      {/* HUD */}
       <div className="w-full bg-[#111] border border-green-500/30 rounded p-4 shadow-lg">
         <div className="flex items-center gap-2 text-green-400 mb-2 text-sm font-mono border-b border-green-500/20 pb-2">
           <Cpu size={16} /> MANUAL OVERRIDE SYSTEM
         </div>
-        <p className="font-mono text-gray-300 text-sm">
-           &gt; {status}
-        </p>
+        <p className="font-mono text-gray-300 text-sm"> &gt; {status}</p>
       </div>
 
-      {/* TABLERO CSS GRID */}
       <div className="w-full aspect-square border-4 border-[#222] rounded shadow-2xl overflow-hidden">
         <div className="grid grid-cols-8 grid-rows-8 w-full h-full">
             {board}
         </div>
-      </div>
-
-      <div className="text-xs text-gray-500 font-mono">
-        Instrucciones: Clic para seleccionar &rarr; Clic para mover.
       </div>
 
       <button
