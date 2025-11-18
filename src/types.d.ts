@@ -8,9 +8,8 @@ declare module 'chess.js' {
     move(move: string | object): object | null;
     turn(): string;
     get(square: string): { type: string; color: string } | null;
-    // Añade más métodos si los necesitas
+    // Añadimos los métodos que falten
   }
 
-  // Definimos Square como string para que no falle el componente
   export type Square = string;
 }
