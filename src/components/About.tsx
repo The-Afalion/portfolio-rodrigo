@@ -1,95 +1,111 @@
 "use client";
 import { motion } from "framer-motion";
-import { Terminal, Cpu, Server, Wind, Medal, Anchor, Box } from "lucide-react";
+import { Terminal, Wind, Medal, Anchor } from "lucide-react";
+import CubeGridScene from "./scenes/CubeGridScene";
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function About() {
-  const badgeBase = "px-3 py-1 text-[11px] font-mono border rounded-md transition-colors cursor-default";
+  const badgeBase = "px-3 py-1 text-xs font-mono border rounded-md transition-colors cursor-default";
 
   return (
-    <section className="py-24 px-4 md:px-10 bg-gray-50 dark:bg-[#050505] text-gray-900 dark:text-white relative overflow-hidden transition-colors duration-300">
+    <section id="about" className="relative py-32 px-4 md:px-10 bg-background text-foreground overflow-hidden">
+      <div className="absolute inset-0 z-0 opacity-20">
+        <CubeGridScene />
+      </div>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 relative z-10">
-
-        {/* --- INGENIERO --- */}
         <motion.div
-          initial={{ x: -50, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          className="p-8 rounded-3xl border border-gray-200 dark:border-green-500/20 bg-white dark:bg-[#111] shadow-xl dark:shadow-green-900/5 relative group"
+          variants={cardVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="p-8 rounded-3xl border border-border bg-background/80 backdrop-blur-sm shadow-2xl"
         >
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-green-100 dark:bg-green-500/10 rounded-xl text-green-600 dark:text-green-400">
+          <motion.div variants={itemVariants} className="flex items-center gap-3 mb-8">
+            <div className="p-3 bg-secondary rounded-xl text-blue-500">
               <Terminal size={24} />
             </div>
             <div>
               <h3 className="text-2xl font-bold font-mono tracking-tight">
-                INGENIERÍA<span className="text-green-600 dark:text-green-500">.exe</span>
+                INGENIERÍA<span className="text-blue-500">.dev</span>
               </h3>
-              <p className="text-xs text-gray-500 font-mono">UAM Student // Full Stack</p>
+              <p className="text-xs text-muted-foreground font-mono">UAM // Software & Systems</p>
             </div>
-          </div>
+          </motion.div>
 
-          <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed text-sm">
-            Estudiante de <strong className="text-black dark:text-white">Ingeniería Informática en la UAM</strong>.
-            Mi enfoque no es solo "que funcione", sino entender por qué funciona.
-          </p>
+          <motion.p variants={itemVariants} className="text-muted-foreground mb-8 leading-relaxed">
+            Graduado en <strong className="text-foreground">Ingeniería Informática</strong>, mi pasión es construir software robusto y eficiente, desde el metal hasta la nube.
+          </motion.p>
 
-          {/* Stack Grid */}
-          <div className="space-y-6">
+          <motion.div variants={itemVariants} className="space-y-6">
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Core Systems</h4>
+              <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Core Systems</h4>
               <div className="flex flex-wrap gap-2">
-                <span className={`${badgeBase} border-gray-200 dark:border-green-500/20 bg-gray-50 dark:bg-green-500/5 text-gray-700 dark:text-green-200`}>C / C++</span>
-                <span className={`${badgeBase} border-gray-200 dark:border-orange-500/20 bg-gray-50 dark:bg-orange-500/5 text-gray-700 dark:text-orange-200`}>Rust</span>
-                <span className={`${badgeBase} border-gray-200 dark:border-blue-500/20 bg-gray-50 dark:bg-blue-500/5 text-gray-700 dark:text-blue-200`}>Python</span>
+                <span className={`${badgeBase} border-blue-500/20 bg-blue-500/10 text-blue-300`}>C / C++</span>
+                <span className={`${badgeBase} border-orange-500/20 bg-orange-500/10 text-orange-300`}>Rust</span>
+                <span className={`${badgeBase} border-yellow-500/20 bg-yellow-500/10 text-yellow-300`}>Python</span>
               </div>
             </div>
-
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Infrastructure</h4>
+              <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Infrastructure</h4>
               <div className="flex flex-wrap gap-2">
-                 <span className={`${badgeBase} border-gray-200 dark:border-purple-500/20 bg-gray-50 dark:bg-purple-500/5 text-gray-700 dark:text-purple-200`}>Docker</span>
-                 <span className={`${badgeBase} border-gray-200 dark:border-yellow-500/20 bg-gray-50 dark:bg-yellow-500/5 text-gray-700 dark:text-yellow-200`}>Firebase</span>
-                 <span className={`${badgeBase} border-gray-200 dark:border-cyan-500/20 bg-gray-50 dark:bg-cyan-500/5 text-gray-700 dark:text-cyan-200`}>MariaDB</span>
+                 <span className={`${badgeBase} border-purple-500/20 bg-purple-500/10 text-purple-300`}>Docker</span>
+                 <span className={`${badgeBase} border-red-500/20 bg-red-500/10 text-red-300`}>Firebase</span>
+                 <span className={`${badgeBase} border-cyan-500/20 bg-cyan-500/10 text-cyan-300`}>MariaDB</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
 
-        {/* --- DEPORTISTA --- */}
         <motion.div
-          initial={{ x: 50, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          className="p-8 rounded-3xl border border-gray-200 dark:border-cyan-500/20 bg-white dark:bg-[#0c1214] shadow-xl relative overflow-hidden group"
+          variants={cardVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="p-8 rounded-3xl border border-border bg-background/80 backdrop-blur-sm shadow-2xl"
         >
-          <div className="flex items-center gap-3 mb-8 relative z-10">
-            <div className="p-3 bg-cyan-100 dark:bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400">
+          <motion.div variants={itemVariants} className="flex items-center gap-3 mb-8">
+            <div className="p-3 bg-secondary rounded-xl text-cyan-400">
               <Wind size={24} />
             </div>
             <h3 className="text-2xl font-bold tracking-tight">
-              ALTO RENDIMIENTO
+              MENTALIDAD DE ATLETA
             </h3>
-          </div>
+          </motion.div>
 
-          <ul className="space-y-4 relative z-10">
-             <li className="flex gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-white/5">
-                <Medal className="text-yellow-500 shrink-0" />
+          <motion.ul variants={itemVariants} className="space-y-4">
+             <li className="flex gap-4 p-4 rounded-2xl bg-secondary">
+                <Medal className="text-yellow-500 shrink-0 mt-1" />
                 <div>
-                  <h4 className="font-bold text-sm">Equipo de Élite Madrileño</h4>
-                  <p className="text-xs text-gray-500 mt-1">Ex-deportista de competición. Disciplina y gestión de presión.</p>
+                  <h4 className="font-bold">Disciplina y Resiliencia</h4>
+                  <p className="text-sm text-muted-foreground mt-1">Forjadas en años de competición deportiva de alto rendimiento.</p>
                 </div>
              </li>
-             <li className="flex gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-white/5">
-                <Anchor className="text-cyan-500 shrink-0" />
+             <li className="flex gap-4 p-4 rounded-2xl bg-secondary">
+                <Anchor className="text-cyan-500 shrink-0 mt-1" />
                 <div>
-                  <h4 className="font-bold text-sm">Árbitro & Entrenador</h4>
-                  <p className="text-xs text-gray-500 mt-1">Liderazgo, responsabilidad y toma de decisiones.</p>
+                  <h4 className="font-bold">Liderazgo y Decisión</h4>
+                  <p className="text-sm text-muted-foreground mt-1">Experiencia como árbitro y entrenador en entornos de alta presión.</p>
                 </div>
              </li>
-          </ul>
+          </motion.ul>
         </motion.div>
-
       </div>
     </section>
   );
