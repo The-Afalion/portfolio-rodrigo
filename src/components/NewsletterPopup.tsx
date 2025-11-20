@@ -12,14 +12,24 @@ export default function NewsletterPopup() {
     if (hasClosedPopup) return;
 
     const handleScroll = () => {
-      if (window.scrollY > window.innerHeight * 0.8) {
+      // CORRECCIÓN: El pop-up aparecerá mucho antes, al hacer scroll un 40% de la página.
+      if (window.scrollY > window.innerHeight * 0.4) {
         setIsOpen(true);
         window.removeEventListener("scroll", handleScroll);
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Añadimos un pequeño retraso para no mostrarlo al instante si el usuario ya ha hecho scroll.
+    const timer = setTimeout(() => {
+      window.addEventListener("scroll", handleScroll);
+      // Comprobar también al cargar, por si el usuario ya está abajo en la página
+      handleScroll();
+    }, 2000); // Esperar 2 segundos antes de empezar a comprobar
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleClose = () => {
