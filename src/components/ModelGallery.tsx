@@ -2,11 +2,12 @@
 import { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, TorusKnot, Icosahedron } from "@react-three/drei";
+import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import KayakerModel from "./KayakerModel"; // Importamos el nuevo modelo
+import KayakerModel from "./KayakerModel";
 
-// --- Lista de modelos, incluyendo el nuevo piragüista ---
+// --- Lista de modelos ---
 const placeholders = [
   { 
     name: "Piragüista de Slalom", 
@@ -76,10 +77,20 @@ export default function ModelGallery() {
           <div className="w-full h-full bg-secondary rounded-lg border border-border flex flex-col overflow-hidden">
             <div className="flex-grow">
               <Canvas shadows camera={{ fov: 50, position: [0, 5, 10] }}>
-                <ambientLight intensity={0.7} />
-                <directionalLight position={[10, 10, 5]} intensity={1.5} castShadow />
+                {/* --- Nueva Iluminación de Estudio --- */}
+                <ambientLight intensity={0.2} />
+                <pointLight position={[10, 10, 10]} intensity={0.5} />
+                <pointLight position={[-10, -10, -10]} intensity={0.3} />
+                <directionalLight position={[0, 10, 0]} intensity={0.8} castShadow />
+
                 <Suspense fallback={null}>{currentModel.component}</Suspense>
                 <OrbitControls autoRotate />
+
+                {/* --- Efectos de Post-procesado --- */}
+                <EffectComposer>
+                  <Bloom luminanceThreshold={0.8} luminanceSmoothing={0.9} height={300} />
+                  <Vignette eskil={false} offset={0.1} darkness={0.5} />
+                </EffectComposer>
               </Canvas>
             </div>
             <h3 className="text-center font-mono p-4">{currentModel.name}</h3>

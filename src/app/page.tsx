@@ -5,6 +5,7 @@ import Hero from "@/components/Hero";
 import Projects from "@/components/Projects";
 import About from "@/components/About";
 import Timeline from "@/components/Timeline";
+import NewsletterSection from "@/components/NewsletterSection";
 
 export default function Home() {
   const containerRef = useRef(null);
@@ -19,6 +20,7 @@ export default function Home() {
       <About />
       <Timeline />
       <Projects />
+      <NewsletterSection />
     </main>
   );
 }
