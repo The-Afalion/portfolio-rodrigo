@@ -1,15 +1,21 @@
 "use client";
 import * as THREE from "three";
-import { useRef, useMemo } from "react";
+import { useRef } from "react";
 import { useFrame, extend } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
+
+// El tipo de las props de nuestro material, para usarlo en la referencia
+type VortexMaterialImpl = THREE.ShaderMaterial & {
+  uTime: number;
+  uMouse: THREE.Vector2;
+};
 
 const VortexMaterial = shaderMaterial(
   {
     uTime: 0,
     uFrequency: 5.0,
     uAmplitude: 0.2,
-    uColor: new THREE.Color("#3B82F6"), // Electric Blue
+    uColor: new THREE.Color("#3B82F6"),
     uMouse: new THREE.Vector2(0, 0),
   },
   // Vertex Shader
@@ -23,16 +29,13 @@ const VortexMaterial = shaderMaterial(
       vUv = uv;
       vec3 newPosition = position;
       float dist = distance(uv, vec2(0.5));
-      // Distorsión basada en el ratón
       float mouseEffect = smoothstep(0.1, 0.5, distance(uv, uMouse));
-      // Combinamos la animación base con la del ratón
       newPosition.z += sin(dist * uFrequency - uTime) * uAmplitude * mouseEffect;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
     }
   `,
   // Fragment Shader
   `
-    uniform float uTime;
     uniform vec3 uColor;
     varying vec2 vUv;
     void main() {
@@ -47,12 +50,11 @@ const VortexMaterial = shaderMaterial(
 extend({ VortexMaterial });
 
 export default function Vortex() {
-  const materialRef = useRef();
+  const materialRef = useRef<VortexMaterialImpl>(null!);
 
   useFrame(({ clock, mouse }) => {
     if (materialRef.current) {
       materialRef.current.uTime = clock.getElapsedTime();
-      // Actualizamos la posición del ratón (normalizada de -1 a 1)
       materialRef.current.uMouse.x = (mouse.x + 1) / 2;
       materialRef.current.uMouse.y = (mouse.y + 1) / 2;
     }

@@ -1,10 +1,17 @@
 "use client";
-import { motion } from "framer-motion";
-import { Terminal, Cpu, ChevronDown } from "lucide-react";
+import { motion, useTransform, MotionValue } from "framer-motion";
+// CORRECCIÓN: Se reemplaza 'Cube' por 'Box', que sí existe en la librería.
+import { Terminal, Cpu, ChevronDown, Box } from "lucide-react";
 import Link from "next/link";
 import VortexScene from "./scenes/VortexScene";
 
-export default function Hero() {
+type HeroProps = {
+  scrollYProgress: MotionValue<number>;
+};
+
+export default function Hero({ scrollYProgress }: HeroProps) {
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+
   return (
     <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-background text-foreground">
       <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-20"
@@ -15,7 +22,7 @@ export default function Hero() {
       />
       <div className="absolute inset-0 z-0 bg-gradient-to-t from-background via-transparent to-background" />
 
-      <div className="z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-6xl w-full px-4">
+      <motion.div style={{ y }} className="z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-6xl w-full px-4">
         <div className="text-center md:text-left">
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
@@ -66,24 +73,30 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.8 }}
             className="flex flex-wrap justify-center md:justify-start gap-4"
           >
-            <Link href="#projects">
-              <button className="group relative px-8 py-4 font-mono font-bold rounded-lg bg-foreground text-background overflow-hidden transition-all hover:scale-105">
-                <span className="relative flex items-center gap-2">
-                  <Terminal size={18} /> VER PROYECTOS
-                </span>
-              </button>
+            <Link
+              href="#projects"
+              className="group relative px-8 py-4 font-mono font-bold rounded-lg bg-foreground text-background overflow-hidden transition-all hover:scale-105 flex items-center gap-2"
+            >
+              <Terminal size={18} /> VER PROYECTOS
             </Link>
-            <Link href="/chess">
-              <button className="px-8 py-4 font-mono font-bold rounded-lg border border-border hover:bg-secondary transition-all flex items-center gap-2">
-                <Cpu size={18} /> LABS IA
-              </button>
+            <Link
+              href="/models"
+              className="px-8 py-4 font-mono font-bold rounded-lg border border-border hover:bg-secondary transition-all flex items-center gap-2"
+            >
+              <Box size={18} /> MODELOS 3D
+            </Link>
+            <Link
+              href="/chess"
+              className="px-8 py-4 font-mono font-bold rounded-lg border border-border hover:bg-secondary transition-all flex items-center gap-2"
+            >
+              <Cpu size={18} /> LABS IA
             </Link>
           </motion.div>
         </div>
         <div className="relative h-full w-full hidden md:flex justify-center items-center">
           <VortexScene />
         </div>
-      </div>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0 }}

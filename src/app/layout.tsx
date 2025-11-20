@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackgroundSpotlight from "@/components/BackgroundSpotlight";
 
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
@@ -24,6 +25,7 @@ export default function RootLayout({
         className={`${sans.variable} ${mono.variable} font-sans antialiased`}
       >
         <Providers>
+          <BackgroundSpotlight />
           <Navbar />
           {children}
           <Footer />

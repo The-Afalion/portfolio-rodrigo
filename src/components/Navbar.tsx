@@ -44,7 +44,7 @@ export default function Navbar() {
               <Terminal size={20} />
             </div>
             <span className="font-mono font-bold text-lg tracking-tight hidden sm:block">
-              RODRIGO<span className="text-blue-500">.dev</span>
+              rodo<span className="text-blue-500">codes</span>
             </span>
           </Link>
         </motion.div>

@@ -6,17 +6,15 @@ import { Instances, Instance } from "@react-three/drei";
 
 const GRID_SIZE = 10;
 const BOX_SIZE = 0.5;
+const baseColor = new THREE.Color("#3B82F6");
 
 export default function CubeGrid() {
-  const ref = useRef();
+  const ref = useRef<THREE.Group>(null);
 
   useFrame(({ clock, mouse }) => {
     if (ref.current) {
-      // Gira lentamente todo el grid
       ref.current.rotation.y = clock.getElapsedTime() * 0.05;
       ref.current.rotation.x = clock.getElapsedTime() * 0.05;
-
-      // Mueve el grid en base a la posición del ratón
       ref.current.position.x = (mouse.x * GRID_SIZE) / 4;
       ref.current.position.y = (mouse.y * GRID_SIZE) / 4;
     }
@@ -26,7 +24,7 @@ export default function CubeGrid() {
     <group ref={ref}>
       <Instances>
         <boxGeometry args={[BOX_SIZE, BOX_SIZE, BOX_SIZE]} />
-        <meshStandardMaterial emissive="#3B82F6" emissiveIntensity={0} />
+        <meshStandardMaterial />
         {Array.from({ length: GRID_SIZE * GRID_SIZE * GRID_SIZE }).map(
           (_, i) => {
             const x = (i % GRID_SIZE) - GRID_SIZE / 2;
@@ -48,10 +46,11 @@ export default function CubeGrid() {
 }
 
 function Cube({ ...props }) {
-  const ref = useRef();
+  const ref = useRef<any>();
+  const tempColor = new THREE.Color();
+
   useFrame(({ clock }) => {
     if (ref.current) {
-      // Animación individual de cada cubo
       const time = clock.getElapsedTime();
       const angle =
         (props.position[0] + props.position[1] + props.position[2]) * 0.1 +
@@ -59,12 +58,11 @@ function Cube({ ...props }) {
       ref.current.rotation.x = angle;
       ref.current.rotation.y = angle;
 
-      // Iluminación basada en la proximidad al centro
       const dist = ref.current.position.distanceTo(new THREE.Vector3(0, 0, 0));
-      ref.current.material.emissiveIntensity = Math.max(
-        0,
-        1 - dist / (GRID_SIZE / 2)
-      );
+      const intensity = Math.max(0, 1 - dist / (GRID_SIZE / 2));
+      
+      // CORRECCIÓN: Modificamos la propiedad 'color' de la instancia
+      ref.current.color.set(tempColor.copy(baseColor).multiplyScalar(intensity * 2));
     }
   });
   return <Instance ref={ref} {...props} />;
