@@ -54,14 +54,14 @@ export default function ChessGame() {
 
   useEffect(() => {
     let newStatus = "";
-    const g = game as any;
-    if (g.isCheckmate()) {
-      newStatus = `Jaque Mate - ${g.turn() === "w" ? "Ganan las Negras" : "Ganan las Blancas"}`;
-    } else if (g.isDraw()) {
+    // SOLUCIÓN DEFINITIVA: Ahora TypeScript entiende los métodos gracias al archivo .d.ts
+    if (game.isCheckmate()) {
+      newStatus = `Jaque Mate - ${game.turn() === "w" ? "Ganan las Negras" : "Ganan las Blancas"}`;
+    } else if (game.isDraw()) {
       newStatus = "Partida en Tablas";
     } else {
-      newStatus = g.turn() === "w" ? "Tu turno (Blancas)" : "Turno de la IA (Negras)";
-      if (g.isCheck()) {
+      newStatus = game.turn() === "w" ? "Tu turno (Blancas)" : "Turno de la IA (Negras)";
+      if (game.isCheck()) {
         newStatus += " - Jaque";
       }
     }
@@ -77,7 +77,6 @@ export default function ChessGame() {
         <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
-          // CORRECCIÓN: Usando las props correctas para el estilo de las casillas
           customDarkSquareStyle={{ backgroundColor: "#B58863" }}
           customLightSquareStyle={{ backgroundColor: "#F0D9B5" }}
         />
