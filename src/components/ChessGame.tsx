@@ -54,14 +54,14 @@ export default function ChessGame() {
 
   useEffect(() => {
     let newStatus = "";
-    // SOLUCIÓN DEFINITIVA: Ahora TypeScript entiende los métodos gracias al archivo .d.ts
-    if (game.isCheckmate()) {
+    // SOLUCIÓN DEFINITIVA: Usando los métodos correctos de la v0.13.x de la librería
+    if (game.in_checkmate()) {
       newStatus = `Jaque Mate - ${game.turn() === "w" ? "Ganan las Negras" : "Ganan las Blancas"}`;
-    } else if (game.isDraw()) {
+    } else if (game.in_draw()) {
       newStatus = "Partida en Tablas";
     } else {
       newStatus = game.turn() === "w" ? "Tu turno (Blancas)" : "Turno de la IA (Negras)";
-      if (game.isCheck()) {
+      if (game.in_check()) {
         newStatus += " - Jaque";
       }
     }
