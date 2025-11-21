@@ -1,75 +1,60 @@
 "use client";
 import { motion } from "framer-motion";
-import { Briefcase, GraduationCap, Code } from "lucide-react";
+import { School, Activity, Award, Code } from "lucide-react";
 
-const timelineData = [
+const timelineEvents = [
   {
-    icon: <GraduationCap />,
-    date: "2020 - Presente",
+    date: "2025 - Presente",
     title: "Grado en Ingeniería Informática",
-    subtitle: "Universidad Autónoma de Madrid",
-    description: "Especialización en sistemas críticos y desarrollo de software avanzado.",
+    institution: "Universidad Autónoma de Madrid (UAM)",
+    description: "Profundizando en los fundamentos de la computación, algoritmos, estructuras de datos y arquitecturas de software.",
+    icon: <School />,
+    color: "blue",
   },
   {
+    date: "2024 - 2025",
+    title: "Atleta de Alto Rendimiento",
+    institution: "Centro de Alto Rendimiento (CARD), Madrid",
+    description: "Compitiendo a nivel nacional en piragüismo, desarrollando una disciplina férrea, gestión del tiempo y resiliencia bajo presión.",
+    icon: <Award />,
+    color: "green",
+  },
+  {
+    date: "2020 - 2024",
+    title: "Bachillerato y Despertar Tecnológico",
+    institution: "IES Isaac Albéniz",
+    description: "Donde nació la curiosidad por la programación. Desarrollo de los primeros proyectos personales y experimentación con Python y desarrollo web básico.",
     icon: <Code />,
-    date: "2022",
-    title: "Primer Proyecto Full-Stack",
-    subtitle: "Aplicación de Ajedrez con IA",
-    description: "Desarrollo de una aplicación web completa con un motor de ajedrez y una IA básica.",
-  },
-  {
-    icon: <Briefcase />,
-    date: "2023",
-    title: "Exploración de Rust y Sistemas de Bajo Nivel",
-    subtitle: "Proyectos personales",
-    description: "Investigación y desarrollo en Rust para entender la gestión de memoria y la concurrencia.",
+    color: "purple",
   },
 ];
 
-const itemVariants = {
-  hidden: { opacity: 0, x: -50 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.5,
-    },
-  },
-};
-
 export default function Timeline() {
   return (
-    <section id="timeline" className="py-24 px-4 md:px-10 bg-background">
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-4xl font-bold text-center mb-12">Mi Trayectoria</h2>
-        <div className="relative">
-          {/* Línea vertical */}
-          <div className="absolute left-4 top-0 h-full w-0.5 bg-border" />
-
-          {timelineData.map((item, index) => (
-            <motion.div
-              key={index}
-              className="relative flex items-start mb-12"
-              variants={itemVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.5 }}
-            >
-              {/* Icono */}
-              <div className="absolute left-0 flex-shrink-0 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-blue-500">
-                {item.icon}
-              </div>
-
-              {/* Contenido */}
-              <div className="ml-16">
-                <p className="text-sm font-mono text-muted-foreground mb-1">{item.date}</p>
-                <h3 className="text-xl font-bold">{item.title}</h3>
-                <h4 className="text-md text-muted-foreground mb-2">{item.subtitle}</h4>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+    <section id="timeline" className="py-24 px-4">
+      <h2 className="text-center text-4xl font-bold mb-12">Mi Trayectoria</h2>
+      <div className="relative max-w-3xl mx-auto">
+        <div className="absolute left-1/2 -translate-x-1/2 h-full w-0.5 bg-border" />
+        {timelineEvents.map((event, index) => (
+          <motion.div
+            key={index}
+            className="relative flex items-center mb-12"
+            initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className={`absolute left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-${event.color}-500/20 border-2 border-${event.color}-500 flex items-center justify-center text-${event.color}-500`}>
+              {event.icon}
+            </div>
+            <div className={`w-[calc(50%-2.5rem)] ${index % 2 === 0 ? 'text-right' : 'ml-auto'}`}>
+              <p className="text-sm text-muted-foreground">{event.date}</p>
+              <h3 className="text-xl font-bold mt-1">{event.title}</h3>
+              <p className="text-sm font-mono">{event.institution}</p>
+              <p className="text-muted-foreground mt-2">{event.description}</p>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </section>
   );

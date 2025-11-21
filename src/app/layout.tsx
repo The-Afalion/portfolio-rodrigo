@@ -4,7 +4,6 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BackgroundSpotlight from "@/components/BackgroundSpotlight";
 import NewsletterPopup from "@/components/NewsletterPopup";
 
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
@@ -26,7 +25,6 @@ export default function RootLayout({
         className={`${sans.variable} ${mono.variable} font-sans antialiased`}
       >
         <Providers>
-          <BackgroundSpotlight />
           <Navbar />
           {children}
           <NewsletterPopup />
