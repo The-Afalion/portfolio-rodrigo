@@ -18,7 +18,15 @@ export default function CommunityChessClient({ gameData }: { gameData: any }) {
   const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
   const [customSquareStyles, setCustomSquareStyles] = useState({});
 
-  const chessGame = useMemo(() => new Chess(game.fen), [game.fen]);
+  // Usamos useMemo para evitar recrear el objeto Chess en cada render
+  const chessGame = useMemo(() => game ? new Chess(game.fen) : null, [game]);
+
+  // Convertimos la fecha (que ahora es un string) de vuelta a un objeto Date
+  const targetDate = useMemo(() => game ? new Date(game.nextMoveDue) : new Date(), [game]);
+
+  if (!chessGame) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando partida...</div>;
+  }
 
   function onPieceClick(piece: string, sourceSquare: string) {
     const moves = chessGame.moves({
@@ -111,7 +119,7 @@ export default function CommunityChessClient({ gameData }: { gameData: any }) {
 
           <div className="bg-secondary p-6 rounded-lg border border-border mb-8">
             <h2 className="text-lg font-bold text-center mb-2">Tiempo para el Próximo Movimiento</h2>
-            <Countdown targetDate={new Date(game.nextMoveDue)} />
+            <Countdown targetDate={targetDate} />
           </div>
 
           {!isRegistered ? (
