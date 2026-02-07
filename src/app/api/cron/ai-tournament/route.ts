@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/db';
 import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
 
+// v1.2 - Adding null checks for robustness
 const AI_NAMES = [
   "ByteBard", "HexaMind", "CodeCaster", "NexoZero", "QuantumLeap", 
   "SiliconSoul", "LogicLoom", "KernelKing", "VoidRunner", "FluxAI", 
@@ -54,6 +55,24 @@ function simulateGame(startTime: Date): { winner: 'w' | 'b', moves: { move: stri
 
 // --- LÓGICA PRINCIPAL DEL CRON JOB ---
 
+async function simulateRound(matches: any[]) {
+  const startTime = new Date();
+  for (const match of matches) {
+    if (!match || !match.player1Id || !match.player2Id) continue; // Comprobación de seguridad
+
+    const { winner, moves } = simulateGame(startTime);
+    const winnerId = winner === 'w' ? match.player1Id : match.player2Id;
+
+    await supabaseAdmin.from('AITournamentMatch')
+      .update({
+        status: 'ACTIVE',
+        winnerId: winnerId,
+        moves: moves,
+      })
+      .eq('id', match.id);
+  }
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
   if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -64,88 +83,82 @@ export async function GET(request: Request) {
     // 1. Crear las IAs si no existen
     const { count: playerCount } = await supabaseAdmin.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('isAI', true);
     if (playerCount === 0) {
-      const newAIs = AI_NAMES.map(name => ({
-        email: `${name.toLowerCase()}@system.io`,
-        name: name,
-        isAI: true,
-      }));
+      const newAIs = AI_NAMES.map(name => ({ email: `${name.toLowerCase()}@system.io`, name: name, isAI: true }));
       await supabaseAdmin.from('ChessPlayer').insert(newAIs);
     }
 
     // 2. Buscar un torneo activo
-    let { data: activeTournament, error: tourneyError } = await supabaseAdmin
+    let { data: activeTournament } = await supabaseAdmin
       .from('AITournament')
       .select('id, matches:AITournamentMatch(*)')
       .eq('status', 'ACTIVE')
       .single();
 
-    // 3. Si no hay torneo activo, empezar uno nuevo
+    // 3. Si no hay torneo activo, empezar uno nuevo y simular la primera ronda
     if (!activeTournament) {
       const { data: players } = await supabaseAdmin.from('ChessPlayer').select('id').eq('isAI', true);
-      const shuffled = players!.sort(() => 0.5 - Math.random());
+      if (!players || players.length < 8) throw new Error("No hay suficientes IAs en la base de datos para empezar un torneo.");
+
+      const shuffled = players.sort(() => 0.5 - Math.random());
       const participants = shuffled.slice(0, 8);
 
-      const { data: newTournament } = await supabaseAdmin.from('AITournament').insert({ status: 'ACTIVE' }).select().single();
+      const { data: newTournament, error: createTourneyError } = await supabaseAdmin.from('AITournament').insert({ status: 'ACTIVE' }).select().single();
+      if (createTourneyError || !newTournament) throw new Error("No se pudo crear el nuevo torneo.");
       
-      const matches = [];
+      const firstRoundMatches = [];
       for (let i = 0; i < 8; i += 2) {
-        matches.push({
-          tournamentId: newTournament!.id,
+        firstRoundMatches.push({
+          tournamentId: newTournament.id,
           round: 1,
           player1Id: participants[i].id,
           player2Id: participants[i + 1].id,
         });
       }
-      await supabaseAdmin.from('AITournamentMatch').insert(matches);
-      return NextResponse.json({ message: `Nuevo torneo ${newTournament!.id} iniciado.` });
-    }
-
-    // 4. Si hay torneo, buscar la próxima partida pendiente
-    const pendingMatch = activeTournament.matches.find(m => m.status === 'PENDING');
-
-    if (pendingMatch) {
-      const startTime = new Date();
-      const { winner, moves } = simulateGame(startTime);
-      const winnerId = winner === 'w' ? pendingMatch.player1Id : pendingMatch.player2Id;
-
-      await supabaseAdmin.from('AITournamentMatch')
-        .update({
-          status: 'ACTIVE', // "Activa" para que el frontend la reproduzca
-          winnerId: winnerId, // Pre-calculamos el ganador
-          moves: moves,
-        })
-        .eq('id', pendingMatch.id);
+      const { data: insertedMatches, error: insertMatchesError } = await supabaseAdmin.from('AITournamentMatch').insert(firstRoundMatches).select();
+      if (insertMatchesError || !insertedMatches) throw new Error("No se pudieron crear las partidas de la primera ronda.");
       
-      return NextResponse.json({ message: `Partida ${pendingMatch.id} simulada y lista para reproducir.` });
+      await simulateRound(insertedMatches);
+      return NextResponse.json({ message: `Nuevo torneo ${newTournament.id} iniciado y primera ronda simulada.` });
     }
 
-    // 5. Si no hay partidas pendientes, avanzar a la siguiente ronda o finalizar el torneo
-    const finishedMatches = activeTournament.matches.filter(m => m.status !== 'PENDING');
-    const lastRound = Math.max(...finishedMatches.map(m => m.round));
-    const winnersOfLastRound = finishedMatches.filter(m => m.round === lastRound).map(m => m.winnerId);
+    // 4. Si hay torneo, comprobar si la ronda actual ha terminado
+    const activeMatches = activeTournament.matches.filter(m => m.status === 'ACTIVE');
+    if (activeMatches.length > 0) {
+      return NextResponse.json({ message: `La ronda actual todavía está en curso.` });
+    }
 
-    // Marcar las partidas de la ronda anterior como 'FINISHED'
+    // 5. Si no hay partidas activas, significa que la ronda ha terminado. Avanzamos.
+    const finishedMatches = activeTournament.matches;
+    const lastRound = Math.max(...finishedMatches.map(m => m.round));
+    const winnersOfLastRound = finishedMatches.filter(m => m.round === lastRound).map(m => m.winnerId).filter(id => id != null); // Filtrar nulos
+
+    if (winnersOfLastRound.length === 0 && lastRound > 0) {
+      throw new Error(`No se encontraron ganadores para la ronda ${lastRound}.`);
+    }
+
     await supabaseAdmin.from('AITournamentMatch').update({ status: 'FINISHED' }).in('id', finishedMatches.map(m => m.id));
 
-    if (winnersOfLastRound.length > 1) {
-      const nextRoundMatches = [];
-      for (let i = 0; i < winnersOfLastRound.length; i += 2) {
-        nextRoundMatches.push({
-          tournamentId: activeTournament.id,
-          round: lastRound + 1,
-          player1Id: winnersOfLastRound[i],
-          player2Id: winnersOfLastRound[i + 1],
-        });
-      }
-      await supabaseAdmin.from('AITournamentMatch').insert(nextRoundMatches);
-      return NextResponse.json({ message: `Avanzando a la ronda ${lastRound + 1}.` });
-    } else {
-      // Finalizar el torneo
+    if (winnersOfLastRound.length === 1) {
       await supabaseAdmin.from('AITournament').update({ status: 'FINISHED', winnerId: winnersOfLastRound[0], endedAt: new Date().toISOString() }).eq('id', activeTournament.id);
-      // Actualizar estadísticas del ganador
       await supabaseAdmin.rpc('increment_wins', { player_id: winnersOfLastRound[0] });
       return NextResponse.json({ message: `Torneo ${activeTournament.id} finalizado. Ganador: ${winnersOfLastRound[0]}` });
     }
+
+    const nextRoundMatches = [];
+    for (let i = 0; i < winnersOfLastRound.length; i += 2) {
+      if (!winnersOfLastRound[i] || !winnersOfLastRound[i+1]) continue; // Comprobación de seguridad
+      nextRoundMatches.push({
+        tournamentId: activeTournament.id,
+        round: lastRound + 1,
+        player1Id: winnersOfLastRound[i],
+        player2Id: winnersOfLastRound[i + 1],
+      });
+    }
+    const { data: insertedMatches, error: insertMatchesError } = await supabaseAdmin.from('AITournamentMatch').insert(nextRoundMatches).select();
+    if (insertMatchesError || !insertedMatches) throw new Error(`No se pudieron crear las partidas de la ronda ${lastRound + 1}.`);
+
+    await simulateRound(insertedMatches);
+    return NextResponse.json({ message: `Avanzando a la ronda ${lastRound + 1} y simulándola.` });
 
   } catch (error: any) {
     console.error("Error en el cron job del torneo:", error.message);

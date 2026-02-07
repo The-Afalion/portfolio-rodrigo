@@ -63,6 +63,9 @@ model ChessPlayer {
   isAI         Boolean @default(false)
   profileIcon  String?
 
+  // Personalidad de la IA
+  personality  String? // e.g., "BERSERKER", "DEFENSIVE", "ADAPTIVE"
+
   // Estadísticas del Torneo
   elo          Int @default(1200)
   winsDaily    Int @default(0)

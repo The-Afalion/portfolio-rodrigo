@@ -1,59 +1,38 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { motion } from 'framer-motion';
-import { Crown, Shield, Swords } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Crown, ChevronRight } from 'lucide-react';
 
-function MatchCard({ match, isLive }: { match: any, isLive: boolean }) {
+// --- COMPONENTES PEQUEÑOS ---
+
+function MatchCard({ match, onClick, isSelected }: { match: any, onClick: () => void, isSelected: boolean }) {
   const p1 = match.player1;
   const p2 = match.player2;
-  const winner = match.winner;
-
   return (
-    <div className={`p-3 rounded-lg border ${isLive ? 'border-blue-500 bg-blue-500/10' : 'border-border bg-secondary/50'}`}>
+    <motion.div
+      onClick={onClick}
+      className={`p-3 rounded-lg border cursor-pointer transition-colors ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-border bg-secondary/50 hover:bg-secondary/80'}`}
+      whileHover={{ scale: 1.03 }}
+    >
       <div className="flex justify-between items-center">
-        <span className={`font-mono text-sm ${winner && winner.id === p1.id ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>{p1.name}</span>
+        <span className="font-mono text-sm font-bold">{p1.name}</span>
         <span className="text-xs font-mono text-muted-foreground">{p1.elo}</span>
       </div>
       <div className="text-center text-xs font-mono text-muted-foreground my-1">vs</div>
       <div className="flex justify-between items-center">
-        <span className={`font-mono text-sm ${winner && winner.id === p2.id ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>{p2.name}</span>
+        <span className="font-mono text-sm font-bold">{p2.name}</span>
         <span className="text-xs font-mono text-muted-foreground">{p2.elo}</span>
       </div>
-    </div>
-  );
-}
-
-function Bracket({ tournament, liveMatchId }: { tournament: any, liveMatchId: string | null }) {
-  const rounds: any = {};
-  tournament.matches.forEach((match: any) => {
-    if (!rounds[match.round]) rounds[match.round] = [];
-    rounds[match.round].push(match);
-  });
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      {Object.keys(rounds).sort().map(roundNum => (
-        <div key={roundNum} className="flex flex-col gap-4">
-          <h3 className="text-center font-bold font-mono">
-            {roundNum == '1' ? 'Octavos' : roundNum == '2' ? 'Cuartos' : roundNum == '3' ? 'Semifinal' : 'Final'}
-          </h3>
-          <div className="flex flex-col gap-6">
-            {rounds[roundNum].map((match: any) => (
-              <MatchCard key={match.id} match={match} isLive={match.id === liveMatchId} />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+    </motion.div>
   );
 }
 
 function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
   return (
-    <div className="bg-secondary/50 backdrop-blur-sm border border-border rounded-lg p-4">
+    <div className="bg-secondary/50 backdrop-blur-sm border border-border rounded-lg p-4 h-full">
       <h3 className="text-lg font-bold text-center mb-4">Leaderboard de IAs</h3>
       <div className="space-y-3">
         {leaderboard.map((player, index) => (
@@ -70,19 +49,69 @@ function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
   );
 }
 
+function Bracket({ tournament, showNextRound }: { tournament: any, showNextRound: boolean }) {
+  const rounds: { [key: number]: any[] } = {};
+  tournament.matches.forEach((match: any) => {
+    if (!rounds[match.round]) rounds[match.round] = [];
+    rounds[match.round].push(match);
+  });
+
+  const roundNames = ['Octavos', 'Cuartos', 'Semifinal', 'Final'];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {Object.keys(rounds).sort((a, b) => Number(a) - Number(b)).map(roundNumStr => {
+        const roundNum = Number(roundNumStr);
+        return (
+          <div key={roundNum} className="flex flex-col gap-4">
+            <h3 className="text-center font-bold font-mono">{roundNames[roundNum - 1]}</h3>
+            <div className="flex flex-col gap-6">
+              {rounds[roundNum].map((match: any) => (
+                <div key={match.id} className="flex items-center gap-2">
+                  <div className="w-full p-3 rounded-lg border bg-secondary/50 border-border">
+                    <p className="font-mono text-sm font-bold truncate">{match.player1.name}</p>
+                    <p className="font-mono text-sm font-bold truncate mt-2">{match.player2.name}</p>
+                  </div>
+                  <AnimatePresence>
+                    {showNextRound && match.winnerId && (
+                      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                        <ChevronRight className="text-green-500" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+// --- COMPONENTE PRINCIPAL ---
+
 export default function TournamentClient({ tournament, leaderboard }: { tournament: any, leaderboard: any[] }) {
+  const [activeMatch, setActiveMatch] = useState<any>(null);
   const [game, setGame] = useState(new Chess());
-  const [liveMatch, setLiveMatch] = useState<any>(null);
+  const [showNextRound, setShowNextRound] = useState(false);
+
+  const activeRoundMatches = tournament.matches.filter((m: any) => m.status === 'ACTIVE');
 
   useEffect(() => {
-    const activeMatch = tournament.matches.find((m: any) => m.status === 'ACTIVE');
+    if (activeRoundMatches.length > 0) {
+      setActiveMatch(activeRoundMatches[0]);
+    }
+  }, [tournament]);
+
+  useEffect(() => {
     if (!activeMatch || !activeMatch.moves) return;
 
-    setLiveMatch(activeMatch);
     const moves = activeMatch.moves as { move: string, timestamp: string }[];
     const now = new Date().getTime();
+    let timeouts: NodeJS.Timeout[] = [];
 
-    // Encontrar el último movimiento que ya debería haber ocurrido
     let lastMoveIndex = -1;
     for (let i = 0; i < moves.length; i++) {
       if (new Date(moves[i].timestamp).getTime() <= now) {
@@ -92,43 +121,59 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
       }
     }
 
-    // Aplicar todos los movimientos pasados
     const initialGame = new Chess();
     for (let i = 0; i <= lastMoveIndex; i++) {
       initialGame.move(moves[i].move);
     }
     setGame(initialGame);
 
-    // Programar los movimientos futuros
     for (let i = lastMoveIndex + 1; i < moves.length; i++) {
       const moveTime = new Date(moves[i].timestamp).getTime();
       const delay = moveTime - now;
       
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setGame(prevGame => {
           const newGame = new Chess(prevGame.fen());
           newGame.move(moves[i].move);
           return newGame;
         });
+        // Si es el último movimiento de la última partida, animar el bracket
+        if (i === moves.length - 1 && activeMatch.id === activeRoundMatches[activeRoundMatches.length - 1].id) {
+          setTimeout(() => setShowNextRound(true), 1000);
+        }
       }, delay);
+      timeouts.push(timeoutId);
     }
-  }, [tournament]);
+
+    return () => timeouts.forEach(clearTimeout);
+  }, [activeMatch]);
 
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          {liveMatch ? (
-            <Chessboard position={game.fen()} boardOrientation={game.turn() === 'w' ? 'white' : 'black'} />
-          ) : (
-            <div className="aspect-square bg-secondary/50 flex items-center justify-center rounded-lg">
-              <p className="font-mono text-muted-foreground">Esperando la próxima partida...</p>
-            </div>
-          )}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {activeRoundMatches.map((match: any) => (
+              <MatchCard 
+                key={match.id} 
+                match={match} 
+                onClick={() => {
+                  setShowNextRound(false);
+                  setActiveMatch(match);
+                }}
+                isSelected={activeMatch?.id === match.id}
+              />
+            ))}
+          </div>
+          <AnimatePresence mode="wait">
+            <motion.div key={activeMatch?.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Chessboard position={game.fen()} boardOrientation={game.turn() === 'w' ? 'white' : 'black'} />
+            </motion.div>
+          </AnimatePresence>
         </div>
         <Leaderboard leaderboard={leaderboard} />
       </div>
-      <Bracket tournament={tournament} liveMatchId={liveMatch?.id} />
+      <Bracket tournament={tournament} showNextRound={showNextRound} />
     </div>
   );
 }
