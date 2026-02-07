@@ -1,64 +1,117 @@
-import prisma from '@/lib/prisma';
+import { supabaseAdmin } from '@/lib/db';
+import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
-import { getRankedMoves } from '@/lib/chess-ai';
 
-const FAKE_VOTES_PER_DAY = 50;
+// Lista de jugadores "bot" que generarán los votos
+const BOT_EMAILS = [
+  'bot-kasparov@system.io',
+  'bot-carlsen@system.io',
+  'bot-fischer@system.io',
+  'bot-alpha-zero@system.io',
+];
 
-export async function GET() {
+// Función simple para evaluar un movimiento
+function evaluateMove(move: any, game: Chess) {
+  let score = 0;
+  if (move.flags.includes('c')) score += 10; // Captura
+  if (move.flags.includes('p')) score += 100; // Promoción
+  
+  // Simular el movimiento para ver si da jaque
+  game.move(move.san);
+  if (game.isCheck()) score += 25;
+  if (game.isCheckmate()) score += 1000;
+  game.undo(); // Revertir el movimiento
+
+  return score;
+}
+
+export async function GET(request: Request) {
+  // 1. Seguridad: Solo permitir que Vercel Cron o un usuario con un token secreto ejecute esto
+  const authHeader = request.headers.get('authorization');
+  if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   try {
-    const game = await prisma.communityChessGame.findUnique({ where: { id: 'main_game' } });
-    if (!game) throw new Error("Game not found");
+    // 2. Obtener la partida actual
+    const { data: gameData, error: gameError } = await supabaseAdmin
+      .from('CommunityChessGame')
+      .select('fen')
+      .eq('id', 'main_game')
+      .single();
 
-    const rankedMoves = getRankedMoves(game.fen, 3); // Aumentamos un poco la profundidad para más calidad
-    if (rankedMoves.length === 0) return NextResponse.json({ message: "No moves available" });
+    if (gameError) throw new Error(`Error al obtener la partida: ${gameError.message}`);
 
-    const fakePlayer = await prisma.chessPlayer.findFirst({ where: { isAI: true, name: 'System' } });
-    if (!fakePlayer) throw new Error("Fake player 'System' not found. Please create it in the database.");
+    const game = new Chess(gameData.fen);
+    const turn = game.turn();
 
-    const votesToCreate = [];
-    let votesToDistribute = FAKE_VOTES_PER_DAY;
+    // 3. Obtener los jugadores bot o crearlos si no existen
+    let { data: bots } = await supabaseAdmin.from('ChessPlayer').select('id, email').in('email', BOT_EMAILS);
+    if (!bots || bots.length < BOT_EMAILS.length) {
+      const newBots = BOT_EMAILS.filter(email => !bots?.some(b => b.email === email))
+        .map(email => ({
+          email,
+          name: email.split('@')[0],
+          isAI: true,
+          assignedSide: Math.random() > 0.5 ? 'w' : 'b' // Asignación aleatoria inicial
+        }));
+      
+      await supabaseAdmin.from('ChessPlayer').insert(newBots);
+      bots = (await supabaseAdmin.from('ChessPlayer').select('id, email').in('email', BOT_EMAILS)).data;
+    }
 
-    // Distribución de votos falsos
-    const distribution = [
-      { move: rankedMoves[0]?.move, maxVotes: 20 },
-      { move: rankedMoves[1]?.move, maxVotes: 15 },
-      { move: rankedMoves[2]?.move, maxVotes: 10 },
-      { move: rankedMoves[3]?.move, maxVotes: 5 },
-    ];
+    // Asegurarse de que los bots tengan el bando correcto para el turno actual
+    for (const bot of bots!) {
+      await supabaseAdmin.from('ChessPlayer').update({ assignedSide: turn }).eq('id', bot.id);
+    }
 
-    for (const item of distribution) {
-      if (item.move && votesToDistribute > 0) {
-        const votes = Math.min(votesToDistribute, item.maxVotes);
-        for (let i = 0; i < votes; i++) {
-          votesToCreate.push({
-            move: item.move,
-            isFake: true,
-            playerId: fakePlayer.id,
-            gameId: 'main_game',
-          });
-        }
-        votesToDistribute -= votes;
+    // 4. Analizar los mejores movimientos
+    const legalMoves = game.moves({ verbose: true });
+    const evaluatedMoves = legalMoves.map(move => ({
+      san: move.san,
+      score: evaluateMove(move, new Chess(game.fen)),
+    })).sort((a, b) => b.score - a.score);
+
+    // 5. Distribuir los votos
+    const VOTES_TO_ADD = 17; // Aprox. 50 votos en 3 días
+    const votes = [];
+    let remainingVotes = VOTES_TO_ADD;
+
+    // Asignar votos a los 4 mejores movimientos
+    const bestMoves = evaluatedMoves.slice(0, 4);
+    const voteDistribution = [0.4, 0.3, 0.2, 0.1]; // 40%, 30%, 20%, 10%
+
+    for (let i = 0; i < bestMoves.length; i++) {
+      const move = bestMoves[i];
+      const votesForThisMove = Math.round(VOTES_TO_ADD * voteDistribution[i]);
+      for (let j = 0; j < votesForThisMove && remainingVotes > 0; j++) {
+        votes.push({ move: move.san, botIndex: j % bots!.length });
+        remainingVotes--;
       }
     }
 
-    // Resto a movimientos menos populares
-    while (votesToDistribute > 0 && rankedMoves.length > 4) {
-      const randomMove = rankedMoves[Math.floor(4 + Math.random() * (rankedMoves.length - 4))].move;
-      votesToCreate.push({
-        move: randomMove,
-        isFake: true,
-        playerId: fakePlayer.id,
-        gameId: 'main_game',
-      });
-      votesToDistribute--;
+    // Asignar votos restantes a otros movimientos aleatorios
+    while (remainingVotes > 0) {
+      const randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+      votes.push({ move: randomMove.san, botIndex: Math.floor(Math.random() * bots!.length) });
+      remainingVotes--;
     }
 
-    if (votesToCreate.length > 0) {
-      await prisma.communityVote.createMany({ data: votesToCreate });
-    }
+    // 6. Crear los registros de votos en la base de datos
+    const voteRecords = votes.map(vote => ({
+      move: vote.move,
+      playerId: bots![vote.botIndex].id,
+      gameId: 'main_game',
+      isFake: true,
+    }));
 
-    return NextResponse.json({ success: true, votes_added: votesToCreate.length });
-  } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    const { error: insertError } = await supabaseAdmin.from('CommunityVote').insert(voteRecords);
+    if (insertError) throw new Error(`Error al insertar votos falsos: ${insertError.message}`);
+
+    return NextResponse.json({ ok: true, message: `${VOTES_TO_ADD} votos falsos añadidos.` });
+
+  } catch (error: any) {
+    console.error("Error en el cron job de votos falsos:", error.message);
+    return new Response(error.message, { status: 500 });
   }
 }
