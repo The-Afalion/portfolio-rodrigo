@@ -2,14 +2,14 @@
 import { motion } from "framer-motion";
 import { ExternalLink, Github, Code2, Database, Layout } from "lucide-react";
 import Link from "next/link";
-import FondoRejilla from "./FondoRejilla"; // Cambiado de EscenaCubo a FondoRejilla
+import FondoRejilla from "./FondoRejilla";
 
 const proyectos = [
   {
     titulo: "Motor de Ajedrez Neuronal",
     descripcion: "Algoritmo de ajedrez con toma de decisiones basada en evaluación posicional estática, usando una variante de Dijkstra.",
     etiquetas: ["TypeScript", "Next.js", "Chess.js"],
-    enlace: "/ajedrez",
+    enlace: "/chess/human-vs-ai", // Corregido
     github: "https://github.com/The-Afalion",
     destacado: true,
     icono: <Code2 size={28} />
@@ -39,7 +39,7 @@ const variantesContenedor = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15, // Retraso entre cada tarjeta
+      staggerChildren: 0.15,
     },
   },
 };
@@ -94,7 +94,6 @@ export default function Proyectos() {
                 ${proyecto.destacado ? "md:col-span-2" : "md:col-span-1"}
               `}
             >
-              {/* Efecto de brillo en hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                    style={{ transform: 'skewX(-20deg) translateX(-150%)', transition: 'transform 0.7s' }}
                    onMouseMove={(e) => {
