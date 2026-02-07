@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Users, Swords, Home, AlertTriangle } from 'lucide-react';
+import { BookOpen, Users, Swords, Home, AlertTriangle, Inbox } from 'lucide-react';
 
 export default async function AdminLayout({
   children,
@@ -30,7 +30,6 @@ export default async function AdminLayout({
     redirect('/login');
   }
 
-  // Usar la variable de entorno correcta
   if (session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
     return (
       <div className="flex min-h-screen bg-background font-mono items-center justify-center text-center">
@@ -53,9 +52,17 @@ export default async function AdminLayout({
       <aside className="w-64 bg-secondary border-r border-border flex flex-col p-4">
         <h2 className="text-2xl font-bold mb-8 text-foreground">Admin Panel</h2>
         <nav className="flex flex-col gap-4">
+          <Link href="/admin" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
+            <Home size={20} />
+            <span>Dashboard</span>
+          </Link>
           <Link href="/admin/posts" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
             <BookOpen size={20} />
             <span>Posts</span>
+          </Link>
+          <Link href="/admin/messages" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
+            <Inbox size={20} />
+            <span>Mensajes</span>
           </Link>
           <Link href="/admin/subscribers" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
             <Users size={20} />

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,8 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// 1. Base de datos para Escritores (Usuarios)
-// Usaremos la tabla 'users' de Supabase Auth
 model User {
   id    String  @id @default(uuid())
   email String? @unique
@@ -20,7 +15,6 @@ model User {
   posts Post[]
 }
 
-// 2. Base de datos para los Artículos del Blog
 model Post {
   id        String   @id @default(cuid())
   title     String
@@ -31,21 +25,75 @@ model Post {
   updatedAt DateTime @updatedAt
   author    User?    @relation(fields: [authorId], references: [id])
   authorId  String?
+  tags      Tag[]    @relation("PostTags")
+  views     Int      @default(0)
+  likes     Int      @default(0)
 }
 
-// 3. Base de datos para la Newsletter
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts Post[] @relation("PostTags")
+}
+
 model Subscriber {
   id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now())
 }
 
-// 4. Base de datos para Partidas de Ajedrez
-model ChessGame {
+model ContactMessage {
   id        String   @id @default(cuid())
-  pgn       String   @db.Text
-  result    String
-  player    String
-  levelAI   Int
+  email     String
+  name      String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+}
+
+// --- MODELOS DE AJEDREZ ---
+
+// Almacena a todos los jugadores, tanto humanos como IAs
+model ChessPlayer {
+  id          String @id @default(cuid())
+  email       String @unique // Para humanos
+  name        String // Nombre de la IA o del jugador
+  isAI        Boolean @default(false)
+  profileIcon String? // Nombre del icono de Lucide o URL de imagen
+  wins        Int    @default(0) // Para el leaderboard de IAs
+
+  // Para Ajedrez Comunitario
+  assignedSide String? // "w" o "b"
+  votes        CommunityVote[]
+}
+
+// Partida de Ajedrez Comunitario (solo habrá una)
+model CommunityChessGame {
+  id              String   @id @default("main_game")
+  fen             String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  nextMoveDue     DateTime
+  lastMoveAt      DateTime @default(now())
+  votes           CommunityVote[]
+}
+
+// Votos para la partida comunitaria
+model CommunityVote {
+  id        String   @id @default(cuid())
+  move      String   // En notación SAN, ej: "e4"
+  isFake    Boolean  @default(false)
+
+  player    ChessPlayer @relation(fields: [playerId], references: [id])
+  playerId  String
+
+  game      CommunityChessGame @relation(fields: [gameId], references: [id])
+  gameId    String
+
+  createdAt DateTime @default(now())
+}
+
+// Torneos de IA
+model AITournament {
+  id        String   @id @default(cuid())
+  winner    String
   createdAt DateTime @default(now())
 }

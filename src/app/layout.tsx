@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 import { Proveedores } from "@/components/Proveedores";
@@ -78,16 +79,29 @@ export const metadata: Metadata = {
 
 export default function DisposicionRaiz({
   children,
+  modal, // Recibimos el slot del modal
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode; // Tipo para el slot
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
       <body
         className={`${fuenteSans.variable} ${fuenteMono.variable} font-sans antialiased selection:bg-green-500 selection:text-black`}
       >
+        <Toaster 
+          position="bottom-right"
+          toastOptions={{
+            className: 'font-mono',
+            style: {
+              background: '#333',
+              color: '#fff',
+            },
+          }}
+        />
         <Proveedores>
           <ContenidoPrincipal>{children}</ContenidoPrincipal>
+          {modal} {/* Renderizamos el modal aquí */}
         </Proveedores>
       </body>
     </html>

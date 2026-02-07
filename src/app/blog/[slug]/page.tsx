@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation';
 import { marked } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye } from 'lucide-react';
+import { incrementViews } from './actions';
+import LikeButton from './LikeButton'; // Componente para el botón de like
 
-// Le decimos a Next.js que esta página siempre debe ser dinámica
 export const dynamic = 'force-dynamic';
 
 type Props = {
@@ -13,34 +14,23 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props) {
-  const post = await prisma.post.findUnique({
-    where: { slug: params.slug, published: true },
-  });
-
-  if (!post) {
-    return {
-      title: 'Post no encontrado',
-    };
-  }
-
-  return {
-    title: post.title,
-    description: post.content.substring(0, 150),
-  };
+  // ... (código existente)
 }
 
 export default async function PostPage({ params }: Props) {
+  // Incrementar vistas
+  await incrementViews(params.slug);
+
   const post = await prisma.post.findUnique({
     where: { slug: params.slug, published: true },
+    include: { tags: true },
   });
 
   if (!post) {
     notFound();
   }
 
-  // 1. Convierte Markdown a HTML
   const rawHtml = await marked.parse(post.content);
-  // 2. Sanitiza el HTML para prevenir ataques XSS
   const sanitizedHtml = DOMPurify.sanitize(rawHtml);
 
   return (
@@ -51,20 +41,33 @@ export default async function PostPage({ params }: Props) {
           Volver al blog
         </Link>
         
+        <div className="mb-4 flex flex-wrap gap-2">
+          {post.tags.map(tag => (
+            <Link key={tag.id} href={`/blog/tags/${tag.name}`} className="text-xs font-mono px-2 py-1 rounded bg-secondary hover:bg-muted">
+              #{tag.name}
+            </Link>
+          ))}
+        </div>
+
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter mb-4">{post.title}</h1>
-        <time dateTime={post.createdAt.toISOString()} className="text-sm text-muted-foreground font-mono">
-          Publicado el {new Date(post.createdAt).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </time>
+        
+        <div className="flex items-center gap-4 text-sm text-muted-foreground font-mono">
+          <time dateTime={post.createdAt.toISOString()}>
+            {new Date(post.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </time>
+          <span className="flex items-center gap-1">
+            <Eye size={14} />
+            {post.views.toLocaleString('es-ES')} vistas
+          </span>
+        </div>
 
         <div className="prose prose-invert prose-lg mt-12 mx-auto"
              dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+        
+        <div className="mt-12 pt-8 border-t border-border flex justify-center">
+          <LikeButton slug={post.slug} initialLikes={post.likes} />
+        </div>
       </article>
     </main>
   );
 }
-
-// La función generateStaticParams ha sido eliminada para forzar el renderizado dinámico.

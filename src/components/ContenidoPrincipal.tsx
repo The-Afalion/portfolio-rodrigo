@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from 'next/navigation';
 import BarraNavegacion from "@/components/BarraNavegacion";
 import PieDePagina from "@/components/PieDePagina";
 import VentanaBoletin from "@/components/VentanaBoletin";
@@ -14,6 +15,7 @@ import { usarContextoGlobal } from "@/context/ContextoGlobal";
 
 export default function ContenidoPrincipal({ children }: { children: React.ReactNode }) {
   const { efectoMatrixVisible, estado1984 } = usarContextoGlobal();
+  const pathname = usePathname();
 
   return (
     <>
@@ -21,7 +23,19 @@ export default function ContenidoPrincipal({ children }: { children: React.React
       <GestorDeEventosRandy />
       
       <BarraNavegacion />
-      {children}
+      
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={pathname} // La clave es la ruta, para que se anime al cambiar
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
+
       <VentanaBoletin />
       <PieDePagina />
       

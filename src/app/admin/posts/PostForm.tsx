@@ -1,16 +1,30 @@
 "use client";
 
+import { useEffect, useRef } from 'react';
 import { useFormState } from 'react-dom';
 import FormButton from './FormButton';
-import { createPost } from './actions'; // Importar la acción del servidor
+import { createPost } from './actions';
+import toast from 'react-hot-toast';
 
 const initialState = { message: null, errors: {} };
 
 export default function PostForm() {
   const [state, dispatch] = useFormState(createPost, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (state.message) {
+      if (state.message.startsWith('Error')) {
+        toast.error(state.message);
+      } else {
+        toast.success(state.message);
+        formRef.current?.reset(); // Limpiar el formulario si el post se creó con éxito
+      }
+    }
+  }, [state]);
 
   return (
-    <form action={dispatch} className="flex flex-col gap-4">
+    <form ref={formRef} action={dispatch} className="flex flex-col gap-4">
       <input
         name="title"
         placeholder="Título del post"
@@ -29,9 +43,6 @@ export default function PostForm() {
       {state.errors?.content && <p className="text-sm text-red-500">{state.errors.content.join(', ')}</p>}
       
       <FormButton />
-      
-      {state.message && state.message.startsWith('Error') && <p className="text-sm text-red-500">{state.message}</p>}
-      {state.message && state.message.startsWith('Post') && <p className="text-sm text-green-500">{state.message}</p>}
     </form>
   );
 }
