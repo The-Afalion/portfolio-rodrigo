@@ -1,20 +1,24 @@
 "use server";
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
 
 export async function requestLogin(email: string) {
-  // 1. Comprobación de seguridad en el servidor
   if (email !== process.env.ADMIN_EMAIL) {
     return { error: "Acceso no autorizado." };
   }
 
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+  );
+  
   const headersList = headers();
   const origin = headersList.get('origin');
 
-  // 2. Envío del Magic Link
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {

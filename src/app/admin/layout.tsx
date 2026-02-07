@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -9,17 +9,27 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // 1. Si no hay sesión, redirigir al login
   if (!session) {
     redirect('/login');
   }
 
-  // 2. Si el email no es el del admin, mostrar error de acceso denegado
   if (session.user.email !== process.env.ADMIN_EMAIL) {
     return (
       <div className="flex min-h-screen bg-background font-mono items-center justify-center text-center">
@@ -37,7 +47,6 @@ export default async function AdminLayout({
     );
   }
 
-  // 3. Si es el admin, mostrar el panel
   return (
     <div className="flex min-h-screen bg-background font-mono">
       <aside className="w-64 bg-secondary border-r border-border flex flex-col p-4">
