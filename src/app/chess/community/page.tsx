@@ -1,12 +1,14 @@
-import { supabaseAdmin } from '@/lib/db'; // Usamos el cliente de admin
+import { supabaseAdmin } from '@/lib/db';
 import CommunityChessClient from './CommunityChessClient';
 import { Chess } from 'chess.js';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 async function getGameState() {
+  // ... (la lógica para obtener el estado del juego no cambia)
   try {
-    // Usamos supabaseAdmin para todas las operaciones de servidor
     let { data: game, error: gameError } = await supabaseAdmin
       .from('CommunityChessGame')
       .select(`
@@ -22,26 +24,14 @@ async function getGameState() {
     }
 
     if (!game) {
-      console.log("No game found, creating one with admin client.");
       const threeDaysFromNow = new Date();
       threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-      
       const { data: newGame, error: createError } = await supabaseAdmin
         .from('CommunityChessGame')
-        .insert({
-          id: 'main_game',
-          fen: new Chess().fen(),
-          nextMoveDue: threeDaysFromNow.toISOString(),
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        throw new Error(`Supabase game creation error: ${createError.message}`);
-      }
-      
+        .insert({ id: 'main_game', fen: new Chess().fen(), nextMoveDue: threeDaysFromNow.toISOString() })
+        .select().single();
+      if (createError) throw new Error(`Supabase game creation error: ${createError.message}`);
       game = { ...newGame, votes: [] };
-      console.log("Successfully created a new game via Supabase admin.");
     }
     
     const voteCounts = (game.votes || []).reduce((acc: any, vote: any) => {
@@ -64,22 +54,25 @@ async function getGameState() {
     return { data: cleanGameData, error: null };
 
   } catch (error: any) {
-    console.error("Error in getGameState with admin client:", error.message);
+    console.error("Error in getGameState:", error.message);
     const defaultFen = new Chess().fen();
     return { 
-      data: {
-        fen: defaultFen,
-        turn: 'w',
-        nextMoveDue: new Date().toISOString(),
-        sortedVotes: [],
-        totalVotes: 0,
-      }, 
+      data: { fen: defaultFen, turn: 'w', nextMoveDue: new Date().toISOString(), sortedVotes: [], totalVotes: 0 }, 
       error: `Error de base de datos: ${error.message}`
     };
   }
 }
 
 export default async function CommunityChessPage() {
+  // 1. Comprobar si el jugador está "logueado"
+  const playerEmailCookie = cookies().get('player-email');
+  if (!playerEmailCookie) {
+    redirect('/chess/community/register');
+  }
+
+  // 2. Obtener los datos de la partida
   const { data, error } = await getGameState();
-  return <CommunityChessClient gameData={data} error={error} />;
+
+  // 3. Pasar el email y los datos al cliente
+  return <CommunityChessClient gameData={data} error={error} playerEmail={playerEmailCookie.value} />;
 }
