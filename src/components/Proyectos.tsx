@@ -9,7 +9,7 @@ const proyectos = [
     titulo: "Motor de Ajedrez Neuronal",
     descripcion: "Algoritmo de ajedrez con toma de decisiones basada en evaluación posicional estática, usando una variante de Dijkstra.",
     etiquetas: ["TypeScript", "Next.js", "Chess.js"],
-    enlace: "/chess/human-vs-ai", // Corregido
+    enlace: "/chess/human-vs-ai",
     github: "https://github.com/The-Afalion",
     destacado: true,
     icono: <Code2 size={28} />

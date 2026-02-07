@@ -9,10 +9,9 @@ import SobreMi from "@/components/SobreMi";
 import Trayectoria from "@/components/Trayectoria";
 import SeccionBoletin from "@/components/SeccionBoletin";
 
-// Carga dinámica de la sección de ajedrez para evitar errores de renderizado en el servidor
 const ChessHubSection = dynamic(() => import('@/components/ChessHubSection'), {
   ssr: false,
-  loading: () => <div className="h-96 w-full" /> // Un placeholder para evitar saltos de layout
+  loading: () => <div className="h-96 w-full" />
 });
 
 export default function PaginaPrincipal() {
