@@ -14,11 +14,7 @@ const nextConfig = {
         destination: '/modelos',
         permanent: true,
       },
-      {
-        source: '/ajedrez',
-        destination: '/#chess-hub', // Redirigir al ancla en la página de inicio
-        permanent: true,
-      },
+      // Eliminamos la redirección a /ajedrez o /chess para evitar conflictos
     ];
   },
   async headers() {

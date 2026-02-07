@@ -6,7 +6,7 @@ import Proyectos from "@/components/Proyectos";
 import SobreMi from "@/components/SobreMi";
 import Trayectoria from "@/components/Trayectoria";
 import SeccionBoletin from "@/components/SeccionBoletin";
-import ChessHubSection from "@/components/ChessHubSection"; // Importar la nueva sección
+import ChessHubSection from "@/components/ChessHubSection";
 
 export default function PaginaPrincipal() {
   const refContenedor = useRef(null);
@@ -21,7 +21,7 @@ export default function PaginaPrincipal() {
       <SobreMi />
       <Trayectoria />
       <Proyectos />
-      <ChessHubSection /> {/* Añadir la nueva sección aquí */}
+      <ChessHubSection />
       <SeccionBoletin />
     </main>
   );
