@@ -1,5 +1,5 @@
-import ChessHubClient from './ChessHubClient';
+import ChessHub from './ChessHub';
 
 export default function ChessHubPage() {
-  return <ChessHubClient />;
+  return <ChessHub />;
 }
