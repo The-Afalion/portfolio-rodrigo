@@ -22,6 +22,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    // Eliminamos la entrada a /chess que ya no existe
   ];
 }

@@ -14,7 +14,6 @@ const nextConfig = {
         destination: '/modelos',
         permanent: true,
       },
-      // Asegurándonos de que no haya redirecciones a /chess o /ajedrez
     ];
   },
   async headers() {
