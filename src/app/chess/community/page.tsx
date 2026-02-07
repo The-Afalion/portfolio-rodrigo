@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import CommunityChessClient from './CommunityChessClient';
+import { Chess } from 'chess.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,7 @@ async function getGameState() {
       game = await prisma.communityChessGame.create({
         data: {
           id: 'main_game',
+          fen: new Chess().fen(), // Asegurarse de que el FEN inicial esté aquí
           nextMoveDue: threeDaysFromNow,
         },
         include: { votes: true },
@@ -34,11 +36,11 @@ async function getGameState() {
     const totalVotes = game.votes.length;
     const sortedVotes = Object.entries(voteCounts).sort(([, a], [, b]) => b - a);
 
-    // **LA SOLUCIÓN DEFINITIVA**: Construir un objeto 100% limpio y serializable.
-    // No pasamos el objeto 'game' de Prisma, sino uno nuevo con solo lo que necesitamos.
+    const chessInstance = new Chess(game.fen);
+
     const cleanGameData = {
       fen: game.fen,
-      turn: game.fen.split(' ')[1], // Extraemos el turno del FEN
+      turn: chessInstance.turn(),
       nextMoveDue: game.nextMoveDue.toISOString(),
       sortedVotes: sortedVotes,
       totalVotes: totalVotes,
@@ -48,16 +50,27 @@ async function getGameState() {
 
   } catch (error) {
     console.error("Error fetching game state:", error);
-    return { data: null, error: "No se pudo cargar la partida." };
+    // Devolver un objeto con una estructura de datos por defecto en caso de error
+    // para que el cliente no se rompa.
+    const defaultFen = new Chess().fen();
+    return { 
+      data: {
+        fen: defaultFen,
+        turn: 'w',
+        nextMoveDue: new Date().toISOString(),
+        sortedVotes: [],
+        totalVotes: 0,
+      }, 
+      error: "No se pudo cargar la partida. Se muestra un tablero por defecto." 
+    };
   }
 }
 
 export default async function CommunityChessPage() {
   const { data, error } = await getGameState();
 
-  if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
-  }
-
-  return <CommunityChessClient gameData={data} />;
+  // Aunque haya un error, renderizamos el cliente con datos por defecto
+  // para evitar un error fatal en el lado del cliente.
+  // El cliente puede entonces mostrar el mensaje de error.
+  return <CommunityChessClient gameData={data} error={error} />;
 }

@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export default function CommunityChessClient({ gameData }: { gameData: any }) {
+export default function CommunityChessClient({ gameData, error }: { gameData: any, error?: string | null }) {
   const { fen, turn, nextMoveDue, sortedVotes, totalVotes } = gameData;
   
   const [email, setEmail] = useState('');
@@ -93,6 +93,11 @@ export default function CommunityChessClient({ gameData }: { gameData: any }) {
             Volver al Laboratorio
         </Link>
       </div>
+      {error && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg font-mono z-30">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col lg:flex-row items-center justify-center gap-8 w-full">
         <div className="w-full max-w-lg lg:max-w-xl">
           <Chessboard

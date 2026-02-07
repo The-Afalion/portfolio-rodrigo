@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { motion } from "framer-motion";
@@ -14,16 +14,21 @@ const coloresDificultad = {
   Difícil: "bg-red-500",
 };
 
-export default function PartidaDeAjedrez() {
+export default function ChessGame() {
   const [partida, setPartida] = useState(new Chess());
   const [estado, setEstado] = useState("Tu turno (Blancas)");
   const [dificultad, setDificultad] = useState<Dificultad>("Medio");
   const [puntuacion, setPuntuacion] = useState(0);
 
-  /**
-   * Procesa un movimiento del jugador y luego solicita el movimiento de la IA.
-   * @param movimiento El movimiento a realizar (ej. { from: 'e2', to: 'e4' }).
-   */
+  const realizarMovimientoIA = useCallback((partidaActual: Chess) => {
+    const movimientoIA = obtenerMovimientoIA(partidaActual, dificultad);
+    if (movimientoIA) {
+      const nuevaPartida = new Chess(partidaActual.fen());
+      nuevaPartida.move(movimientoIA);
+      setPartida(nuevaPartida);
+    }
+  }, [dificultad]);
+
   function realizarMovimiento(movimiento: string | { from: string; to: string; promotion?: string }) {
     try {
       const copiaPartida = new Chess(partida.fen());
@@ -33,13 +38,7 @@ export default function PartidaDeAjedrez() {
         setPartida(copiaPartida);
         setEstado("Pensando...");
         
-        setTimeout(() => {
-          const movimientoIA = obtenerMovimientoIA(copiaPartida, dificultad);
-          if (movimientoIA) {
-            copiaPartida.move(movimientoIA);
-            setPartida(new Chess(copiaPartida.fen()));
-          }
-        }, 300);
+        setTimeout(() => realizarMovimientoIA(copiaPartida), 300);
       }
       return resultado;
     } catch (e) {
@@ -47,19 +46,15 @@ export default function PartidaDeAjedrez() {
     }
   }
 
-  /**
-   * Se ejecuta cuando el jugador suelta una pieza en el tablero.
-   */
   function alSoltarPieza(casillaOrigen: string, casillaDestino: string) {
     const movimiento = realizarMovimiento({
       from: casillaOrigen,
       to: casillaDestino,
-      promotion: "q", // Promocionar a reina por defecto.
+      promotion: "q",
     });
     return movimiento !== null;
   }
 
-  // Efecto para actualizar el estado de la partida (jaque, mate, etc.)
   useEffect(() => {
     let nuevoEstado = "";
     if (partida.isCheckmate()) {
@@ -76,7 +71,6 @@ export default function PartidaDeAjedrez() {
     setPuntuacion(evaluarTablero(partida));
   }, [partida]);
 
-  // Calcula el porcentaje para la barra de evaluación.
   const porcentajeEvaluacion = Math.max(0, Math.min(100, 50 + puntuacion * 5));
 
   return (
