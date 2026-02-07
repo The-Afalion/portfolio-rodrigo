@@ -1,8 +1,10 @@
 "use client";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, useTransform, MotionValue } from "framer-motion";
 import { Terminal, Cpu, ChevronDown, Box } from "lucide-react";
 import Link from "next/link";
-import FondoPlexo from "./FondoPlexo"; // Revertido a FondoPlexo
+import FondoPlexo from "./FondoPlexo";
 
 type PresentacionProps = {
   progresoScrollY: MotionValue<number>;
@@ -39,6 +41,17 @@ const BotonAnimado = ({ href, icono: Icono, texto }: { href: string, icono: Reac
 );
 
 export default function Presentacion({ progresoScrollY }: PresentacionProps) {
+  const router = useRouter();
+  const [clickCount, setClickCount] = useState(0);
+
+  const handleAdminClick = () => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    if (newCount >= 10) {
+      router.push('/admin');
+    }
+  };
+
   const yTitulo = useTransform(progresoScrollY, [0, 0.5], ["0%", "-50%"]);
   const escalaTitulo = useTransform(progresoScrollY, [0, 0.5], [1, 0.8]);
   const opacidadTitulo = useTransform(progresoScrollY, [0, 0.4, 0.5], [1, 1, 0]);
@@ -63,7 +76,9 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs font-mono mb-8"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs font-mono mb-8 cursor-pointer"
+            onClick={handleAdminClick}
+            title={`Admin clicks: ${clickCount}`}
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>

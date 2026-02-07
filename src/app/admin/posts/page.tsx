@@ -1,10 +1,10 @@
 import prisma from '@/lib/prisma';
 import PostActions from './PostActions';
 import PostForm from './PostForm';
+import Link from 'next/link';
 
-export const dynamic = 'force-dynamic'; // Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
 
-// --- Componente de la Página ---
 export default async function AdminPostsPage() {
   const posts = await prisma.post.findMany({
     orderBy: { createdAt: 'desc' },
@@ -28,7 +28,12 @@ export default async function AdminPostsPage() {
                 {post.published ? 'Publicado' : 'Borrador'} - {new Date(post.createdAt).toLocaleDateString()}
               </p>
             </div>
-            <PostActions post={{ id: post.id, published: post.published }} />
+            <div className="flex items-center gap-2">
+              <Link href={`/admin/posts/${post.id}/edit`} className="text-xs px-3 py-1 border rounded hover:bg-muted">
+                Editar
+              </Link>
+              <PostActions post={{ id: post.id, published: post.published }} />
+            </div>
           </div>
         ))}
       </div>
