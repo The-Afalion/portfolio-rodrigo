@@ -127,11 +127,16 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
   useEffect(() => {
     if (activeRoundMatches.length > 0) {
       setActiveMatch(activeRoundMatches[0]);
+    } else {
+      setActiveMatch(null); // Asegurarse de que no hay partida activa si no hay partidos
     }
   }, [tournament]);
 
   useEffect(() => {
-    if (!activeMatch || !activeMatch.moves) return;
+    if (!activeMatch || !activeMatch.moves) {
+      setGame(new Chess()); // Resetear el tablero si no hay partida activa
+      return;
+    };
 
     const moves = activeMatch.moves as { move: string, timestamp: string }[];
     const now = new Date().getTime();
@@ -172,11 +177,12 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
     return () => timeouts.forEach(clearTimeout);
   }, [activeMatch]);
 
-  if (!tournament) {
+  // Si no hay torneo o el torneo no tiene partidas activas, mostrar el botón de inicio
+  if (!tournament || activeRoundMatches.length === 0) {
     return (
       <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg">
         <h2 className="text-2xl font-bold font-mono">Torneo en Preparación</h2>
-        <p className="text-muted-foreground mt-2 mb-6">El Cron Job de mantenimiento se está ejecutando. Si es la primera vez, las IAs se están creando.</p>
+        <p className="text-muted-foreground mt-2 mb-6">No hay ninguna ronda activa en este momento.</p>
         <ForceStartButton />
       </div>
     );
