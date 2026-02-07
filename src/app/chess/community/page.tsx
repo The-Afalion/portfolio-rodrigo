@@ -16,16 +16,27 @@ async function getGameState() {
     });
 
     if (!game) {
-      const threeDaysFromNow = new Date();
-      threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-      game = await prisma.communityChessGame.create({
-        data: {
-          id: 'main_game',
-          fen: new Chess().fen(), // Asegurarse de que el FEN inicial esté aquí
-          nextMoveDue: threeDaysFromNow,
-        },
-        include: { votes: true },
-      });
+      console.log("No game found, attempting to create one.");
+      try {
+        const threeDaysFromNow = new Date();
+        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+        game = await prisma.communityChessGame.create({
+          data: {
+            id: 'main_game',
+            fen: new Chess().fen(),
+            nextMoveDue: threeDaysFromNow,
+          },
+          include: { votes: true },
+        });
+        console.log("Successfully created a new game.");
+      } catch (creationError) {
+        console.error("FATAL: Failed to create new game.", creationError);
+        // Si la creación falla, no podemos continuar.
+        return { 
+          data: null, 
+          error: "Error crítico: No se pudo inicializar la partida en la base de datos." 
+        };
+      }
     }
     
     const voteCounts = game.votes.reduce((acc, vote) => {
@@ -50,8 +61,6 @@ async function getGameState() {
 
   } catch (error) {
     console.error("Error fetching game state:", error);
-    // Devolver un objeto con una estructura de datos por defecto en caso de error
-    // para que el cliente no se rompa.
     const defaultFen = new Chess().fen();
     return { 
       data: {
@@ -61,7 +70,7 @@ async function getGameState() {
         sortedVotes: [],
         totalVotes: 0,
       }, 
-      error: "No se pudo cargar la partida. Se muestra un tablero por defecto." 
+      error: "No se pudo conectar con la base de datos para cargar la partida." 
     };
   }
 }
@@ -69,8 +78,10 @@ async function getGameState() {
 export default async function CommunityChessPage() {
   const { data, error } = await getGameState();
 
-  // Aunque haya un error, renderizamos el cliente con datos por defecto
-  // para evitar un error fatal en el lado del cliente.
-  // El cliente puede entonces mostrar el mensaje de error.
+  if (!data) {
+    // Si la creación de la partida falló, mostramos un error fatal.
+    return <div className="min-h-screen flex items-center justify-center text-red-500 font-mono">{error}</div>;
+  }
+
   return <CommunityChessClient gameData={data} error={error} />;
 }
