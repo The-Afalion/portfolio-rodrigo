@@ -3,43 +3,8 @@
 import { useFormState, useFormStatus } from 'react-dom';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
-import prisma from '@/lib/prisma';
+import { saveMessage } from './actions'; // Importar desde el nuevo archivo
 
-// --- Esquema de Validación ---
-const MessageSchema = z.object({
-  name: z.string().min(2, "El nombre es demasiado corto."),
-  email: z.string().email("El email no es válido."),
-  message: z.string().min(10, "El mensaje es demasiado corto."),
-});
-
-// --- Server Action para Guardar Mensaje ---
-async function saveMessage(prevState: any, formData: FormData) {
-  "use server";
-
-  const validatedFields = MessageSchema.safeParse({
-    name: formData.get('name'),
-    email: formData.get('email'),
-    message: formData.get('message'),
-  });
-
-  if (!validatedFields.success) {
-    return { message: 'Error de validación', errors: validatedFields.error.flatten().fieldErrors };
-  }
-
-  try {
-    await prisma.contactMessage.create({
-      data: validatedFields.data,
-    });
-    revalidatePath('/admin/messages'); // Para que el admin vea el nuevo mensaje
-    return { message: '¡Mensaje enviado con éxito! Gracias por contactar.', errors: {} };
-  } catch (e) {
-    return { message: 'Error al enviar el mensaje.', errors: {} };
-  }
-}
-
-// --- Componente del Botón ---
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -49,7 +14,6 @@ function SubmitButton() {
   );
 }
 
-// --- Componente de la Página ---
 export default function ContactPage() {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(saveMessage, initialState);

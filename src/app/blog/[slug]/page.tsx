@@ -4,8 +4,8 @@ import { marked } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
 import Link from 'next/link';
 import { ArrowLeft, Eye } from 'lucide-react';
-import { incrementViews } from './actions';
-import LikeButton from './LikeButton'; // Componente para el botón de like
+import { incrementViews } from '@/app/blog/actions'; // Ruta absoluta
+import LikeButton from '@/app/blog/LikeButton'; // Ruta absoluta
 
 export const dynamic = 'force-dynamic';
 
@@ -14,11 +14,21 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props) {
-  // ... (código existente)
+  const post = await prisma.post.findUnique({
+    where: { slug: params.slug, published: true },
+  });
+
+  if (!post) {
+    return { title: 'Post no encontrado' };
+  }
+
+  return {
+    title: post.title,
+    description: post.content.substring(0, 150),
+  };
 }
 
 export default async function PostPage({ params }: Props) {
-  // Incrementar vistas
   await incrementViews(params.slug);
 
   const post = await prisma.post.findUnique({
