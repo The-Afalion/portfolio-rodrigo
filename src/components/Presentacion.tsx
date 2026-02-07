@@ -119,7 +119,7 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
           >
             <BotonAnimado href="#proyectos" icono={Terminal} texto="VER PROYECTOS" />
             <BotonAnimado href="/modelos" icono={Box} texto="MODELOS 3D" />
-            <BotonAnimado href="/chess" icono={Cpu} texto="LABS IA" />
+            <BotonAnimado href="#chess-hub" icono={Cpu} texto="LABS IA" />
           </motion.div>
         </motion.div>
       </div>
