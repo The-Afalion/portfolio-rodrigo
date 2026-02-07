@@ -5,6 +5,9 @@ import DOMPurify from 'isomorphic-dompurify';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
+// Le decimos a Next.js que esta página siempre debe ser dinámica
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: { slug: string };
 };
@@ -64,10 +67,4 @@ export default async function PostPage({ params }: Props) {
   );
 }
 
-// Generar rutas estáticas para los posts publicados
-export async function generateStaticParams() {
-  const posts = await prisma.post.findMany({ where: { published: true } });
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
-}
+// La función generateStaticParams ha sido eliminada para forzar el renderizado dinámico.
