@@ -2,14 +2,16 @@ import { supabaseAdmin } from '@/lib/db';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
-import dynamic from 'next/dynamic';
-import ForceStartButton from './ForceStartButton'; // Importamos el nuevo botón
+import dynamicImport from 'next/dynamic'; // Importación renombrada para evitar conflicto
+import ForceStartButton from './ForceStartButton';
 
-const TournamentClient = dynamic(() => import('./TournamentClient'), {
+// Usamos el nombre 'dynamicImport'
+const TournamentClient = dynamicImport(() => import('./TournamentClient'), {
   ssr: false,
   loading: () => <div className="text-center font-mono animate-pulse">Cargando Torneo...</div>,
 });
 
+// Ahora no hay conflicto con la constante de renderizado
 export const dynamic = 'force-dynamic';
 
 async function getTournamentData() {
