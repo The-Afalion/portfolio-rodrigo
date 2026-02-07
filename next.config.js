@@ -16,7 +16,7 @@ const nextConfig = {
       },
       {
         source: '/ajedrez',
-        destination: '/chess',
+        destination: '/#chess-hub', // Redirigir al ancla en la página de inicio
         permanent: true,
       },
     ];
