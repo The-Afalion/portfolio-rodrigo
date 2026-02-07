@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { supabase } from '@/lib/db';
 import CommunityChessClient from './CommunityChessClient';
 import { Chess } from 'chess.js';
 
@@ -6,61 +6,68 @@ export const dynamic = 'force-dynamic';
 
 async function getGameState() {
   try {
-    let game = await prisma.communityChessGame.findUnique({
-      where: { id: 'main_game' },
-      include: {
-        votes: {
-          select: { move: true },
-        },
-      },
-    });
+    // 1. Intentar obtener la partida principal
+    let { data: game, error: gameError } = await supabase
+      .from('CommunityChessGame')
+      .select(`
+        fen,
+        nextMoveDue,
+        votes:CommunityVote ( move )
+      `)
+      .eq('id', 'main_game')
+      .single();
 
+    if (gameError && gameError.code !== 'PGRST116') { // PGRST116 = 'single row not found'
+      throw new Error(`Supabase game fetch error: ${gameError.message}`);
+    }
+
+    // 2. Si no existe, crearla
     if (!game) {
-      console.log("No game found, attempting to create one.");
-      try {
-        const threeDaysFromNow = new Date();
-        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-        game = await prisma.communityChessGame.create({
-          data: {
-            id: 'main_game',
-            fen: new Chess().fen(),
-            nextMoveDue: threeDaysFromNow,
-          },
-          include: { votes: true },
-        });
-        console.log("Successfully created a new game.");
-      } catch (creationError) {
-        console.error("FATAL: Failed to create new game.", creationError);
-        // Si la creación falla, no podemos continuar.
-        return { 
-          data: null, 
-          error: "Error crítico: No se pudo inicializar la partida en la base de datos." 
-        };
+      console.log("No game found via Supabase, attempting to create one.");
+      const threeDaysFromNow = new Date();
+      threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+      
+      const { data: newGame, error: createError } = await supabase
+        .from('CommunityChessGame')
+        .insert({
+          id: 'main_game',
+          fen: new Chess().fen(),
+          nextMoveDue: threeDaysFromNow.toISOString(),
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        throw new Error(`Supabase game creation error: ${createError.message}`);
       }
+      
+      game = { ...newGame, votes: [] }; // Estructura consistente
+      console.log("Successfully created a new game via Supabase.");
     }
     
-    const voteCounts = game.votes.reduce((acc, vote) => {
+    // 3. Procesar los votos (igual que antes)
+    const voteCounts = (game.votes || []).reduce((acc: any, vote: any) => {
       acc[vote.move] = (acc[vote.move] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const totalVotes = game.votes.length;
+    const totalVotes = (game.votes || []).length;
     const sortedVotes = Object.entries(voteCounts).sort(([, a], [, b]) => b - a);
 
+    // 4. Preparar los datos para el cliente (igual que antes)
     const chessInstance = new Chess(game.fen);
-
     const cleanGameData = {
       fen: game.fen,
       turn: chessInstance.turn(),
-      nextMoveDue: game.nextMoveDue.toISOString(),
+      nextMoveDue: game.nextMoveDue,
       sortedVotes: sortedVotes,
       totalVotes: totalVotes,
     };
 
     return { data: cleanGameData, error: null };
 
-  } catch (error) {
-    console.error("Error fetching game state:", error);
+  } catch (error: any) {
+    console.error("A radical error occurred in getGameState:", error.message);
     const defaultFen = new Chess().fen();
     return { 
       data: {
@@ -70,18 +77,15 @@ async function getGameState() {
         sortedVotes: [],
         totalVotes: 0,
       }, 
-      error: "No se pudo conectar con la base de datos para cargar la partida." 
+      error: `Error de Supabase: ${error.message}`
     };
   }
 }
 
 export default async function CommunityChessPage() {
   const { data, error } = await getGameState();
-
-  if (!data) {
-    // Si la creación de la partida falló, mostramos un error fatal.
-    return <div className="min-h-screen flex items-center justify-center text-red-500 font-mono">{error}</div>;
-  }
-
+  
+  // El cliente ahora siempre recibe datos, incluso en caso de error.
+  // El propio cliente se encargará de mostrar el mensaje de error.
   return <CommunityChessClient gameData={data} error={error} />;
 }

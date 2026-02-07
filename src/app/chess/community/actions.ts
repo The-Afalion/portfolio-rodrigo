@@ -1,7 +1,8 @@
 "use server";
 
-import prisma from '@/lib/prisma';
+import { supabase } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { Chess } from 'chess.js';
 
 export async function submitVote(email: string, move: string) {
   if (!email || !move) {
@@ -9,56 +10,90 @@ export async function submitVote(email: string, move: string) {
   }
 
   try {
-    const game = await prisma.communityChessGame.findUnique({ where: { id: 'main_game' } });
+    // 1. Obtener la partida
+    const { data: game, error: gameError } = await supabase
+      .from('CommunityChessGame')
+      .select('fen')
+      .eq('id', 'main_game')
+      .single();
+
+    if (gameError) throw new Error(`Error al buscar la partida: ${gameError.message}`);
     if (!game) return { error: "No se encontró la partida." };
 
-    let player = await prisma.chessPlayer.findUnique({ where: { email } });
+    // 2. Buscar o crear al jugador
+    let { data: player, error: playerError } = await supabase
+      .from('ChessPlayer')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (playerError && playerError.code !== 'PGRST116') {
+      throw new Error(`Error al buscar el jugador: ${playerError.message}`);
+    }
 
     if (!player) {
-      const whitePlayers = await prisma.chessPlayer.count({ where: { assignedSide: 'w' } });
-      const blackPlayers = await prisma.chessPlayer.count({ where: { assignedSide: 'b' } });
-      const side = whitePlayers <= blackPlayers ? 'w' : 'b';
+      const { count: whitePlayers, error: whiteError } = await supabase.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('assignedSide', 'w');
+      const { count: blackPlayers, error: blackError } = await supabase.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('assignedSide', 'b');
+
+      if (whiteError || blackError) throw new Error('Error al contar jugadores.');
+
+      const side = (whitePlayers || 0) <= (blackPlayers || 0) ? 'w' : 'b';
       
-      player = await prisma.chessPlayer.create({
-        data: {
+      const { data: newPlayer, error: createPlayerError } = await supabase
+        .from('ChessPlayer')
+        .insert({
           email,
           name: email.split('@')[0],
           assignedSide: side,
-        },
-      });
+        })
+        .select()
+        .single();
+      
+      if (createPlayerError) throw new Error(`Error al crear el jugador: ${createPlayerError.message}`);
+      player = newPlayer;
     }
 
-    const currentTurn = game.fen.split(' ')[1];
+    // 3. Validar el turno
+    const currentTurn = new Chess(game.fen).turn();
     if (player.assignedSide !== currentTurn) {
       return { error: `No es el turno de tu bando (${currentTurn === 'w' ? 'blancas' : 'negras'}).` };
     }
 
-    const existingVote = await prisma.communityVote.findFirst({
-      where: {
-        playerId: player.id,
-        gameId: 'main_game',
-      },
-    });
+    // 4. Buscar si el jugador ya votó
+    const { data: existingVote, error: voteError } = await supabase
+      .from('CommunityVote')
+      .select('id')
+      .eq('playerId', player.id)
+      .eq('gameId', 'main_game')
+      .single();
 
+    if (voteError && voteError.code !== 'PGRST116') {
+      throw new Error(`Error al buscar el voto: ${voteError.message}`);
+    }
+
+    // 5. Actualizar o crear el voto
     if (existingVote) {
-      await prisma.communityVote.update({
-        where: { id: existingVote.id },
-        data: { move },
-      });
+      const { error: updateError } = await supabase
+        .from('CommunityVote')
+        .update({ move })
+        .eq('id', existingVote.id);
+      if (updateError) throw new Error(`Error al actualizar el voto: ${updateError.message}`);
     } else {
-      await prisma.communityVote.create({
-        data: {
+      const { error: createError } = await supabase
+        .from('CommunityVote')
+        .insert({
           move,
           playerId: player.id,
           gameId: 'main_game',
-        },
-      });
+        });
+      if (createError) throw new Error(`Error al crear el voto: ${createError.message}`);
     }
 
     revalidatePath('/chess/community');
     return { success: `Voto por '${move}' registrado.` };
 
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Server action error in submitVote:", error.message);
     return { error: "Ocurrió un error en el servidor." };
   }
 }
