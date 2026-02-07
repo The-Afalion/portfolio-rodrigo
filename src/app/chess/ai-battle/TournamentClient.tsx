@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, ChevronRight } from 'lucide-react';
+import { Crown, ChevronRight, Play } from 'lucide-react';
+import { startNewTournament } from './actions';
+import toast from 'react-hot-toast';
 
 // --- COMPONENTES PEQUEÑOS ---
 
@@ -89,6 +91,29 @@ function Bracket({ tournament, showNextRound }: { tournament: any, showNextRound
   );
 }
 
+function ForceStartButton() {
+  const [pending, setPending] = useState(false);
+  const handleStart = async () => {
+    setPending(true);
+    toast.loading('Forzando inicio de un nuevo torneo...');
+    const result = await startNewTournament();
+    toast.dismiss();
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(result.success || '¡Torneo iniciado!');
+    }
+    setPending(false);
+  };
+
+  return (
+    <button onClick={handleStart} disabled={pending} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-mono rounded-md hover:bg-blue-700 disabled:bg-gray-500">
+      <Play size={16} />
+      Forzar Inicio de Torneo
+    </button>
+  );
+}
+
 
 // --- COMPONENTE PRINCIPAL ---
 
@@ -97,7 +122,7 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
   const [game, setGame] = useState(new Chess());
   const [showNextRound, setShowNextRound] = useState(false);
 
-  const activeRoundMatches = tournament.matches.filter((m: any) => m.status === 'ACTIVE');
+  const activeRoundMatches = tournament?.matches.filter((m: any) => m.status === 'ACTIVE') || [];
 
   useEffect(() => {
     if (activeRoundMatches.length > 0) {
@@ -137,7 +162,6 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
           newGame.move(moves[i].move);
           return newGame;
         });
-        // Si es el último movimiento de la última partida, animar el bracket
         if (i === moves.length - 1 && activeMatch.id === activeRoundMatches[activeRoundMatches.length - 1].id) {
           setTimeout(() => setShowNextRound(true), 1000);
         }
@@ -147,6 +171,16 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
 
     return () => timeouts.forEach(clearTimeout);
   }, [activeMatch]);
+
+  if (!tournament) {
+    return (
+      <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg">
+        <h2 className="text-2xl font-bold font-mono">Torneo en Preparación</h2>
+        <p className="text-muted-foreground mt-2 mb-6">El Cron Job de mantenimiento se está ejecutando. Si es la primera vez, las IAs se están creando.</p>
+        <ForceStartButton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12">
