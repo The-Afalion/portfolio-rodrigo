@@ -1,13 +1,19 @@
 import { supabaseAdmin } from '@/lib/db';
-import CommunityChessClient from './CommunityChessClient';
 import { Chess } from 'chess.js';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import dynamicImport from 'next/dynamic'; // Importación renombrada
 
+// Usamos el nombre 'dynamicImport' para evitar el conflicto
+const CommunityChessClient = dynamicImport(() => import('./CommunityChessClient'), {
+  ssr: false,
+  loading: () => <div className="min-h-screen flex items-center justify-center"><p>Cargando partida...</p></div>,
+});
+
+// Ahora no hay conflicto con la constante de renderizado de Next.js
 export const dynamic = 'force-dynamic';
 
 async function getGameState() {
-  // ... (la lógica para obtener el estado del juego no cambia)
   try {
     let { data: game, error: gameError } = await supabaseAdmin
       .from('CommunityChessGame')
@@ -64,15 +70,12 @@ async function getGameState() {
 }
 
 export default async function CommunityChessPage() {
-  // 1. Comprobar si el jugador está "logueado"
   const playerEmailCookie = cookies().get('player-email');
   if (!playerEmailCookie) {
     redirect('/chess/community/register');
   }
 
-  // 2. Obtener los datos de la partida
   const { data, error } = await getGameState();
 
-  // 3. Pasar el email y los datos al cliente
   return <CommunityChessClient gameData={data} error={error} playerEmail={playerEmailCookie.value} />;
 }
