@@ -63,7 +63,7 @@ export default async function AiBattlePage() {
             </ol>
           </div>
           <div className="text-center mt-4">
-            <Link href="/chess" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/#chess-hub" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               &larr; Volver al Laboratorio
             </Link>
           </div>

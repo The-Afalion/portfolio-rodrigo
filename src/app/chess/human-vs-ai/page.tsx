@@ -19,9 +19,9 @@ export default function PaginaAjedrez() {
       <FondoAjedrez />
 
       <div className="absolute top-6 left-6 z-20">
-        <Link href="/chess" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono">
+        <Link href="/#chess-hub" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono">
             <ArrowLeft size={20} />
-            cd ..
+            Volver al Laboratorio
         </Link>
       </div>
 
