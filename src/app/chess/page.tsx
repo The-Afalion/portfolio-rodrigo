@@ -1,3 +1,5 @@
+"use client"; // Necesario para Framer Motion
+
 import Link from 'next/link';
 import { Users, Cpu, Bot } from 'lucide-react';
 import { motion } from 'framer-motion';
