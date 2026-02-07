@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@/lib/db';
 import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
 
-// v1.2 - Adding null checks for robustness
+// v1.3 - Forcing AI creation
 const AI_NAMES = [
   "ByteBard", "HexaMind", "CodeCaster", "NexoZero", "QuantumLeap", 
   "SiliconSoul", "LogicLoom", "KernelKing", "VoidRunner", "FluxAI", 
@@ -58,7 +58,7 @@ function simulateGame(startTime: Date): { winner: 'w' | 'b', moves: { move: stri
 async function simulateRound(matches: any[]) {
   const startTime = new Date();
   for (const match of matches) {
-    if (!match || !match.player1Id || !match.player2Id) continue; // Comprobación de seguridad
+    if (!match || !match.player1Id || !match.player2Id) continue;
 
     const { winner, moves } = simulateGame(startTime);
     const winnerId = winner === 'w' ? match.player1Id : match.player2Id;
@@ -80,12 +80,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 1. Crear las IAs si no existen
-    const { count: playerCount } = await supabaseAdmin.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('isAI', true);
-    if (playerCount === 0) {
-      const newAIs = AI_NAMES.map(name => ({ email: `${name.toLowerCase()}@system.io`, name: name, isAI: true }));
-      await supabaseAdmin.from('ChessPlayer').insert(newAIs);
-    }
+    // 1. Intentar crear las IAs. Si ya existen, la DB dará un error de unicidad que ignoramos.
+    const newAIs = AI_NAMES.map(name => ({ email: `${name.toLowerCase()}@system.io`, name: name, isAI: true }));
+    await supabaseAdmin.from('ChessPlayer').insert(newAIs).select();
+    // La opción { onConflict: 'email' } no está disponible en todas las versiones, así que simplemente dejamos que falle silenciosamente.
 
     // 2. Buscar un torneo activo
     let { data: activeTournament } = await supabaseAdmin
@@ -130,7 +128,7 @@ export async function GET(request: Request) {
     // 5. Si no hay partidas activas, significa que la ronda ha terminado. Avanzamos.
     const finishedMatches = activeTournament.matches;
     const lastRound = Math.max(...finishedMatches.map(m => m.round));
-    const winnersOfLastRound = finishedMatches.filter(m => m.round === lastRound).map(m => m.winnerId).filter(id => id != null); // Filtrar nulos
+    const winnersOfLastRound = finishedMatches.filter(m => m.round === lastRound).map(m => m.winnerId).filter(id => id != null);
 
     if (winnersOfLastRound.length === 0 && lastRound > 0) {
       throw new Error(`No se encontraron ganadores para la ronda ${lastRound}.`);
@@ -146,7 +144,7 @@ export async function GET(request: Request) {
 
     const nextRoundMatches = [];
     for (let i = 0; i < winnersOfLastRound.length; i += 2) {
-      if (!winnersOfLastRound[i] || !winnersOfLastRound[i+1]) continue; // Comprobación de seguridad
+      if (!winnersOfLastRound[i] || !winnersOfLastRound[i+1]) continue;
       nextRoundMatches.push({
         tournamentId: activeTournament.id,
         round: lastRound + 1,
