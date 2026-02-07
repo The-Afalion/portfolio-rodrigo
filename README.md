@@ -73,3 +73,4 @@ Para ejecutar el proyecto en un entorno de desarrollo local, por favor sigue est
 ## Licencia
 
 Este proyecto está distribuido bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
+Rodrigo
