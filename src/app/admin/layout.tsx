@@ -30,7 +30,8 @@ export default async function AdminLayout({
     redirect('/login');
   }
 
-  if (session.user.email !== process.env.ADMIN_EMAIL) {
+  // Usar la variable de entorno correcta
+  if (session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
     return (
       <div className="flex min-h-screen bg-background font-mono items-center justify-center text-center">
         <div>
