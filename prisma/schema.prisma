@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// 1. Base de datos para Escritores (Usuarios)
+// Usaremos la tabla 'users' de Supabase Auth
+model User {
+  id    String  @id @default(uuid())
+  email String? @unique
+  name  String?
+  posts Post[]
+}
+
+// 2. Base de datos para los Artículos del Blog
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  content   String   @db.Text
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?
+}
+
+// 3. Base de datos para la Newsletter
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// 4. Base de datos para Partidas de Ajedrez
+model ChessGame {
+  id        String   @id @default(cuid())
+  pgn       String   @db.Text
+  result    String
+  player    String
+  levelAI   Int
+  createdAt DateTime @default(now())
+}
