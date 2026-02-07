@@ -5,6 +5,7 @@ import { Providers } from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import NewsletterPopup from "@/components/NewsletterPopup";
+import { Analytics } from "@vercel/analytics/next";
 
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
@@ -30,6 +31,7 @@ export default function RootLayout({
           <NewsletterPopup />
           <Footer />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
