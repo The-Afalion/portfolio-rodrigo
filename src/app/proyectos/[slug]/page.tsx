@@ -1,21 +1,18 @@
+"use client"; // Marcado como componente de cliente
+
 import { DATOS_PROYECTOS } from "@/datos/proyectos";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Github, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Esta función le dice a Next.js qué rutas dinámicas debe pre-renderizar en el momento de la compilación.
-export function generateStaticParams() {
-  return DATOS_PROYECTOS.map((proyecto) => ({
-    slug: proyecto.slug,
-  }));
-}
+// La función generateStaticParams se elimina para forzar el renderizado dinámico
+// y evitar problemas en el build de Vercel.
 
 export default function PaginaDetalleProyecto({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const proyecto = DATOS_PROYECTOS.find((p) => p.slug === slug);
 
-  // Si no se encuentra el proyecto, mostrar una página 404.
   if (!proyecto) {
     notFound();
   }
