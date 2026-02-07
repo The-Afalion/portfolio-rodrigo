@@ -14,6 +14,11 @@ const nextConfig = {
         destination: '/modelos',
         permanent: true,
       },
+      {
+        source: '/ajedrez',
+        destination: '/chess',
+        permanent: true,
+      },
     ];
   },
   async headers() {
