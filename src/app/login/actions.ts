@@ -5,8 +5,12 @@ import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
 
 export async function requestLogin(email: string) {
-  if (email !== process.env.ADMIN_EMAIL) {
-    return { error: "Acceso no autorizado." };
+  const adminEmail = process.env.ADMIN_EMAIL;
+
+  // --- PRUEBA DE DEPURACIÓN ---
+  // Comparamos y si falla, devolvemos el valor que está leyendo el servidor.
+  if (email.toLowerCase() !== adminEmail?.toLowerCase()) {
+    return { error: `Acceso no autorizado. El servidor esperaba el email: [${adminEmail}] pero recibió: [${email}]` };
   }
 
   const cookieStore = cookies();
