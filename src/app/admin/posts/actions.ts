@@ -48,6 +48,42 @@ export async function createPost(prevState: any, formData: FormData) {
   }
 }
 
+export async function updatePost(prevState: any, formData: FormData) {
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { message: 'Error: No autorizado' };
+
+  const validatedFields = PostSchema.safeParse({
+    title: formData.get('title'),
+    content: formData.get('content'),
+  });
+
+  if (!validatedFields.success) {
+    return { message: 'Error de validación', errors: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const { title, content } = validatedFields.data;
+  const postId = formData.get('postId') as string;
+  const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+  try {
+    await prisma.post.update({
+      where: { id: postId },
+      data: { title, slug, content },
+    });
+    revalidatePath('/admin/posts');
+    revalidatePath(`/blog/${slug}`);
+    return { message: 'Post actualizado con éxito', errors: {} };
+  } catch (e) {
+    return { message: 'Error en la base de datos', errors: {} };
+  }
+}
+
 export async function togglePublish(id: string, published: boolean) {
   const cookieStore = cookies();
   const supabase = createServerClient(
