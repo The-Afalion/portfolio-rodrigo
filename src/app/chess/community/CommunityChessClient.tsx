@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export default function CommunityChessClient({ gameData }: { gameData: any }) {
-  const { game, sortedVotes, totalVotes } = gameData;
+  const { fen, turn, nextMoveDue, sortedVotes, totalVotes } = gameData;
   
   const [email, setEmail] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
@@ -18,15 +18,8 @@ export default function CommunityChessClient({ gameData }: { gameData: any }) {
   const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
   const [customSquareStyles, setCustomSquareStyles] = useState({});
 
-  // Usamos useMemo para evitar recrear el objeto Chess en cada render
-  const chessGame = useMemo(() => game ? new Chess(game.fen) : null, [game]);
-
-  // Convertimos la fecha (que ahora es un string) de vuelta a un objeto Date
-  const targetDate = useMemo(() => game ? new Date(game.nextMoveDue) : new Date(), [game]);
-
-  if (!chessGame) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando partida...</div>;
-  }
+  const chessGame = useMemo(() => new Chess(fen), [fen]);
+  const targetDate = useMemo(() => new Date(nextMoveDue), [nextMoveDue]);
 
   function onPieceClick(piece: string, sourceSquare: string) {
     const moves = chessGame.moves({
@@ -103,11 +96,11 @@ export default function CommunityChessClient({ gameData }: { gameData: any }) {
       <div className="flex flex-col lg:flex-row items-center justify-center gap-8 w-full">
         <div className="w-full max-w-lg lg:max-w-xl">
           <Chessboard
-            position={game.fen}
+            position={fen}
             onPieceClick={onPieceClick}
             onSquareClick={onSquareClick}
             customSquareStyles={customSquareStyles}
-            boardOrientation={isRegistered ? (game.turn === 'w' ? 'white' : 'black') : 'white'}
+            boardOrientation={isRegistered ? (turn === 'w' ? 'white' : 'black') : 'white'}
           />
         </div>
 

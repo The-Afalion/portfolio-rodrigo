@@ -34,28 +34,30 @@ async function getGameState() {
     const totalVotes = game.votes.length;
     const sortedVotes = Object.entries(voteCounts).sort(([, a], [, b]) => b - a);
 
-    // **LA SOLUCIÓN CLAVE**: Convertir las fechas a strings antes de pasarlas al cliente.
-    // Los Server Components no pueden pasar objetos Date() como props.
-    const serializableGame = {
-      ...game,
+    // **LA SOLUCIÓN DEFINITIVA**: Construir un objeto 100% limpio y serializable.
+    // No pasamos el objeto 'game' de Prisma, sino uno nuevo con solo lo que necesitamos.
+    const cleanGameData = {
+      fen: game.fen,
+      turn: game.fen.split(' ')[1], // Extraemos el turno del FEN
       nextMoveDue: game.nextMoveDue.toISOString(),
-      lastMoveAt: game.lastMoveAt.toISOString(),
+      sortedVotes: sortedVotes,
+      totalVotes: totalVotes,
     };
 
-    return { game: serializableGame, sortedVotes, totalVotes, error: null };
+    return { data: cleanGameData, error: null };
+
   } catch (error) {
     console.error("Error fetching game state:", error);
-    // Devolver un estado de error que el cliente pueda manejar
-    return { game: null, sortedVotes: [], totalVotes: 0, error: "No se pudo cargar la partida." };
+    return { data: null, error: "No se pudo cargar la partida." };
   }
 }
 
 export default async function CommunityChessPage() {
-  const gameData = await getGameState();
+  const { data, error } = await getGameState();
 
-  if (gameData.error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">{gameData.error}</div>;
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
   }
 
-  return <CommunityChessClient gameData={gameData} />;
+  return <CommunityChessClient gameData={data} />;
 }
