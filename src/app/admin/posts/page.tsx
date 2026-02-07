@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma';
 import PostActions from './PostActions';
-import PostForm from './PostForm'; // Importar el nuevo componente
+import PostForm from './PostForm';
+
+export const dynamic = 'force-dynamic'; // Forzar renderizado dinámico
 
 // --- Componente de la Página ---
 export default async function AdminPostsPage() {

@@ -1,5 +1,7 @@
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic'; // Forzar renderizado dinámico
+
 export default async function AdminChessPage() {
   const games = await prisma.chessGame.findMany({
     orderBy: { createdAt: 'desc' },
