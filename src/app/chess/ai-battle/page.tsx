@@ -2,15 +2,14 @@ import { supabaseAdmin } from '@/lib/db';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
-import dynamicImport from 'next/dynamic'; // Importación renombrada
+import dynamic from 'next/dynamic';
+import ForceStartButton from './ForceStartButton'; // Importamos el nuevo botón
 
-// Usamos el nombre 'dynamicImport' para evitar el conflicto
-const TournamentClient = dynamicImport(() => import('./TournamentClient'), {
+const TournamentClient = dynamic(() => import('./TournamentClient'), {
   ssr: false,
   loading: () => <div className="text-center font-mono animate-pulse">Cargando Torneo...</div>,
 });
 
-// Ahora no hay conflicto con la constante de renderizado de Next.js
 export const dynamic = 'force-dynamic';
 
 async function getTournamentData() {
@@ -56,6 +55,7 @@ async function getTournamentData() {
   }
 }
 
+
 export default async function AiBattlePage() {
   const { tournament, leaderboard } = await getTournamentData();
 
@@ -80,9 +80,10 @@ export default async function AiBattlePage() {
         {tournament ? (
           <TournamentClient tournament={tournament} leaderboard={leaderboard} />
         ) : (
-          <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg">
+          <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg flex flex-col items-center">
             <h2 className="text-2xl font-bold font-mono">Torneo en Preparación</h2>
-            <p className="text-muted-foreground mt-2">Un nuevo torneo comenzará en la próxima hora. ¡Vuelve pronto para la acción!</p>
+            <p className="text-muted-foreground mt-2">Un nuevo torneo comenzará en la próxima hora, o puedes forzar el inicio ahora.</p>
+            <ForceStartButton />
           </div>
         )}
       </div>
