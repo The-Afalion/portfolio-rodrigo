@@ -1,6 +1,6 @@
 generator client {
-  provider        = "prisma-client-js"
-  binaryTargets   = ["native", "rhel-openssl-1.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -8,6 +8,8 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+// --- MODELOS GENERALES ---
 
 model User {
   id    String  @id @default(uuid())
@@ -54,47 +56,74 @@ model ContactMessage {
 
 // --- MODELOS DE AJEDREZ ---
 
-// Almacena a todos los jugadores, tanto humanos como IAs
 model ChessPlayer {
-  id          String @id @default(cuid())
-  email       String @unique // Para humanos
-  name        String // Nombre de la IA o del jugador
-  isAI        Boolean @default(false)
-  profileIcon String? // Nombre del icono de Lucide o URL de imagen
-  wins        Int    @default(0) // Para el leaderboard de IAs
+  id           String @id @default(cuid())
+  email        String @unique
+  name         String
+  isAI         Boolean @default(false)
+  profileIcon  String?
 
-  // Para Ajedrez Comunitario
-  assignedSide String? // "w" o "b"
+  // Estadísticas del Torneo
+  elo          Int @default(1200)
+  winsDaily    Int @default(0)
+  winsWeekly   Int @default(0)
+  winsMonthly  Int @default(0)
+  winsTotal    Int @default(0)
+
+  // Relaciones
+  assignedSide String? // Para Ajedrez Comunitario
   votes        CommunityVote[]
+  matchesAsP1  AITournamentMatch[] @relation("Player1")
+  matchesAsP2  AITournamentMatch[] @relation("Player2")
+  wonMatches   AITournamentMatch[] @relation("Winner")
 }
 
-// Partida de Ajedrez Comunitario (solo habrá una)
 model CommunityChessGame {
-  id              String   @id @default("main_game")
-  fen             String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-  nextMoveDue     DateTime
-  lastMoveAt      DateTime @default(now())
-  votes           CommunityVote[]
+  id          String   @id @default("main_game")
+  fen         String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  nextMoveDue DateTime
+  lastMoveAt  DateTime @default(now())
+  votes       CommunityVote[]
 }
 
-// Votos para la partida comunitaria
 model CommunityVote {
   id        String   @id @default(cuid())
-  move      String   // En notación SAN, ej: "e4"
+  move      String
   isFake    Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   player    ChessPlayer @relation(fields: [playerId], references: [id])
   playerId  String
-
   game      CommunityChessGame @relation(fields: [gameId], references: [id])
   gameId    String
-
-  createdAt DateTime @default(now())
 }
 
-// Torneos de IA
 model AITournament {
   id        String   @id @default(cuid())
-  winner    String
+  status    String   @default("PENDING") // PENDING, ACTIVE, FINISHED
   createdAt DateTime @default(now())
+  endedAt   DateTime?
+
+  winnerId  String?
+  matches   AITournamentMatch[]
+}
+
+model AITournamentMatch {
+  id           String   @id @default(cuid())
+  round        Int // 1=Octavos, 2=Cuartos, 3=Semi, 4=Final
+  status       String   @default("PENDING") // PENDING, ACTIVE, FINISHED
+
+  player1      ChessPlayer @relation("Player1", fields: [player1Id], references: [id])
+  player1Id    String
+  player2      ChessPlayer @relation("Player2", fields: [player2Id], references: [id])
+  player2Id    String
+
+  winner       ChessPlayer? @relation("Winner", fields: [winnerId], references: [id])
+  winnerId     String?
+
+  // Almacenará la partida completa en formato PGN o una lista de movimientos
+  moves        Json?
+
+  tournament   AITournament @relation(fields: [tournamentId], references: [id])
+  tournamentId String
 }
