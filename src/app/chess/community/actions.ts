@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from '@/lib/db';
+import { supabaseAdmin } from '@/lib/db'; // Usamos el cliente de admin
 import { revalidatePath } from 'next/cache';
 import { Chess } from 'chess.js';
 
@@ -10,8 +10,8 @@ export async function submitVote(email: string, move: string) {
   }
 
   try {
-    // 1. Obtener la partida
-    const { data: game, error: gameError } = await supabase
+    // Usamos supabaseAdmin para todas las operaciones
+    const { data: game, error: gameError } = await supabaseAdmin
       .from('CommunityChessGame')
       .select('fen')
       .eq('id', 'main_game')
@@ -20,8 +20,7 @@ export async function submitVote(email: string, move: string) {
     if (gameError) throw new Error(`Error al buscar la partida: ${gameError.message}`);
     if (!game) return { error: "No se encontró la partida." };
 
-    // 2. Buscar o crear al jugador
-    let { data: player, error: playerError } = await supabase
+    let { data: player, error: playerError } = await supabaseAdmin
       .from('ChessPlayer')
       .select('*')
       .eq('email', email)
@@ -32,14 +31,14 @@ export async function submitVote(email: string, move: string) {
     }
 
     if (!player) {
-      const { count: whitePlayers, error: whiteError } = await supabase.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('assignedSide', 'w');
-      const { count: blackPlayers, error: blackError } = await supabase.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('assignedSide', 'b');
+      const { count: whitePlayers, error: whiteError } = await supabaseAdmin.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('assignedSide', 'w');
+      const { count: blackPlayers, error: blackError } = await supabaseAdmin.from('ChessPlayer').select('*', { count: 'exact', head: true }).eq('assignedSide', 'b');
 
       if (whiteError || blackError) throw new Error('Error al contar jugadores.');
 
       const side = (whitePlayers || 0) <= (blackPlayers || 0) ? 'w' : 'b';
       
-      const { data: newPlayer, error: createPlayerError } = await supabase
+      const { data: newPlayer, error: createPlayerError } = await supabaseAdmin
         .from('ChessPlayer')
         .insert({
           email,
@@ -53,14 +52,12 @@ export async function submitVote(email: string, move: string) {
       player = newPlayer;
     }
 
-    // 3. Validar el turno
     const currentTurn = new Chess(game.fen).turn();
     if (player.assignedSide !== currentTurn) {
       return { error: `No es el turno de tu bando (${currentTurn === 'w' ? 'blancas' : 'negras'}).` };
     }
 
-    // 4. Buscar si el jugador ya votó
-    const { data: existingVote, error: voteError } = await supabase
+    const { data: existingVote, error: voteError } = await supabaseAdmin
       .from('CommunityVote')
       .select('id')
       .eq('playerId', player.id)
@@ -71,15 +68,14 @@ export async function submitVote(email: string, move: string) {
       throw new Error(`Error al buscar el voto: ${voteError.message}`);
     }
 
-    // 5. Actualizar o crear el voto
     if (existingVote) {
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseAdmin
         .from('CommunityVote')
         .update({ move })
         .eq('id', existingVote.id);
       if (updateError) throw new Error(`Error al actualizar el voto: ${updateError.message}`);
     } else {
-      const { error: createError } = await supabase
+      const { error: createError } = await supabaseAdmin
         .from('CommunityVote')
         .insert({
           move,

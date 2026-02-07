@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/db';
+import { supabaseAdmin } from '@/lib/db'; // Usamos el cliente de admin
 import CommunityChessClient from './CommunityChessClient';
 import { Chess } from 'chess.js';
 
@@ -6,8 +6,8 @@ export const dynamic = 'force-dynamic';
 
 async function getGameState() {
   try {
-    // 1. Intentar obtener la partida principal
-    let { data: game, error: gameError } = await supabase
+    // Usamos supabaseAdmin para todas las operaciones de servidor
+    let { data: game, error: gameError } = await supabaseAdmin
       .from('CommunityChessGame')
       .select(`
         fen,
@@ -17,17 +17,16 @@ async function getGameState() {
       .eq('id', 'main_game')
       .single();
 
-    if (gameError && gameError.code !== 'PGRST116') { // PGRST116 = 'single row not found'
+    if (gameError && gameError.code !== 'PGRST116') {
       throw new Error(`Supabase game fetch error: ${gameError.message}`);
     }
 
-    // 2. Si no existe, crearla
     if (!game) {
-      console.log("No game found via Supabase, attempting to create one.");
+      console.log("No game found, creating one with admin client.");
       const threeDaysFromNow = new Date();
       threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
       
-      const { data: newGame, error: createError } = await supabase
+      const { data: newGame, error: createError } = await supabaseAdmin
         .from('CommunityChessGame')
         .insert({
           id: 'main_game',
@@ -41,11 +40,10 @@ async function getGameState() {
         throw new Error(`Supabase game creation error: ${createError.message}`);
       }
       
-      game = { ...newGame, votes: [] }; // Estructura consistente
-      console.log("Successfully created a new game via Supabase.");
+      game = { ...newGame, votes: [] };
+      console.log("Successfully created a new game via Supabase admin.");
     }
     
-    // 3. Procesar los votos (igual que antes)
     const voteCounts = (game.votes || []).reduce((acc: any, vote: any) => {
       acc[vote.move] = (acc[vote.move] || 0) + 1;
       return acc;
@@ -54,7 +52,6 @@ async function getGameState() {
     const totalVotes = (game.votes || []).length;
     const sortedVotes = Object.entries(voteCounts).sort(([, a], [, b]) => b - a);
 
-    // 4. Preparar los datos para el cliente (igual que antes)
     const chessInstance = new Chess(game.fen);
     const cleanGameData = {
       fen: game.fen,
@@ -67,7 +64,7 @@ async function getGameState() {
     return { data: cleanGameData, error: null };
 
   } catch (error: any) {
-    console.error("A radical error occurred in getGameState:", error.message);
+    console.error("Error in getGameState with admin client:", error.message);
     const defaultFen = new Chess().fen();
     return { 
       data: {
@@ -77,15 +74,12 @@ async function getGameState() {
         sortedVotes: [],
         totalVotes: 0,
       }, 
-      error: `Error de Supabase: ${error.message}`
+      error: `Error de base de datos: ${error.message}`
     };
   }
 }
 
 export default async function CommunityChessPage() {
   const { data, error } = await getGameState();
-  
-  // El cliente ahora siempre recibe datos, incluso en caso de error.
-  // El propio cliente se encargará de mostrar el mensaje de error.
   return <CommunityChessClient gameData={data} error={error} />;
 }
