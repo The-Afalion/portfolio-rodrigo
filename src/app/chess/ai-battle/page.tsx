@@ -2,18 +2,19 @@ import { supabaseAdmin } from '@/lib/db';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic'; // Importación renombrada
 
-const TournamentClient = dynamic(() => import('./TournamentClient'), {
+// Usamos el nombre 'dynamicImport' para evitar el conflicto
+const TournamentClient = dynamicImport(() => import('./TournamentClient'), {
   ssr: false,
   loading: () => <div className="text-center font-mono animate-pulse">Cargando Torneo...</div>,
 });
 
+// Ahora no hay conflicto con la constante de renderizado de Next.js
 export const dynamic = 'force-dynamic';
 
 async function getTournamentData() {
   try {
-    // Consulta para el torneo activo
     const { data: tournament, error: tourneyError } = await supabaseAdmin
       .from('AITournament')
       .select(`
@@ -31,12 +32,11 @@ async function getTournamentData() {
       .limit(1)
       .single();
 
-    if (tourneyError && tourneyError.code !== 'PGRST116') { // Ignorar si no se encuentra ningún torneo
+    if (tourneyError && tourneyError.code !== 'PGRST116') {
       console.error('Error fetching tournament:', tourneyError.message);
       throw new Error(`Error al buscar torneo: ${tourneyError.message}`);
     }
 
-    // Consulta para el leaderboard
     const { data: leaderboard, error: leaderboardError } = await supabaseAdmin
       .from('ChessPlayer')
       .select('name, elo, winsDaily, winsWeekly, winsMonthly, winsTotal')
@@ -51,7 +51,6 @@ async function getTournamentData() {
     return { tournament, leaderboard };
 
   } catch (error: any) {
-    // No relanzar el error de Prisma, sino manejarlo
     console.error("Fallo total en getTournamentData:", error.message);
     return { tournament: null, leaderboard: [] };
   }
