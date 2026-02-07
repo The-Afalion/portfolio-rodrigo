@@ -14,13 +14,21 @@ export default prisma;
 
 // --- Clientes de Supabase ---
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL: Las variables de entorno de Supabase no están configuradas en producción.');
+  } else {
+    // En desarrollo, podemos ser un poco más permisivos, pero aun así advertir.
+    console.warn('ADVERTENCIA: Faltan una o más variables de entorno de Supabase. Es posible que las operaciones de base de datos fallen.');
+  }
+}
 
 // Cliente PÚBLICO para usar en el NAVEGADOR (si es necesario)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
 
 // Cliente de SERVIDOR con privilegios para usar en Server Actions y API Routes
-// Este cliente puede saltarse las políticas de RLS (Row Level Security)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+export const supabaseAdmin = createClient(supabaseUrl!, supabaseServiceKey!);
