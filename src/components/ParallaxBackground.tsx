@@ -13,20 +13,62 @@ export default function ParallaxBackground() {
 
     let width = window.innerWidth;
     let height = window.innerHeight;
-    let mouseX = 0;
-    let mouseY = 0;
+    
+    // Configuración
+    const particleCount = 100; // Cantidad de partículas
+    const connectionDistance = 150; // Distancia para conectar líneas
+    const moveSpeed = 0.5; // Velocidad de movimiento constante
 
-    // Configuración de los puntos
-    const dots: { x: number; y: number; z: number; baseX: number; baseY: number }[] = [];
-    const numDots = 150; // Cantidad de puntos
-    const connectionDistance = 100;
+    // Estado del ratón (para interacción sutil)
+    const mouse = { x: -1000, y: -1000 };
 
-    // Inicializar puntos
-    for (let i = 0; i < numDots; i++) {
-      const x = Math.random() * width;
-      const y = Math.random() * height;
-      const z = Math.random() * 2 + 0.5; // Profundidad para el efecto parallax
-      dots.push({ x, y, z, baseX: x, baseY: y });
+    class Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * moveSpeed;
+        this.vy = (Math.random() - 0.5) * moveSpeed;
+        this.size = Math.random() * 2 + 1;
+      }
+
+      update() {
+        // Movimiento constante
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Rebote en bordes
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+
+        // Interacción con ratón (opcional: huir suavemente)
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 100) {
+          const angle = Math.atan2(dy, dx);
+          this.x -= Math.cos(angle) * 1;
+          this.y -= Math.sin(angle) * 1;
+        }
+      }
+
+      draw() {
+        if (!ctx) return;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fill();
+      }
+    }
+
+    const particles: Particle[] = [];
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
     }
 
     const resize = () => {
@@ -37,42 +79,32 @@ export default function ParallaxBackground() {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX - width / 2;
-      mouseY = e.clientY - height / 2;
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Dibujar puntos
-      dots.forEach(dot => {
-        // Efecto Parallax: Mover el punto en dirección opuesta al ratón, basado en su profundidad (z)
-        const targetX = dot.baseX - (mouseX * dot.z * 0.05);
-        const targetY = dot.baseY - (mouseY * dot.z * 0.05);
-        
-        // Suavizado (Lerp)
-        dot.x += (targetX - dot.x) * 0.1;
-        dot.y += (targetY - dot.y) * 0.1;
-
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, 1.5 * dot.z, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${0.1 * dot.z})`;
-        ctx.fill();
+      // Actualizar y dibujar partículas
+      particles.forEach(p => {
+        p.update();
+        p.draw();
       });
 
-      // Dibujar líneas de conexión (opcional, le da un toque "tech")
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < dots.length; i++) {
-        for (let j = i + 1; j < dots.length; j++) {
-          const dx = dots[i].x - dots[j].x;
-          const dy = dots[i].y - dots[j].y;
+      // Dibujar líneas
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < connectionDistance) {
             ctx.beginPath();
-            ctx.moveTo(dots[i].x, dots[i].y);
-            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance / connectionDistance})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
           }
         }
@@ -96,8 +128,7 @@ export default function ParallaxBackground() {
   return (
     <canvas 
       ref={canvasRef} 
-      className="absolute inset-0 z-0 pointer-events-none"
-      style={{ background: 'radial-gradient(circle at center, #111 0%, #000 100%)' }}
+      className="fixed inset-0 z-0 pointer-events-none bg-black"
     />
   );
 }
