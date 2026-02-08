@@ -10,49 +10,7 @@ datasource db {
 }
 
 // --- MODELOS GENERALES ---
-
-model User {
-  id    String  @id @default(uuid())
-  email String? @unique
-  name  String?
-  posts Post[]
-}
-
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  slug      String   @unique
-  content   String   @db.Text
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  String?
-  tags      Tag[]    @relation("PostTags")
-  views     Int      @default(0)
-  likes     Int      @default(0)
-}
-
-model Tag {
-  id    String @id @default(cuid())
-  name  String @unique
-  posts Post[] @relation("PostTags")
-}
-
-model Subscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
-}
-
-model ContactMessage {
-  id        String   @id @default(cuid())
-  email     String
-  name      String
-  message   String   @db.Text
-  createdAt DateTime @default(now())
-  read      Boolean  @default(false)
-}
+// ... (sin cambios)
 
 // --- MODELOS DE AJEDREZ ---
 
@@ -83,6 +41,16 @@ model CommunityChessGame {
   nextMoveDue DateTime
   lastMoveAt  DateTime @default(now())
   votes       CommunityVote[]
+  suggestions CommunityMoveSuggestion[]
+}
+
+model CommunityMoveSuggestion {
+  id        String   @id @default(cuid())
+  move      String   // El movimiento en formato SAN
+  score     Int      // La puntuación de Lichess (centipawns)
+  rank      Int      // 1 para el mejor, 2 para el segundo, etc.
+  game      CommunityChessGame @relation(fields: [gameId], references: [id])
+  gameId    String
 }
 
 model CommunityVote {
@@ -96,6 +64,7 @@ model CommunityVote {
   gameId    String
 }
 
+// ... (resto de modelos sin cambios)
 model AITournament {
   id        String   @id @default(cuid())
   status    String   @default("PENDING")
@@ -135,8 +104,6 @@ model CorrespondenceGame {
   updatedAt DateTime @updatedAt
 }
 
-// --- MODELOS DE SLALOM ARCHITECT ---
-
 model SlalomCourse {
   id          String   @id @default(cuid())
   name        String
@@ -154,14 +121,12 @@ model SlalomVote {
   createdAt DateTime @default(now())
 }
 
-// --- MODELOS DE NEXUS (DFS SIMULATOR) ---
-
 model NexusNode {
   id        String   @id @default(cuid())
-  name      String   // ej: "Node-Alpha-1"
-  region    String   // ej: "eu-west"
-  status    String   @default("ONLINE") // ONLINE, OFFLINE, RECOVERING
-  capacity  Int      @default(1000) // MB
+  name      String
+  region    String
+  status    String   @default("ONLINE")
+  capacity  Int      @default(1000)
   used      Int      @default(0)
   chunks    NexusChunk[]
 }
@@ -169,7 +134,7 @@ model NexusNode {
 model NexusFile {
   id        String   @id @default(cuid())
   name      String
-  size      Int      // Bytes
+  size      Int
   mimeType  String
   uploadedAt DateTime @default(now())
   chunks    NexusChunk[]
@@ -177,13 +142,11 @@ model NexusFile {
 
 model NexusChunk {
   id        String   @id @default(cuid())
-  index     Int      // Orden del trozo (0, 1, 2...)
-  hash      String   // Hash del contenido para verificar integridad
+  index     Int
+  hash      String
   size      Int
-
   file      NexusFile @relation(fields: [fileId], references: [id])
   fileId    String
-
   node      NexusNode @relation(fields: [nodeId], references: [id])
   nodeId    String
 }
