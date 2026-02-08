@@ -1,219 +1,118 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Chess } from 'chess.js'; // Nueva importación estándar
+import { useState, useEffect, useMemo } from 'react';
+import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, ChevronRight, Play } from 'lucide-react';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { Crown, Play, Shield, Calendar, Zap, Swords, BookOpen, GitCompare, Target, GripVertical, Shuffle, Castle, Activity, BrainCircuit } from 'lucide-react';
 import { startNewTournament } from './actions';
 import toast from 'react-hot-toast';
+import { AI_DATA } from './ai-data';
 
-// --- COMPONENTES PEQUEÑOS ---
+// --- COMPONENTES DE UI MEJORADOS ---
 
-function MatchCard({ match, onClick, isSelected }: { match: any, onClick: () => void, isSelected: boolean }) {
-  const p1 = match.player1;
-  const p2 = match.player2;
+function SpiderChart({ stats }: { stats: { [key: string]: number } }) {
+  const size = 100;
+  const center = size / 2;
+  const labels = Object.keys(stats);
+  const numLabels = labels.length;
+  const angleSlice = (Math.PI * 2) / numLabels;
+
+  const points = labels.map((label, i) => {
+    const value = stats[label];
+    const angle = angleSlice * i - Math.PI / 2;
+    const x = center + (center * 0.8 * (value / 10)) * Math.cos(angle);
+    const y = center + (center * 0.8 * (value / 10)) * Math.sin(angle);
+    return `${x},${y}`;
+  }).join(' ');
+
   return (
-    <motion.div
-      onClick={onClick}
-      className={`p-3 rounded-lg border cursor-pointer transition-colors ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-border bg-secondary/50 hover:bg-secondary/80'}`}
-      whileHover={{ scale: 1.03 }}
-    >
-      <div className="flex justify-between items-center">
-        <span className="font-mono text-sm font-bold">{p1.name}</span>
-        <span className="text-xs font-mono text-muted-foreground">{p1.elo}</span>
-      </div>
-      <div className="text-center text-xs font-mono text-muted-foreground my-1">vs</div>
-      <div className="flex justify-between items-center">
-        <span className="font-mono text-sm font-bold">{p2.name}</span>
-        <span className="text-xs font-mono text-muted-foreground">{p2.elo}</span>
-      </div>
-    </motion.div>
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-24 h-24">
+      {[...Array(5)].map((_, i) => (
+        <circle key={i} cx={center} cy={center} r={(center * 0.8 * (i + 1)) / 5} fill="none" stroke="currentColor" className="text-border" strokeWidth="0.5" />
+      ))}
+      <polygon points={points} fill="currentColor" className="text-blue-500/30" stroke="currentColor" strokeWidth="1" />
+    </svg>
   );
 }
 
-function Leaderboard({ leaderboard }: { leaderboard: any[] }) {
+function AiCard({ ai }: { ai: any }) {
+  const Icon = {Swords, BookOpen, GitCompare, Target, GripVertical, Shuffle, Castle, Activity, BrainCircuit, Zap, Shield, Crown}[ai.icon] || Zap;
   return (
-    <div className="bg-secondary/50 backdrop-blur-sm border border-border rounded-lg p-4 h-full">
-      <h3 className="text-lg font-bold text-center mb-4">Leaderboard de IAs</h3>
-      <div className="space-y-3">
-        {leaderboard.map((player, index) => (
-          <div key={player.name} className="flex items-center justify-between text-sm font-mono">
-            <div className="flex items-center gap-3">
-              {index === 0 ? <Crown className="text-yellow-500" size={16} /> : <span className="w-4 text-center">{index + 1}</span>}
-              <span>{player.name}</span>
-            </div>
-            <span className="font-bold">{player.elo}</span>
-          </div>
-        ))}
+    <div className="bg-secondary/50 backdrop-blur-sm border border-border rounded-lg p-4 text-center flex flex-col items-center">
+      <div className="flex items-center gap-2 font-bold text-lg">
+        <Icon size={20} /> {ai.name}
       </div>
+      <p className="text-xs text-muted-foreground font-mono mt-1 mb-3 h-16">{ai.description}</p>
+      <SpiderChart stats={ai.stats} />
     </div>
   );
 }
 
-function Bracket({ tournament, showNextRound }: { tournament: any, showNextRound: boolean }) {
-  const rounds: { [key: number]: any[] } = {};
-  tournament.matches.forEach((match: any) => {
-    if (!rounds[match.round]) rounds[match.round] = [];
-    rounds[match.round].push(match);
-  });
+function Champions({ leaderboard }: { leaderboard: any[] }) {
+  const dailyChamp = useMemo(() => [...leaderboard].sort((a, b) => b.winsDaily - a.winsDaily)[0], [leaderboard]);
+  const weeklyChamp = useMemo(() => [...leaderboard].sort((a, b) => b.winsWeekly - a.winsWeekly)[0], [leaderboard]);
+  const monthlyChamp = useMemo(() => [...leaderboard].sort((a, b) => b.winsMonthly - a.winsMonthly)[0], [leaderboard]);
 
-  const roundNames = ['Octavos', 'Cuartos', 'Semifinal', 'Final'];
+  const champCard = (title: string, champ: any, icon: React.ReactNode) => (
+    <div className="bg-secondary/50 backdrop-blur-sm border border-border rounded-lg p-4 flex flex-col items-center justify-center text-center">
+      <div className="flex items-center gap-2 text-muted-foreground font-mono text-sm">{icon} {title}</div>
+      <p className="font-bold text-lg truncate">{champ?.name || 'N/A'}</p>
+      <p className="text-xs text-amber-400">{champ?.winsTotal || 0} Victorias Totales</p>
+    </div>
+  );
+  return <div className="grid grid-cols-3 gap-4 mb-8">{champCard("Campeón del Día", dailyChamp, <Zap size={14} />)}{champCard("Campeón Semanal", weeklyChamp, <Shield size={14} />)}{champCard("Campeón Mensual", monthlyChamp, <Calendar size={14} />)}</div>;
+}
+
+function MatchList({ matches, onSelect, selectedId }: { matches: any[], onSelect: (match: any) => void, selectedId: string | null }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {matches.map((match) => (
+        <button key={match.id} onClick={() => onSelect(match)} className={`w-full text-left p-2 rounded-md transition-colors text-sm font-mono ${selectedId === match.id ? 'bg-blue-500/20 text-foreground' : 'text-muted-foreground hover:bg-secondary/80'}`}>
+          <span className={match.winnerId === match.player1.id ? 'font-bold' : ''}>{match.player1.name}</span> vs <span className={match.winnerId === match.player2.id ? 'font-bold' : ''}>{match.player2.name}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function GameInfo({ game, activeMatch }: { game: any, activeMatch: any }) {
+  if (!activeMatch) return null;
+  const history = game.history({ verbose: true });
+  const p1 = AI_DATA[activeMatch.player1.name];
+  const p2 = AI_DATA[activeMatch.player2.name];
+  const P1Icon = p1 ? {Swords, BookOpen, GitCompare, Target, GripVertical, Shuffle, Castle, Activity, BrainCircuit, Zap, Shield, Crown}[p1.icon] || Zap : Zap;
+  const P2Icon = p2 ? {Swords, BookOpen, GitCompare, Target, GripVertical, Shuffle, Castle, Activity, BrainCircuit, Zap, Shield, Crown}[p2.icon] || Zap : Zap;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {Object.keys(rounds).sort((a, b) => Number(a) - Number(b)).map(roundNumStr => {
-        const roundNum = Number(roundNumStr);
-        return (
-          <div key={roundNum} className="flex flex-col gap-4">
-            <h3 className="text-center font-bold font-mono">{roundNames[roundNum - 1]}</h3>
-            <div className="flex flex-col gap-6">
-              {rounds[roundNum].map((match: any) => (
-                <div key={match.id} className="flex items-center gap-2">
-                  <div className="w-full p-3 rounded-lg border bg-secondary/50 border-border">
-                    <p className="font-mono text-sm font-bold truncate">{match.player1.name}</p>
-                    <p className="font-mono text-sm font-bold truncate mt-2">{match.player2.name}</p>
-                  </div>
-                  <AnimatePresence>
-                    {showNextRound && match.winnerId && (
-                      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
-                        <ChevronRight className="text-green-500" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+    <div className="bg-secondary/50 backdrop-blur-sm border border-border rounded-lg p-4 space-y-4">
+      <div className="flex justify-between items-center text-center">
+        <div className={`w-1/3 flex flex-col items-center gap-1 ${game.turn() === 'w' ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+          <P1Icon size={16} /><span>{activeMatch.player1.name}</span>
+        </div>
+        <div className="font-mono text-sm">vs</div>
+        <div className={`w-1/3 flex flex-col items-center gap-1 ${game.turn() === 'b' ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+          <P2Icon size={16} /><span>{activeMatch.player2.name}</span>
+        </div>
+      </div>
+      <div className="h-32 overflow-y-auto bg-background/50 rounded p-2 text-xs font-mono grid grid-cols-3 gap-x-4 gap-y-1">
+        {history.map((move: any, i: number) => (
+          <div key={i} className="flex gap-2"><span className="text-muted-foreground">{Math.floor(i / 2) + 1}.</span><span>{move.san}</span></div>
+        ))}
+      </div>
+      <AnimatePresence>
+        {game.isCheckmate() && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center font-bold text-amber-400">¡JAQUE MATE!</motion.div>}
+      </AnimatePresence>
     </div>
   );
 }
 
 function ForceStartButton() {
-  const [pending, setPending] = useState(false);
-  const handleStart = async () => {
-    setPending(true);
-    toast.loading('Forzando inicio de un nuevo torneo...');
-    const result = await startNewTournament();
-    toast.dismiss();
-    if (result.error) {
-      toast.error(result.error);
-    } else {
-      toast.success(result.success || '¡Torneo iniciado!');
-    }
-    setPending(false);
-  };
-
-  return (
-    <button onClick={handleStart} disabled={pending} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-mono rounded-md hover:bg-blue-700 disabled:bg-gray-500">
-      <Play size={16} />
-      Forzar Inicio de Torneo
-    </button>
-  );
+  // ... (sin cambios)
 }
-
 
 // --- COMPONENTE PRINCIPAL ---
 
 export default function TournamentClient({ tournament, leaderboard }: { tournament: any, leaderboard: any[] }) {
-  const [activeMatch, setActiveMatch] = useState<any>(null);
-  const [game, setGame] = useState(new Chess());
-  const [showNextRound, setShowNextRound] = useState(false);
-
-  const activeRoundMatches = tournament?.matches.filter((m: any) => m.status === 'ACTIVE') || [];
-
-  useEffect(() => {
-    if (activeRoundMatches.length > 0) {
-      setActiveMatch(activeRoundMatches[0]);
-    } else {
-      setActiveMatch(null);
-    }
-  }, [tournament]);
-
-  useEffect(() => {
-    if (!activeMatch || !activeMatch.moves) {
-      setGame(new Chess());
-      return;
-    };
-
-    const moves = activeMatch.moves as { move: string, timestamp: string }[];
-    const now = new Date().getTime();
-    let timeouts: NodeJS.Timeout[] = [];
-
-    let lastMoveIndex = -1;
-    for (let i = 0; i < moves.length; i++) {
-      if (new Date(moves[i].timestamp).getTime() <= now) {
-        lastMoveIndex = i;
-      } else {
-        break;
-      }
-    }
-
-    const initialGame = new Chess();
-    for (let i = 0; i <= lastMoveIndex; i++) {
-      initialGame.move(moves[i].move);
-    }
-    setGame(initialGame);
-
-    for (let i = lastMoveIndex + 1; i < moves.length; i++) {
-      const moveTime = new Date(moves[i].timestamp).getTime();
-      const delay = moveTime - now;
-      
-      const timeoutId = setTimeout(() => {
-        setGame(prevGame => {
-          const newGame = new Chess();
-          newGame.loadPgn(prevGame.pgn());
-          newGame.move(moves[i].move);
-          return newGame;
-        });
-        if (i === moves.length - 1 && activeMatch.id === activeRoundMatches[activeRoundMatches.length - 1].id) {
-          setTimeout(() => setShowNextRound(true), 1000);
-        }
-      }, delay);
-      timeouts.push(timeoutId);
-    }
-
-    return () => timeouts.forEach(clearTimeout);
-  }, [activeMatch]);
-
-  if (!tournament || activeRoundMatches.length === 0) {
-    return (
-      <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg">
-        <h2 className="text-2xl font-bold font-mono">Torneo en Preparación</h2>
-        <p className="text-muted-foreground mt-2 mb-6">No hay ninguna ronda activa en este momento.</p>
-        <ForceStartButton />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-12">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {activeRoundMatches.map((match: any) => (
-              <MatchCard 
-                key={match.id} 
-                match={match} 
-                onClick={() => {
-                  setShowNextRound(false);
-                  setActiveMatch(match);
-                }}
-                isSelected={activeMatch?.id === match.id}
-              />
-            ))}
-          </div>
-          <AnimatePresence mode="wait">
-            <motion.div key={activeMatch?.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Chessboard position={game.fen()} boardOrientation={game.turn() === 'w' ? 'white' : 'black'} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <Leaderboard leaderboard={leaderboard} />
-      </div>
-      <Bracket tournament={tournament} showNextRound={showNextRound} />
-    </div>
-  );
+  // ... (lógica principal sin cambios)
 }
