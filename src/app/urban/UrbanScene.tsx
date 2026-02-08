@@ -2,12 +2,12 @@
 
 import { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Line } from '@react-three/drei';
 import * as THREE from 'three';
 
 // --- Componente para los Edificios ---
 function Buildings() {
-  const citySize = 50; // Tamaño de la cuadrícula de la ciudad
+  const citySize = 50;
   const buildingCount = citySize * citySize;
 
   const buildings = useMemo(() => {
@@ -33,7 +33,31 @@ function Buildings() {
   );
 }
 
-// --- Componente para el Tráfico ---
+// --- Componente de Tráfico (CORREGIDO) ---
+function TrafficLine({ points }: { points: THREE.Vector3[] }) {
+  const materialRef = useRef<any>();
+  
+  useFrame((_, delta) => {
+    if (materialRef.current) {
+      // La animación del dashOffset se hace sobre el material
+      materialRef.current.dashOffset -= delta * 0.1;
+    }
+  });
+
+  return (
+    <Line
+      points={points}
+      color={Math.random() > 0.1 ? "#ef4444" : "#f59e0b"}
+      lineWidth={2}
+      dashed={true}
+      dashSize={0.2}
+      gapSize={0.2}
+      // @ts-ignore
+      material-ref={materialRef} // Pasamos la ref al material
+    />
+  );
+}
+
 function Traffic() {
   const count = 200;
   const lines = useMemo(() => {
@@ -43,47 +67,17 @@ function Traffic() {
       const points = [pos.clone()];
       const dir = Math.random() > 0.5 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
       points.push(pos.clone().add(dir.multiplyScalar(Math.random() * 5 + 1)));
-      temp.push(points);
+      temp.push({ id: i, points });
     }
     return temp;
   }, []);
 
   return (
     <group>
-      {lines.map((line, i) => (
-        <TrafficLine key={i} points={line} />
+      {lines.map((line) => (
+        <TrafficLine key={line.id} points={line.points} />
       ))}
     </group>
-  );
-}
-
-function TrafficLine({ points }: { points: THREE.Vector3[] }) {
-  const ref = useRef<any>();
-  useFrame(() => {
-    if (ref.current) {
-      ref.current.uniforms.dashOffset.value -= 0.01;
-    }
-  });
-
-  return (
-    <line>
-      <bufferGeometry attach="geometry">
-        <bufferAttribute
-          attach="attributes-position"
-          count={points.length}
-          array={new Float32Array(points.flatMap(p => p.toArray()))}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <lineDashedMaterial 
-        ref={ref}
-        attach="material" 
-        color={Math.random() > 0.1 ? "#ef4444" : "#f59e0b"} // Mayoría rojos, algunos amarillos
-        dashSize={0.2} 
-        gapSize={0.2} 
-        scale={1}
-      />
-    </line>
   );
 }
 
