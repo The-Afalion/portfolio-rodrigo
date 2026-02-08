@@ -15,7 +15,7 @@ class AudioEngine {
   constructor() {
     this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     this.mainGain = this.audioContext.createGain();
-    this.mainGain.gain.value = 0.5; // Volumen maestro
+    this.mainGain.gain.value = 0.5;
     this.mainGain.connect(this.audioContext.destination);
   }
 
@@ -24,7 +24,6 @@ class AudioEngine {
       this.audioContext.resume();
     }
 
-    // Mapear Y a una frecuencia (ej: 200Hz a 1000Hz)
     const minFreq = 200;
     const maxFreq = 1000;
     const freq = maxFreq - (yPosition / canvasHeight) * (maxFreq - minFreq);
@@ -33,7 +32,6 @@ class AudioEngine {
     oscillator.type = waveform;
     oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
 
-    // Envolvente de volumen para evitar "clics"
     const noteGain = this.audioContext.createGain();
     noteGain.gain.setValueAtTime(0, this.audioContext.currentTime);
     noteGain.gain.linearRampToValueAtTime(1, this.audioContext.currentTime + 0.01);
@@ -54,28 +52,24 @@ export default function SonicCanvas() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playhead, setPlayhead] = useState(0);
   const [waveform, setWaveform] = useState<Waveform>('sine');
+  const [isDrawing, setIsDrawing] = useState(false);
   const audioEngine = useRef<AudioEngine | null>(null);
 
-  // Inicializar motor de audio
   useEffect(() => {
     audioEngine.current = new AudioEngine();
   }, []);
 
-  // Bucle del secuenciador
   useEffect(() => {
     if (!isPlaying) return;
-
     let animationFrameId: number;
     const loop = () => {
       setPlayhead(p => (p + 1) % (canvasRef.current?.width || 1));
       animationFrameId = requestAnimationFrame(loop);
     };
     animationFrameId = requestAnimationFrame(loop);
-
     return () => cancelAnimationFrame(animationFrameId);
   }, [isPlaying]);
 
-  // Dibujar en el canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -83,16 +77,12 @@ export default function SonicCanvas() {
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Dibujar notas
     notes.forEach(note => {
       ctx.beginPath();
       ctx.arc(note.x, note.y, 5, 0, Math.PI * 2);
       ctx.fillStyle = '#06b6d4';
       ctx.fill();
     });
-
-    // Dibujar playhead
     if (isPlaying) {
       ctx.beginPath();
       ctx.moveTo(playhead, 0);
@@ -103,25 +93,37 @@ export default function SonicCanvas() {
     }
   }, [notes, isPlaying, playhead]);
 
-  // Disparar notas
   useEffect(() => {
     if (!isPlaying || !audioEngine.current) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const notesAtPlayhead = notes.filter(note => Math.abs(note.x - playhead) < 2);
     notesAtPlayhead.forEach(note => {
       audioEngine.current?.playNote(note.y, canvas.height, waveform);
     });
   }, [playhead, isPlaying, notes, waveform]);
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setNotes([...notes, { x, y }]);
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    const coords = getCoords(e);
+    if (coords) setNotes(prev => [...prev, coords]);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const coords = getCoords(e);
+    if (coords) setNotes(prev => [...prev, coords]);
+  };
+
+  const handleMouseUp = () => {
+    setIsDrawing(false);
   };
 
   return (
@@ -134,7 +136,6 @@ export default function SonicCanvas() {
           <Trash2 />
         </button>
         <div className="h-8 w-px bg-cyan-900/50"></div>
-        {/* Selector de forma de onda */}
         {(['sine', 'square', 'triangle', 'sawtooth'] as Waveform[]).map(wf => (
           <button key={wf} onClick={() => setWaveform(wf)} className={`p-2 rounded-md ${waveform === wf ? 'bg-cyan-500 text-black' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}>
             {wf === 'sine' && <Waves size={20} />}
@@ -148,7 +149,10 @@ export default function SonicCanvas() {
         ref={canvasRef}
         width={800}
         height={400}
-        onClick={handleCanvasClick}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         className="bg-black/50 border border-cyan-900/50 rounded-lg cursor-crosshair"
       />
     </div>

@@ -2,8 +2,8 @@ export const PROYECTOS_CORE = [
   {
     id: 'nexus',
     title: 'NEXUS',
-    description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding, encriptación y distribución de datos.',
-    tech: ['Next.js', 'Framer Motion', 'Algorithms', 'Sharding'],
+    description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding y distribución de datos.',
+    tech: ['Next.js', 'Framer Motion', 'Algorithms'],
     color: '#4ade80', // Verde Matrix
     position: [0, 0, 0] as [number, number, number],
     link: '/nexus'
@@ -11,8 +11,8 @@ export const PROYECTOS_CORE = [
   {
     id: 'slalom',
     title: 'Slalom Arch.',
-    description: 'Herramienta CAD para diseño de circuitos olímpicos. Editor vectorial interactivo con gestión de estado compleja.',
-    tech: ['SVG', 'React', 'Supabase', 'PostgreSQL'],
+    description: 'Herramienta CAD para diseño de circuitos. Editor vectorial interactivo con gestión de estado compleja.',
+    tech: ['SVG', 'React', 'Supabase'],
     color: '#3b82f6', // Azul Agua
     position: [5, 2, -5] as [number, number, number],
     link: '/slalom'
@@ -20,8 +20,8 @@ export const PROYECTOS_CORE = [
   {
     id: 'chess-engine',
     title: 'Chess AI',
-    description: 'Motor de ajedrez serverless con personalidades múltiples basado en Stockfish/Lichess API.',
-    tech: ['QStash', 'Serverless', 'Chess.js', 'API Integration'],
+    description: 'Motor de ajedrez serverless con personalidades múltiples y torneos en tiempo real.',
+    tech: ['QStash', 'Serverless', 'Chess.js'],
     color: '#f59e0b', // Dorado
     position: [-5, -2, -10] as [number, number, number],
     link: '/chess'
@@ -29,7 +29,7 @@ export const PROYECTOS_CORE = [
   {
     id: 'galton',
     title: 'Galton Physics',
-    description: 'Simulación de físicas en tiempo real demostrando el Teorema del Límite Central (Campana de Gauss).',
+    description: 'Simulación de físicas demostrando el Teorema del Límite Central con miles de colisiones.',
     tech: ['Matter.js', 'Canvas API', 'Physics Engine'],
     color: '#ef4444', // Rojo
     position: [6, -4, 5] as [number, number, number],
