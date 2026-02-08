@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Line } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
 // --- Componente para los Edificios ---
@@ -33,49 +33,44 @@ function Buildings() {
   );
 }
 
-// --- Componente de Tráfico (CORREGIDO) ---
-function TrafficLine({ points }: { points: THREE.Vector3[] }) {
-  const materialRef = useRef<any>();
-  
-  useFrame((_, delta) => {
-    if (materialRef.current) {
-      // La animación del dashOffset se hace sobre el material
-      materialRef.current.dashOffset -= delta * 0.1;
+// --- Componente de Tráfico (CORREGIDO Y ROBUSTO) ---
+function TrafficParticle({ initialPosition, direction }: { initialPosition: THREE.Vector3, direction: THREE.Vector3 }) {
+  const ref = useRef<THREE.Mesh>(null);
+  const speed = useMemo(() => Math.random() * 0.1 + 0.05, []);
+  const pathLength = 10;
+
+  useFrame(({ clock }) => {
+    if (ref.current) {
+      // Mover la partícula a lo largo de la dirección y resetear
+      const progress = (clock.getElapsedTime() * speed) % pathLength;
+      ref.current.position.copy(initialPosition).addScaledVector(direction, progress);
     }
   });
 
   return (
-    <Line
-      points={points}
-      color={Math.random() > 0.1 ? "#ef4444" : "#f59e0b"}
-      lineWidth={2}
-      dashed={true}
-      dashSize={0.2}
-      gapSize={0.2}
-      // @ts-ignore
-      material-ref={materialRef} // Pasamos la ref al material
-    />
+    <mesh ref={ref}>
+      <sphereGeometry args={[0.05, 8, 8]} />
+      <meshBasicMaterial color={Math.random() > 0.1 ? "#ef4444" : "#f59e0b"} toneMapped={false} />
+    </mesh>
   );
 }
 
 function Traffic() {
   const count = 200;
-  const lines = useMemo(() => {
+  const particles = useMemo(() => {
     const temp = [];
     for (let i = 0; i < count; i++) {
       const pos = new THREE.Vector3((Math.random() - 0.5) * 60, 0.1, (Math.random() - 0.5) * 60);
-      const points = [pos.clone()];
       const dir = Math.random() > 0.5 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
-      points.push(pos.clone().add(dir.multiplyScalar(Math.random() * 5 + 1)));
-      temp.push({ id: i, points });
+      temp.push({ id: i, position: pos, direction: dir });
     }
     return temp;
   }, []);
 
   return (
     <group>
-      {lines.map((line) => (
-        <TrafficLine key={line.id} points={line.points} />
+      {particles.map((particle) => (
+        <TrafficParticle key={particle.id} initialPosition={particle.position} direction={particle.direction} />
       ))}
     </group>
   );
