@@ -1,34 +1,38 @@
 export const PROYECTOS_CORE = [
   {
-    id: 'neural-vis',
-    title: 'Neural Vis',
-    description: 'Visualizador en tiempo real de los pesos y activaciones de una red neuronal profunda durante el entrenamiento.',
-    tech: ['Python', 'TensorFlow', 'WebGL', 'React'],
-    color: '#ff5e57', // Rojo neón
+    id: 'nexus',
+    title: 'NEXUS',
+    description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding, encriptación y distribución de datos entre nodos.',
+    tech: ['Next.js', 'Framer Motion', 'Algorithms', 'Sharding'],
+    color: '#4ade80', // Verde Matrix
     position: [0, 0, 0] as [number, number, number],
+    link: '/nexus'
   },
   {
-    id: 'distributed-sim',
-    title: 'Distri-Sim',
-    description: 'Simulador de consenso Raft visualizando la elección de líderes y replicación de logs en un clúster distribuido.',
-    tech: ['Go', 'gRPC', 'D3.js', 'Docker'],
-    color: '#0be881', // Verde neón
+    id: 'slalom',
+    title: 'Slalom Arch.',
+    description: 'Herramienta CAD para diseño de circuitos olímpicos. Editor vectorial interactivo con gestión de estado compleja y persistencia de datos.',
+    tech: ['SVG', 'React', 'Supabase', 'PostgreSQL'],
+    color: '#3b82f6', // Azul Agua
     position: [5, 2, -5] as [number, number, number],
+    link: '/slalom'
   },
   {
-    id: 'quantum-crypto',
-    title: 'Q-Crypto',
-    description: 'Implementación demostrativa del protocolo BB84 de distribución de claves cuánticas.',
-    tech: ['Rust', 'WASM', 'React', 'Canvas'],
-    color: '#4bcffa', // Azul neón
+    id: 'chess-engine',
+    title: 'Chess AI',
+    description: 'Motor de ajedrez con personalidades múltiples basado en Stockfish/Lichess API. Arquitectura serverless con colas de mensajes.',
+    tech: ['QStash', 'Serverless', 'Chess.js', 'API Integration'],
+    color: '#f59e0b', // Dorado
     position: [-5, -2, -10] as [number, number, number],
+    link: '/chess' // Enlazamos al Hub
   },
   {
-    id: 'compiler-arch',
-    title: 'Mini-Compiler',
-    description: 'Un compilador completo para un subconjunto de C, con análisis léxico, sintáctico y generación de código ensamblador.',
-    tech: ['C++', 'LLVM', 'Bison', 'Flex'],
-    color: '#ffd32a', // Amarillo neón
+    id: 'portfolio',
+    title: 'Este Portfolio',
+    description: 'Meta-proyecto. Una experiencia inmersiva construida con las últimas tecnologías web, integrando 3D, tiempo real y diseño avanzado.',
+    tech: ['R3F', 'Three.js', 'TypeScript', 'Vercel'],
+    color: '#a855f7', // Púrpura
     position: [3, -4, -15] as [number, number, number],
+    link: '/'
   }
 ];
