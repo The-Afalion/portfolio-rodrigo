@@ -1,71 +1,64 @@
 "use client";
-import { motion } from "framer-motion";
-import { BrainCircuit, Languages, Database, Code } from "lucide-react";
 
-const habilidades = [
-  { nombre: "Next.js", icono: <Code /> },
-  { nombre: "React", icono: <Code /> },
-  { nombre: "TypeScript", icono: <Code /> },
-  { nombre: "Tailwind CSS", icono: <Code /> },
-  { nombre: "Framer Motion", icono: <Code /> },
-  { nombre: "Three.js", icono: <Code /> },
-  { nombre: "MongoDB", icono: <Database /> },
-  { nombre: "SQL", icono: <Database /> },
-];
+import { Canvas } from '@react-three/fiber';
+import { Float } from '@react-three/drei';
+import { motion } from 'framer-motion';
 
-const EtiquetaHabilidad = ({ nombre, icono }: { nombre: string, icono: React.ReactNode }) => (
-  <div className="flex items-center gap-2 px-3 py-1 bg-secondary rounded-md border border-border">
-    {icono}
-    <span className="font-mono text-sm">{nombre}</span>
-  </div>
-);
+function RotatingShape() {
+  return (
+    <Canvas camera={{ position: [0, 0, 3] }}>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} />
+      <Float speed={2} rotationIntensity={1} floatIntensity={2}>
+        <mesh>
+          <icosahedronGeometry args={[1, 0]} />
+          <meshStandardMaterial 
+            color="hsl(var(--primary))" 
+            roughness={0.1} 
+            metalness={0.1} 
+          />
+        </mesh>
+      </Float>
+    </Canvas>
+  );
+}
 
 export default function SobreMi() {
   return (
-    <section id="sobre-mi" className="py-24 px-4 bg-card">
-      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+    <section id="sobre-mi" className="relative py-32 px-6">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        
         {/* Columna de Texto */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8 }}
         >
-          <h2 className="text-4xl font-bold mb-6">Sobre Mí</h2>
-          <div className="space-y-4 text-muted-foreground">
+          <h2 className="text-4xl font-bold tracking-tight mb-6">
+            De la Idea a la <span className="text-primary">Realidad Digital</span>
+          </h2>
+          <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Soy un desarrollador de software con una doble vida: por un lado, un <span className="text-foreground font-semibold">ingeniero</span> apasionado por construir sistemas precisos y soluciones tecnológicas elegantes; por otro, un <span className="text-foreground font-semibold">deportista de alto rendimiento</span> que entiende el valor de la disciplina, la estrategia y el trabajo en equipo.
+              Soy un Ingeniero de Software con una obsesión: construir productos que no solo funcionen a la perfección, sino que también se sientan vivos. Mi pasión reside en la intersección entre la arquitectura de software robusta y la creación de experiencias de usuario memorables.
             </p>
             <p>
-              Mi experiencia como <span className="text-foreground">entrenador y árbitro de piragüismo</span> me ha enseñado a liderar, comunicar con claridad y tomar decisiones bajo presión. Estas habilidades, combinadas con mi formación técnica, me permiten abordar los desafíos del desarrollo de software con una perspectiva única y un enfoque implacable en el resultado.
+              Disfruto desglosando sistemas complejos, ya sea un motor de ajedrez en tiempo real o un simulador de físicas, y presentándolos de una manera que sea a la vez intuitiva y visualmente impactante.
             </p>
           </div>
         </motion.div>
 
-        {/* Columna de Habilidades */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="space-y-6"
+        {/* Columna Visual 3D */}
+        <motion.div 
+          className="h-80 md:h-96"
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <div>
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><BrainCircuit /> Tecnologías</h3>
-            <div className="flex flex-wrap gap-2">
-              {habilidades.map(habilidad => <EtiquetaHabilidad key={habilidad.nombre} {...habilidad} />)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">* Incluye las tecnologías usadas para construir esta web.</p>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><Languages /> Idiomas</h3>
-            <div className="flex flex-wrap gap-2">
-              <EtiquetaHabilidad nombre="Inglés (C1 Certificado)" icono={<></>} />
-              <EtiquetaHabilidad nombre="Alemán (A1)" icono={<></>} />
-              <EtiquetaHabilidad nombre="Francés (A1)" icono={<></>} />
-            </div>
-          </div>
+          <RotatingShape />
         </motion.div>
+
       </div>
     </section>
   );
