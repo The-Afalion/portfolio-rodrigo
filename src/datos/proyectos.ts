@@ -2,8 +2,8 @@ export const PROYECTOS_CORE = [
   {
     id: 'nexus',
     title: 'NEXUS',
-    description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding, encriptación y distribución.',
-    tech: ['Next.js', 'Framer Motion', 'Algorithms'],
+    description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding, encriptación y distribución de datos.',
+    tech: ['Next.js', 'Framer Motion', 'Algorithms', 'Sharding'],
     color: '#4ade80', // Verde Matrix
     position: [0, 0, 0] as [number, number, number],
     link: '/nexus'
@@ -11,8 +11,8 @@ export const PROYECTOS_CORE = [
   {
     id: 'slalom',
     title: 'Slalom Arch.',
-    description: 'Herramienta CAD para diseño de circuitos. Editor vectorial interactivo con gestión de estado compleja.',
-    tech: ['SVG', 'React', 'Supabase'],
+    description: 'Herramienta CAD para diseño de circuitos olímpicos. Editor vectorial interactivo con gestión de estado compleja.',
+    tech: ['SVG', 'React', 'Supabase', 'PostgreSQL'],
     color: '#3b82f6', // Azul Agua
     position: [5, 2, -5] as [number, number, number],
     link: '/slalom'
@@ -21,7 +21,7 @@ export const PROYECTOS_CORE = [
     id: 'chess-engine',
     title: 'Chess AI',
     description: 'Motor de ajedrez serverless con personalidades múltiples basado en Stockfish/Lichess API.',
-    tech: ['QStash', 'Serverless', 'Chess.js'],
+    tech: ['QStash', 'Serverless', 'Chess.js', 'API Integration'],
     color: '#f59e0b', // Dorado
     position: [-5, -2, -10] as [number, number, number],
     link: '/chess'
@@ -29,7 +29,7 @@ export const PROYECTOS_CORE = [
   {
     id: 'galton',
     title: 'Galton Physics',
-    description: 'Simulación de físicas en tiempo real demostrando el Teorema del Límite Central (Campana de Gauss) con miles de colisiones.',
+    description: 'Simulación de físicas en tiempo real demostrando el Teorema del Límite Central (Campana de Gauss).',
     tech: ['Matter.js', 'Canvas API', 'Physics Engine'],
     color: '#ef4444', // Rojo
     position: [6, -4, 5] as [number, number, number],
@@ -38,7 +38,7 @@ export const PROYECTOS_CORE = [
   {
     id: 'algo-vis',
     title: 'Algo Vision',
-    description: 'Visualizador interactivo de algoritmos de ordenamiento y búsqueda. Observa la lógica interna del código en acción.',
+    description: 'Visualizador interactivo de algoritmos de ordenamiento. Observa la lógica interna del código en acción.',
     tech: ['React', 'Algorithms', 'Visualization'],
     color: '#d946ef', // Magenta
     position: [-6, 4, 5] as [number, number, number],
@@ -61,5 +61,14 @@ export const PROYECTOS_CORE = [
     color: '#8b5cf6', // Violeta
     position: [0, -6, -8] as [number, number, number],
     link: '/urban'
+  },
+  {
+    id: 'vector-assault',
+    title: 'Vector Assault',
+    description: 'Shooter arcade 3D con estética "wireframe". Demostración de interacciones en tiempo real, colisiones y gestión de estado en Three.js.',
+    tech: ['R3F', 'Game Logic', 'State Management'],
+    color: '#ec4899', // Rosa Neón
+    position: [8, 0, -12] as [number, number, number],
+    link: '/vector-assault'
   }
 ];
