@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '@/lib/db';
 import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
-import { Client, verifySignature } from '@upstash/qstash';
+import { Client } from '@upstash/qstash';
+import { verifySignature } from "@upstash/qstash/dist/nextjs"; // Ruta de importación corregida
 
 // v2.0 - QStash Real-time Engine
 
@@ -30,29 +31,27 @@ async function advanceTournament(tournamentId: string) {
   if (!matches) return;
 
   const activeMatches = matches.filter(m => m.status === 'ACTIVE');
-  if (activeMatches.length > 0) return; // La ronda actual no ha terminado
+  if (activeMatches.length > 0) return;
 
   const finishedRoundMatches = matches.filter(m => m.status === 'FINISHED');
   const lastRound = Math.max(0, ...finishedRoundMatches.map(m => m.round));
   const winners = finishedRoundMatches.filter(m => m.round === lastRound).map(m => m.winnerId);
 
-  if (winners.length === 1) { // Es el campeón
+  if (winners.length === 1) {
     await supabaseAdmin.from('AITournament').update({ status: 'FINISHED', winnerId: winners[0], endedAt: new Date().toISOString() }).eq('id', tournamentId);
     await supabaseAdmin.rpc('increment_wins', { player_id: winners[0] });
-  } else if (winners.length > 1) { // Preparar siguiente ronda
+  } else if (winners.length > 1) {
     const nextRoundMatches = [];
     for (let i = 0; i < winners.length; i += 2) {
       nextRoundMatches.push({ tournamentId, round: lastRound + 1, player1Id: winners[i], player2Id: winners[i + 1], status: 'PENDING' });
     }
     await supabaseAdmin.from('AITournamentMatch').insert(nextRoundMatches);
-    // Iniciar la nueva ronda
     const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
     await qstashClient.publishJSON({ url: `${baseUrl}/api/make-move` });
   }
 }
 
 export async function POST(request: Request) {
-  // Verificar que la petición viene de QStash
   const body = await request.text();
   const isValid = await verifySignature({
     body,
@@ -67,7 +66,6 @@ export async function POST(request: Request) {
     if (!match) {
       const { data: nextMatch } = await supabaseAdmin.from('AITournamentMatch').select('id, tournamentId').eq('status', 'PENDING').order('createdAt').limit(1).single();
       if (!nextMatch) {
-        // No hay más partidas pendientes, podría ser el final de una ronda
         const { data: lastFinishedMatch } = await supabaseAdmin.from('AITournamentMatch').select('tournamentId').order('updatedAt', { ascending: false }).limit(1).single();
         if (lastFinishedMatch) await advanceTournament(lastFinishedMatch.tournamentId);
         return NextResponse.json({ message: 'No more pending matches.' });
@@ -97,11 +95,10 @@ export async function POST(request: Request) {
     const updatedMoves = [...(match.moves || []), { move: moveResult.san }];
     await supabaseAdmin.from('AITournamentMatch').update({ moves: updatedMoves }).eq('id', match.id);
 
-    // Re-programar el siguiente movimiento
     const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
     await qstashClient.publishJSON({
       url: `${baseUrl}/api/make-move`,
-      delay: `${3 + Math.floor(Math.random() * 4)}s`, // 3-6 segundos
+      delay: `${3 + Math.floor(Math.random() * 4)}s`,
     });
 
     return NextResponse.json({ message: `Move ${moveResult.san} made.` });

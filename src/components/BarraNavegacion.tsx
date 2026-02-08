@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { usePathname } from 'next/navigation'; // Importamos el hook
 import { Terminal, Eye, Rss, Mail } from "lucide-react";
 import Link from "next/link";
 import { usarContextoGlobal } from "@/context/ContextoGlobal";
-import VisualControls from "./VisualControls"; // Importamos el control unificado
+import VisualControls from "./VisualControls";
 
 const variantesElementoNav = {
   oculto: { y: -20, opacity: 0 },
@@ -30,6 +31,7 @@ function Logo() {
 }
 
 export default function BarraNavegacion() {
+  const pathname = usePathname(); // Obtenemos la ruta actual
   const [haHechoScroll, setHaHechoScroll] = useState(false);
 
   useEffect(() => {
@@ -37,6 +39,11 @@ export default function BarraNavegacion() {
     window.addEventListener("scroll", gestionarScroll);
     return () => window.removeEventListener("scroll", gestionarScroll);
   }, []);
+
+  // Si no estamos en la página de inicio, no renderizamos nada
+  if (pathname !== '/') {
+    return null;
+  }
 
   return (
     <motion.nav
@@ -83,7 +90,6 @@ export default function BarraNavegacion() {
 
           <div className="h-6 w-px bg-border hidden sm:block"></div>
 
-          {/* Controles Visuales Unificados */}
           <VisualControls />
         </motion.div>
       </div>
