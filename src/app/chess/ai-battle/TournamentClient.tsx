@@ -107,12 +107,122 @@ function GameInfo({ game, activeMatch }: { game: any, activeMatch: any }) {
   );
 }
 
-function ForceStartButton() {
+function Bracket({ tournament }: { tournament: any }) {
   // ... (sin cambios)
 }
+
+function ForceStartButton() {
+  const [pending, setPending] = useState(false);
+  const handleStart = async () => {
+    setPending(true);
+    toast.loading('Forzando inicio de un nuevo torneo...');
+    const result = await startNewTournament();
+    toast.dismiss();
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(result.success || '¡Torneo iniciado!');
+    }
+    setPending(false);
+  };
+
+  return (
+    <button onClick={handleStart} disabled={pending} className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white font-mono rounded-md hover:bg-blue-700 disabled:bg-gray-500 mt-6">
+      <Play size={16} />
+      Forzar Inicio de Torneo
+    </button>
+  );
+}
+
 
 // --- COMPONENTE PRINCIPAL ---
 
 export default function TournamentClient({ tournament, leaderboard }: { tournament: any, leaderboard: any[] }) {
-  // ... (lógica principal sin cambios)
+  const [activeMatch, setActiveMatch] = useState<any>(null);
+  const [game, setGame] = useState(new Chess());
+  const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white');
+
+  const activeRoundMatches = tournament?.matches.filter((m: any) => m.status === 'ACTIVE') || [];
+
+  useEffect(() => {
+    if (activeRoundMatches.length > 0) {
+      setActiveMatch(activeRoundMatches[0]);
+    } else {
+      setActiveMatch(null);
+    }
+  }, [tournament]);
+
+  useEffect(() => {
+    if (!activeMatch || !activeMatch.moves) {
+      setGame(new Chess());
+      return;
+    };
+    setBoardOrientation('white');
+    const moves = activeMatch.moves as { move: string, timestamp: string }[];
+    const now = new Date().getTime();
+    let timeouts: NodeJS.Timeout[] = [];
+    let lastMoveIndex = -1;
+    for (let i = 0; i < moves.length; i++) {
+      if (new Date(moves[i].timestamp).getTime() <= now) lastMoveIndex = i;
+      else break;
+    }
+    const initialGame = new Chess();
+    for (let i = 0; i <= lastMoveIndex; i++) initialGame.move(moves[i].move);
+    setGame(initialGame);
+    for (let i = lastMoveIndex + 1; i < moves.length; i++) {
+      const moveTime = new Date(moves[i].timestamp).getTime();
+      const delay = moveTime - now;
+      const timeoutId = setTimeout(() => {
+        setGame(prevGame => {
+          const newGame = new Chess();
+          newGame.loadPgn(prevGame.pgn());
+          newGame.move(moves[i].move);
+          return newGame;
+        });
+      }, delay);
+      timeouts.push(timeoutId);
+    }
+    return () => timeouts.forEach(clearTimeout);
+  }, [activeMatch]);
+
+  // LÓGICA CORREGIDA: Mostrar el botón si no hay torneo O si el torneo no tiene partidas activas.
+  if (!tournament || activeRoundMatches.length === 0) {
+    return (
+      <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg flex flex-col items-center">
+        <h2 className="text-2xl font-bold font-mono">Torneo en Preparación</h2>
+        <p className="text-muted-foreground mt-2">No hay ninguna ronda activa en este momento.</p>
+        <ForceStartButton />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-12">
+      <Champions leaderboard={leaderboard} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <AnimatePresence mode="wait">
+            <motion.div key={activeMatch?.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Chessboard position={game.fen()} boardOrientation={boardOrientation} />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-center">Partidas de la Ronda</h3>
+          <MatchList matches={activeRoundMatches} onSelect={setActiveMatch} selectedId={activeMatch?.id} />
+          <GameInfo game={game} activeMatch={activeMatch} />
+        </div>
+      </div>
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold text-center mb-8">Bracket del Torneo</h2>
+        <Bracket tournament={tournament} />
+      </div>
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold text-center mb-8">Combatientes</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Object.values(AI_DATA).map(ai => <AiCard key={ai.name} ai={ai} />)}
+        </div>
+      </div>
+    </div>
+  );
 }
