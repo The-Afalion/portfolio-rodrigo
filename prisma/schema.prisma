@@ -140,16 +140,50 @@ model CorrespondenceGame {
 model SlalomCourse {
   id          String   @id @default(cuid())
   name        String
-  authorName  String   @default("Anónimo") // Nombre para mostrar (puede ser invitado)
-  layout      Json     // Array de puertas: [{x, y, rotation, type, number}]
+  authorName  String   @default("Anónimo")
+  layout      Json
   createdAt   DateTime @default(now())
   votes       SlalomVote[]
 }
 
 model SlalomVote {
   id        String   @id @default(cuid())
-  type      String   // 'TECHNICAL', 'PHYSICAL', 'FUN'
+  type      String
   course    SlalomCourse @relation(fields: [courseId], references: [id])
   courseId  String
   createdAt DateTime @default(now())
+}
+
+// --- MODELOS DE NEXUS (DFS SIMULATOR) ---
+
+model NexusNode {
+  id        String   @id @default(cuid())
+  name      String   // ej: "Node-Alpha-1"
+  region    String   // ej: "eu-west"
+  status    String   @default("ONLINE") // ONLINE, OFFLINE, RECOVERING
+  capacity  Int      @default(1000) // MB
+  used      Int      @default(0)
+  chunks    NexusChunk[]
+}
+
+model NexusFile {
+  id        String   @id @default(cuid())
+  name      String
+  size      Int      // Bytes
+  mimeType  String
+  uploadedAt DateTime @default(now())
+  chunks    NexusChunk[]
+}
+
+model NexusChunk {
+  id        String   @id @default(cuid())
+  index     Int      // Orden del trozo (0, 1, 2...)
+  hash      String   // Hash del contenido para verificar integridad
+  size      Int
+
+  file      NexusFile @relation(fields: [fileId], references: [id])
+  fileId    String
+
+  node      NexusNode @relation(fields: [nodeId], references: [id])
+  nodeId    String
 }
