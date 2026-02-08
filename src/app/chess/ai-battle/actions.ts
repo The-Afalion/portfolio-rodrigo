@@ -4,10 +4,10 @@ import { supabaseAdmin } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { Chess } from 'chess.js';
 
-// v2.3 - Optimizing AI Engine for Serverless environment
+// v2.4 - Re-enabling optimized simulation
 
 // --- CONFIGURACIÓN DEL MOTOR OPTIMIZADA ---
-const SEARCH_DEPTH = 2; // REDUCIDO: De 3 a 2. El cambio más importante.
+const SEARCH_DEPTH = 2;
 
 const PIECE_VALUES: { [key: string]: number } = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
 
@@ -61,7 +61,6 @@ function minimax(game: Chess, depth: number, alpha: number, beta: number, maximi
 }
 
 function getBestMove(game: Chess, personality: any, opponentPersonality: any, moveNumber: number) {
-  // Lógicas especiales se mantienen
   if (personality.type === 'OPENING_BOOK' && moveNumber <= 4) { /* ... */ }
   if (personality.type === 'CHAOTIC' && Math.random() < 0.3) { /* ... */ }
 
@@ -71,7 +70,6 @@ function getBestMove(game: Chess, personality: any, opponentPersonality: any, mo
 
   for (const move of game.moves()) {
     game.move(move);
-    // La personalidad ahora solo afecta a la evaluación final, no a todo el árbol
     const boardValue = minimax(game, SEARCH_DEPTH - 1, -Infinity, Infinity, !isMaximizing);
     game.undo();
     
@@ -142,11 +140,11 @@ export async function startNewTournament() {
     const { data: insertedMatches } = await supabaseAdmin.from('AITournamentMatch').insert(firstRoundMatches).select();
     if (!insertedMatches) throw new Error("No se pudieron crear las partidas.");
     
-    // No simulamos aquí por ahora para probar el flujo
-    // await simulateRound(insertedMatches, players);
+    // RE-ACTIVADO: La simulación ahora es más rápida.
+    await simulateRound(insertedMatches, players);
     
     revalidatePath('/chess/ai-battle');
-    return { success: `Nuevo torneo ${newTournament.id} creado. Partidas pendientes de simulación.` };
+    return { success: `Nuevo torneo ${newTournament.id} iniciado.` };
 
   } catch (error: any) {
     console.error("Error al forzar el inicio del torneo:", error.message);
