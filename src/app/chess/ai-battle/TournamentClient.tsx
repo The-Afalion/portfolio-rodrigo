@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Chess } from 'chess.js';
+// @ts-ignore - Usamos import por defecto para compatibilidad con chess.js v0.13
+import Chess from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, ChevronRight, Play } from 'lucide-react';
@@ -128,13 +129,13 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
     if (activeRoundMatches.length > 0) {
       setActiveMatch(activeRoundMatches[0]);
     } else {
-      setActiveMatch(null); // Asegurarse de que no hay partida activa si no hay partidos
+      setActiveMatch(null);
     }
   }, [tournament]);
 
   useEffect(() => {
     if (!activeMatch || !activeMatch.moves) {
-      setGame(new Chess()); // Resetear el tablero si no hay partida activa
+      setGame(new Chess());
       return;
     };
 
@@ -177,7 +178,6 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
     return () => timeouts.forEach(clearTimeout);
   }, [activeMatch]);
 
-  // Si no hay torneo o el torneo no tiene partidas activas, mostrar el botón de inicio
   if (!tournament || activeRoundMatches.length === 0) {
     return (
       <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg">
