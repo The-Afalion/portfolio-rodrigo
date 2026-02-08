@@ -5,7 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
-// --- Componente para los Edificios ---
+// --- Componente para los Edificios (Sin cambios) ---
 function Buildings() {
   const citySize = 50;
   const buildingCount = citySize * citySize;
@@ -33,28 +33,7 @@ function Buildings() {
   );
 }
 
-// --- Componente de Tráfico (CORREGIDO Y ROBUSTO) ---
-function TrafficParticle({ initialPosition, direction }: { initialPosition: THREE.Vector3, direction: THREE.Vector3 }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const speed = useMemo(() => Math.random() * 0.1 + 0.05, []);
-  const pathLength = 10;
-
-  useFrame(({ clock }) => {
-    if (ref.current) {
-      // Mover la partícula a lo largo de la dirección y resetear
-      const progress = (clock.getElapsedTime() * speed) % pathLength;
-      ref.current.position.copy(initialPosition).addScaledVector(direction, progress);
-    }
-  });
-
-  return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[0.05, 8, 8]} />
-      <meshBasicMaterial color={Math.random() > 0.1 ? "#ef4444" : "#f59e0b"} toneMapped={false} />
-    </mesh>
-  );
-}
-
+// --- Componente de Tráfico (LÓGICA APLANADA) ---
 function Traffic() {
   const count = 200;
   const particles = useMemo(() => {
@@ -62,15 +41,30 @@ function Traffic() {
     for (let i = 0; i < count; i++) {
       const pos = new THREE.Vector3((Math.random() - 0.5) * 60, 0.1, (Math.random() - 0.5) * 60);
       const dir = Math.random() > 0.5 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
-      temp.push({ id: i, position: pos, direction: dir });
+      temp.push({ id: i, initialPosition: pos, direction: dir, speed: Math.random() * 0.1 + 0.05, pathLength: 10 });
     }
     return temp;
   }, []);
 
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame(({ clock }) => {
+    if (groupRef.current) {
+      groupRef.current.children.forEach((child, i) => {
+        const particle = particles[i];
+        const progress = (clock.getElapsedTime() * particle.speed) % particle.pathLength;
+        child.position.copy(particle.initialPosition).addScaledVector(particle.direction, progress);
+      });
+    }
+  });
+
   return (
-    <group>
+    <group ref={groupRef}>
       {particles.map((particle) => (
-        <TrafficParticle key={particle.id} initialPosition={particle.position} direction={particle.direction} />
+        <mesh key={particle.id}>
+          <sphereGeometry args={[0.05, 8, 8]} />
+          <meshBasicMaterial color={Math.random() > 0.1 ? "#ef4444" : "#f59e0b"} toneMapped={false} />
+        </mesh>
       ))}
     </group>
   );
