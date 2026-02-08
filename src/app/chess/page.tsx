@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, Users, Mail, LogOut, Trophy, User as UserIcon, Crown } from 'lucide-react'; // Crown AÑADIDO
+import { ArrowLeft, Users, Mail, LogOut, Trophy, User as UserIcon, Crown, Shield } from 'lucide-react'; // Shield AÑADIDO
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
 import { supabaseAdmin } from '@/lib/db';
