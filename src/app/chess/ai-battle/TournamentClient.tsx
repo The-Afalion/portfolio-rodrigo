@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-// @ts-ignore - Usamos import por defecto para compatibilidad con chess.js v0.13
-import Chess from 'chess.js';
+import { Chess } from 'chess.js'; // Nueva importación estándar
 import { Chessboard } from 'react-chessboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, ChevronRight, Play } from 'lucide-react';
@@ -164,7 +163,8 @@ export default function TournamentClient({ tournament, leaderboard }: { tourname
       
       const timeoutId = setTimeout(() => {
         setGame(prevGame => {
-          const newGame = new Chess(prevGame.fen());
+          const newGame = new Chess();
+          newGame.loadPgn(prevGame.pgn());
           newGame.move(moves[i].move);
           return newGame;
         });

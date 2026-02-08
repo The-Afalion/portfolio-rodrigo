@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/db';
-import { Chess } from 'chess.js';
+import { Chess } from 'chess.js'; // Nueva importación estándar
 import { NextResponse } from 'next/server';
 
 // v4.0 - Final Version: Tournament logic only. Assumes AIs exist.
@@ -43,7 +43,8 @@ function getBestMove(game: Chess, personality: string, opponentPersonality: stri
       case 'FORTRESS': if (move.san === 'O-O' || move.san === 'O-O-O') score += 25; break;
       case 'PAWN_MASTER': if (move.piece === 'p') score += 8; break;
     }
-    const gameCopy = new Chess(game.fen());
+    const gameCopy = new Chess();
+    gameCopy.loadPgn(game.pgn());
     gameCopy.move(move.san);
     if (gameCopy.isCheck()) score += 25;
     if (gameCopy.isCheckmate()) score += 1000;

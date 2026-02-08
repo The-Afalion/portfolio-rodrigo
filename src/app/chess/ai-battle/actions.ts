@@ -2,9 +2,9 @@
 
 import { supabaseAdmin } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
-import { Chess } from 'chess.js';
+import { Chess } from 'chess.js'; // Nueva importación estándar
 
-// --- Lógica de Simulación (sin cambios) ---
+// --- Lógica de Simulación (copiada del antiguo cron job) ---
 const AI_PERSONALITIES: { [name: string]: string } = {
   "ByteBard": "PAWN_MASTER", "HexaMind": "AGGRESSIVE", "CodeCaster": "ADAPTIVE", 
   "NexoZero": "BALANCED", "QuantumLeap": "CHAOTIC", "SiliconSoul": "DEFENSIVE", 
@@ -12,6 +12,7 @@ const AI_PERSONALITIES: { [name: string]: string } = {
   "FluxAI": "REACTIONARY", "CygnusX1": "OPPORTUNIST", "ApexBot": "PRESSURER"
 };
 const OPENING_BOOK: any = { "e4": { "e5": { "Nf3": { "Nc6": {} } } }, "d4": { "d5": { "c4": { "e6": {} } } } };
+
 function getBestMove(game: Chess, personality: string, opponentPersonality: string, moveNumber: number) {
   if (personality === 'OPENING_BOOK' && moveNumber <= 4) {
     let bookMoves = OPENING_BOOK;
@@ -47,7 +48,8 @@ function getBestMove(game: Chess, personality: string, opponentPersonality: stri
       case 'FORTRESS': if (move.san === 'O-O' || move.san === 'O-O-O') score += 25; break;
       case 'PAWN_MASTER': if (move.piece === 'p') score += 8; break;
     }
-    const gameCopy = new Chess(game.fen());
+    const gameCopy = new Chess();
+    gameCopy.loadPgn(game.pgn());
     gameCopy.move(move.san);
     if (gameCopy.isCheck()) score += 25;
     if (gameCopy.isCheckmate()) score += 1000;
@@ -55,6 +57,7 @@ function getBestMove(game: Chess, personality: string, opponentPersonality: stri
   }
   return bestMove;
 }
+
 function simulateGame(p1: any, p2: any, startTime: Date) {
   const game = new Chess();
   const moves: { move: string, timestamp: string }[] = [];
@@ -72,6 +75,7 @@ function simulateGame(p1: any, p2: any, startTime: Date) {
   const winnerTurn = game.turn() === 'b' ? 'w' : 'b';
   return { winner: winnerTurn === 'w' ? 'p1' : 'p2', moves };
 }
+
 async function simulateRound(matches: any[], players: any[]) {
   const startTime = new Date();
   for (const match of matches) {
@@ -85,42 +89,22 @@ async function simulateRound(matches: any[], players: any[]) {
   }
 }
 
-// --- ACCIÓN DEL SERVIDOR (LÓGICA REVISADA) ---
+// --- ACCIÓN DEL SERVIDOR ---
 
 export async function startNewTournament() {
   try {
     // Finalizar cualquier torneo activo
     await supabaseAdmin.from('AITournament').update({ status: 'FINISHED', endedAt: new Date().toISOString() }).eq('status', 'ACTIVE');
 
-    // --- LÓGICA DE CREACIÓN REVISADA ---
-    // Paso 1: Insertar el nuevo torneo sin pedir que lo devuelva.
-    const { error: createTourneyError } = await supabaseAdmin
-      .from('AITournament')
-      .insert({ status: 'ACTIVE' });
-
-    if (createTourneyError) {
-      throw new Error(`Error directo en la inserción del torneo: ${createTourneyError.message}`);
-    }
-
-    // Paso 2: Si la inserción fue exitosa, buscar el torneo que acabamos de crear.
-    const { data: newTournament, error: fetchTourneyError } = await supabaseAdmin
-      .from('AITournament')
-      .select('id')
-      .eq('status', 'ACTIVE')
-      .order('createdAt', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (fetchTourneyError || !newTournament) {
-      throw new Error("Se insertó el torneo, pero no se pudo recuperar inmediatamente después.");
-    }
-    // --- FIN DE LA LÓGICA REVISADA ---
-
+    // Iniciar el nuevo torneo
     const { data: players } = await supabaseAdmin.from('ChessPlayer').select('id, personality').eq('isAI', true);
     if (!players || players.length < 8) throw new Error("No hay suficientes IAs en la base de datos.");
 
     const shuffled = players.sort(() => 0.5 - Math.random());
     const participants = shuffled.slice(0, 8);
+
+    const { data: newTournament, error: createTourneyError } = await supabaseAdmin.from('AITournament').insert({ status: 'ACTIVE' }).select('id').single();
+    if (createTourneyError || !newTournament) throw new Error("No se pudo crear el torneo.");
     
     const firstRoundMatches = [];
     for (let i = 0; i < 8; i += 2) {
