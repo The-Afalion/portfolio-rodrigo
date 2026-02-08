@@ -4,15 +4,14 @@ import { useRouter } from 'next/navigation';
 import { motion, useTransform, MotionValue } from "framer-motion";
 import { Terminal, Cpu, ChevronDown, Box } from "lucide-react";
 import Link from "next/link";
-// import FondoPlexo from "./FondoPlexo"; // Desactivado para usar el fondo global
 
 type PresentacionProps = {
   progresoScrollY: MotionValue<number>;
 };
 
-const TituloAnimado = ({ texto }: { texto: string }) => {
+const TituloAnimado = ({ texto, className }: { texto: string, className?: string }) => {
   return (
-    <span className="inline-block">
+    <span className={`inline-block ${className}`}>
       {texto.split("").map((caracter, i) => (
         <motion.span
           key={i}
@@ -60,31 +59,19 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
 
   return (
     <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-transparent text-foreground">
-      {/* Fondo desactivado
-      <motion.div 
-        className="absolute inset-0 z-0"
-        style={{ 
-          scale: useTransform(progresoScrollY, [0, 1], [1, 1.5]),
-          opacity: useTransform(progresoScrollY, [0, 0.8], [1, 0]),
-        }}
-      >
-        <FondoPlexo progresoScrollY={progresoScrollY} />
-      </motion.div>
-      */}
-      
       <div className="z-10 text-center">
         <motion.div style={{ opacity: opacidadElementosUI }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs font-mono mb-8 cursor-pointer"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono mb-8 cursor-pointer"
             onClick={handleAdminClick}
             title={`Admin clicks: ${clickCount}`}
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
             SISTEMA EN LÍNEA // v3.0
           </motion.div>
@@ -92,7 +79,7 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
 
         <motion.h1 
           style={{ y: yTitulo, scale: escalaTitulo, opacity: opacidadTitulo }}
-          className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 text-white"
+          className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 text-foreground"
         >
           <TituloAnimado texto="RODRIGO" />{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
@@ -105,12 +92,12 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1 }}
-            className="font-mono text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10"
+            className="font-mono text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10"
           >
             Ingeniero de Software. <br />
             Construyendo puentes entre{" "}
-            <span className="text-white font-bold">Sistemas de Precisión</span> y{" "}
-            <span className="text-white font-bold">Experiencias Inmersivas</span>.
+            <span className="text-foreground font-bold">Sistemas de Precisión</span> y{" "}
+            <span className="text-foreground font-bold">Experiencias Inmersivas</span>.
           </motion.p>
 
           <motion.div

@@ -20,12 +20,12 @@ export default function Home() {
 
   const [showPlexus, setShowPlexus] = useState(true);
 
-  // Ocultar el fondo 3D pesado cuando el usuario hace scroll hacia abajo
+  // Optimización: Desmontar completamente el componente 3D pesado cuando no es visible
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (latest > 0.1) {
-      setShowPlexus(false);
+    if (latest > 0.15) { // Un umbral un poco más generoso
+      showPlexus && setShowPlexus(false);
     } else {
-      setShowPlexus(true);
+      !showPlexus && setShowPlexus(true);
     }
   });
 
@@ -34,11 +34,11 @@ export default function Home() {
       
       {/* Gestión de Fondos Optimizada */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {showPlexus ? (
-          <FondoPlexo progresoScrollY={scrollYProgress} />
-        ) : (
-          <GridBackground />
-        )}
+        {/* El fondo 3D solo se renderiza si showPlexus es true */}
+        {showPlexus && <FondoPlexo progresoScrollY={scrollYProgress} />}
+        
+        {/* El fondo 2D ligero se muestra siempre, pero está debajo del 3D */}
+        <GridBackground />
       </div>
 
       <div className="relative z-10">

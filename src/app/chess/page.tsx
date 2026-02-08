@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, Users, Mail, LogOut, Trophy, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Users, Mail, LogOut, Trophy, User as UserIcon, Crown } from 'lucide-react'; // Crown AÑADIDO
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
 import { supabaseAdmin } from '@/lib/db';
+import { ChessPlayer } from '@prisma/client';
 
 // --- COMPONENTES DE UI ---
 
@@ -67,7 +68,7 @@ function IdentificationGate() {
     <div className="w-full max-w-md z-10">
       <div className="bg-background/60 backdrop-blur-xl border border-border shadow-2xl p-8 rounded-2xl">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 text-blue-400 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
             <UserIcon size={32} />
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-2">Identifícate</h1>
@@ -83,10 +84,10 @@ function IdentificationGate() {
               id="email"
               placeholder="tu@email.com"
               required
-              className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-mono text-center placeholder:text-muted-foreground/50"
+              className="w-full px-4 py-3 bg-secondary/50 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-mono text-center placeholder:text-muted-foreground/50"
             />
           </div>
-          <button type="submit" className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-500/20">
+          <button type="submit" className="w-full px-4 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
             Acceder
           </button>
         </form>
@@ -112,7 +113,6 @@ export default async function ChessHubPage() {
   const emailCookie = cookies().get('player-email');
   const email = emailCookie?.value;
 
-  // Si no hay cookie, mostrar el muro de identificación
   if (!email) {
     return (
       <main className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -127,14 +127,12 @@ export default async function ChessHubPage() {
     );
   }
 
-  // Obtener datos del usuario si está identificado
   let user = null;
   let stats = { gamesPlayed: 0, wins: 0, rank: 'Novato' };
   
-  if (email !== 'guest') {
+  if (email && email !== 'guest') {
     const { data } = await supabaseAdmin.from('ChessPlayer').select('*').eq('email', email).single();
     user = data;
-    // Aquí podríamos calcular estadísticas reales en el futuro
     if (user) {
       stats = { 
         gamesPlayed: user.winsTotal || 0, // Placeholder
@@ -154,13 +152,12 @@ export default async function ChessHubPage() {
     <main className="min-h-screen bg-background text-foreground p-6 md:p-12 relative overflow-hidden">
       <FondoAjedrez />
       
-      {/* Header */}
       <header className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div>
           <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-4">
             <ArrowLeft size={16} /> Volver al Portfolio
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
             Chess Hub
           </h1>
           <p className="text-muted-foreground mt-2 max-w-md">
@@ -179,7 +176,6 @@ export default async function ChessHubPage() {
         )}
       </header>
 
-      {/* Stats Grid (Solo si es usuario) */}
       {user && (
         <section className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
           <StatCard label="Partidas Jugadas" value={stats.gamesPlayed} icon={<Trophy size={20} />} />
@@ -188,21 +184,20 @@ export default async function ChessHubPage() {
         </section>
       )}
 
-      {/* Features Grid */}
       <section className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
         <FeatureCard 
           title="Ajedrez Comunitario" 
           description="Únete a la mente colmena. Vota el siguiente movimiento en una partida masiva contra el mundo. ¿Podrá la comunidad derrotar al caos?"
           href="/chess/community"
-          icon={<Users size={32} className="text-blue-400" />}
+          icon={<Users size={32} className="text-primary" />}
         />
         
         <FeatureCard 
           title="Ajedrez por Correspondencia" 
           description="Juega a tu propio ritmo. Desafía a otros usuarios, recibe notificaciones por email y analiza tus partidas con calma."
-          href="/chess/play-by-mail" // Próximo proyecto
+          href="/chess/play-by-mail"
           icon={<Mail size={32} className="text-purple-400" />}
-          active={false} // Desactivado por ahora
+          active={false}
         />
       </section>
 
