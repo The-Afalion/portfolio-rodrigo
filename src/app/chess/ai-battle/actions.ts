@@ -4,9 +4,9 @@ import { supabaseAdmin } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { Chess } from 'chess.js';
 
-// v2.5 - Fixing personality object bug
+// v2.6 - Defensive coding for AI personality logic
 
-// --- CONFIGURACIÓN DEL MOTOR OPTIMIZADA ---
+// --- CONFIGURACIÓN DEL MOTOR ---
 const SEARCH_DEPTH = 2;
 const PIECE_VALUES: { [key: string]: number } = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
 const AI_PERSONALITIES: { [name: string]: any } = {
@@ -17,22 +17,20 @@ const AI_PERSONALITIES: { [name: string]: any } = {
 };
 const OPENING_BOOK: any = { "e4": { "e5": { "Nf3": { "Nc6": {} } } }, "d4": { "d5": { "c4": { "e6": {} } } } };
 
-// --- NUEVO MOTOR MINIMAX ---
+// --- MOTOR MINIMAX ---
 
-function evaluateBoard(game: Chess, personality: any) {
+function evaluateBoard(game: Chess) {
   let score = 0;
   game.board().forEach(row => {
     row.forEach(piece => {
-      if (!piece) return;
-      const value = PIECE_VALUES[piece.type] * (piece.color === 'w' ? 1 : -1);
-      score += value * (piece.color === game.turn() ? personality.aggression : 1);
+      if (piece) score += PIECE_VALUES[piece.type] * (piece.color === 'w' ? 1 : -1);
     });
   });
   return score;
 }
 
 function minimax(game: Chess, depth: number, alpha: number, beta: number, maximizingPlayer: boolean) {
-  if (depth === 0 || game.isGameOver()) return evaluateBoard(game, { aggression: 1.0 }); // Usar personalidad neutral en la recursión
+  if (depth === 0 || game.isGameOver()) return evaluateBoard(game);
   const moves = game.moves();
   if (maximizingPlayer) {
     let maxEval = -Infinity;
@@ -60,6 +58,9 @@ function minimax(game: Chess, depth: number, alpha: number, beta: number, maximi
 }
 
 function getBestMove(game: Chess, personality: any, opponentPersonality: any, moveNumber: number) {
+  // Fallback de seguridad
+  if (!personality) personality = { type: 'BALANCED', aggression: 1.0 };
+
   if (personality.type === 'OPENING_BOOK' && moveNumber <= 4) { /* ... */ }
   if (personality.type === 'CHAOTIC' && Math.random() < 0.3) { /* ... */ }
 
@@ -67,9 +68,9 @@ function getBestMove(game: Chess, personality: any, opponentPersonality: any, mo
   let bestValue = -Infinity;
   const isMaximizing = game.turn() === 'w';
 
-  // CORRECCIÓN: Usar el 'type' del objeto de personalidad
+  // Lógica ADAPTIVE robusta
   let currentPersonalityType = personality.type;
-  if (personality.type === 'ADAPTIVE') {
+  if (personality.type === 'ADAPTIVE' && opponentPersonality) { // Comprobar que opponentPersonality existe
     const opponentType = opponentPersonality.type;
     if (opponentType === 'AGGRESSIVE' || opponentType === 'BERSERKER') currentPersonalityType = 'DEFENSIVE';
     else if (opponentType === 'DEFENSIVE' || opponentType === 'FORTRESS') currentPersonalityType = 'AGGRESSIVE';
@@ -81,8 +82,7 @@ function getBestMove(game: Chess, personality: any, opponentPersonality: any, mo
     game.undo();
     
     let finalValue = boardValue;
-    // Aplicar agresión basada en el tipo de personalidad actual
-    const aggression = AI_PERSONALITIES[Object.keys(AI_PERSONALITIES).find(k => AI_PERSONALITIES[k].type === currentPersonalityType) || 'NexoZero']?.aggression || 1.0;
+    const aggression = personality.aggression || 1.0;
     if (move.flags.includes('c')) finalValue *= aggression;
 
     if (isMaximizing) {
@@ -108,11 +108,12 @@ function simulateGame(p1: any, p2: any, startTime: Date) {
     const turn = game.turn();
     const currentPlayer = turn === 'w' ? p1 : p2;
     const opponentPlayer = turn === 'w' ? p2 : p1;
-    // Asegurarse de que los jugadores y sus nombres existen
     if (!currentPlayer?.name || !opponentPlayer?.name) continue;
+    
     const move = getBestMove(game, AI_PERSONALITIES[currentPlayer.name], AI_PERSONALITIES[opponentPlayer.name], moves.length);
-    if (!move) break; // Salir si no hay movimientos legales
+    if (!move) break;
     game.move(move);
+
     const timeIncrement = (5 + Math.random() * 10) * 1000;
     currentTime += timeIncrement;
     moves.push({ move: move, timestamp: new Date(currentTime).toISOString() });
