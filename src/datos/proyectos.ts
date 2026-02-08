@@ -2,8 +2,8 @@ export const PROYECTOS_CORE = [
   {
     id: 'nexus',
     title: 'NEXUS',
-    description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding, encriptación y distribución de datos entre nodos.',
-    tech: ['Next.js', 'Framer Motion', 'Algorithms', 'Sharding'],
+    description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding, encriptación y distribución.',
+    tech: ['Next.js', 'Framer Motion', 'Algorithms'],
     color: '#4ade80', // Verde Matrix
     position: [0, 0, 0] as [number, number, number],
     link: '/nexus'
@@ -11,8 +11,8 @@ export const PROYECTOS_CORE = [
   {
     id: 'slalom',
     title: 'Slalom Arch.',
-    description: 'Herramienta CAD para diseño de circuitos olímpicos. Editor vectorial interactivo con gestión de estado compleja y persistencia de datos.',
-    tech: ['SVG', 'React', 'Supabase', 'PostgreSQL'],
+    description: 'Herramienta CAD para diseño de circuitos. Editor vectorial interactivo con gestión de estado compleja.',
+    tech: ['SVG', 'React', 'Supabase'],
     color: '#3b82f6', // Azul Agua
     position: [5, 2, -5] as [number, number, number],
     link: '/slalom'
@@ -20,19 +20,46 @@ export const PROYECTOS_CORE = [
   {
     id: 'chess-engine',
     title: 'Chess AI',
-    description: 'Motor de ajedrez con personalidades múltiples basado en Stockfish/Lichess API. Arquitectura serverless con colas de mensajes.',
-    tech: ['QStash', 'Serverless', 'Chess.js', 'API Integration'],
+    description: 'Motor de ajedrez serverless con personalidades múltiples basado en Stockfish/Lichess API.',
+    tech: ['QStash', 'Serverless', 'Chess.js'],
     color: '#f59e0b', // Dorado
     position: [-5, -2, -10] as [number, number, number],
-    link: '/chess' // Enlazamos al Hub
+    link: '/chess'
   },
   {
-    id: 'portfolio',
-    title: 'Este Portfolio',
-    description: 'Meta-proyecto. Una experiencia inmersiva construida con las últimas tecnologías web, integrando 3D, tiempo real y diseño avanzado.',
-    tech: ['R3F', 'Three.js', 'TypeScript', 'Vercel'],
-    color: '#a855f7', // Púrpura
-    position: [3, -4, -15] as [number, number, number],
-    link: '/'
+    id: 'galton',
+    title: 'Galton Physics',
+    description: 'Simulación de físicas en tiempo real demostrando el Teorema del Límite Central (Campana de Gauss) con miles de colisiones.',
+    tech: ['Matter.js', 'Canvas API', 'Physics Engine'],
+    color: '#ef4444', // Rojo
+    position: [6, -4, 5] as [number, number, number],
+    link: '/physics'
+  },
+  {
+    id: 'algo-vis',
+    title: 'Algo Vision',
+    description: 'Visualizador interactivo de algoritmos de ordenamiento y búsqueda. Observa la lógica interna del código en acción.',
+    tech: ['React', 'Algorithms', 'Visualization'],
+    color: '#d946ef', // Magenta
+    position: [-6, 4, 5] as [number, number, number],
+    link: '/algorithms'
+  },
+  {
+    id: 'sonic',
+    title: 'Sonic Canvas',
+    description: 'Sintetizador visual experimental. Dibuja en el lienzo para generar frecuencias de audio en tiempo real.',
+    tech: ['Web Audio API', 'Canvas', 'DSP'],
+    color: '#06b6d4', // Cyan
+    position: [0, 6, -8] as [number, number, number],
+    link: '/sonic'
+  },
+  {
+    id: 'urban',
+    title: 'Urban Pulse',
+    description: 'Gemelo digital de una ciudad visualizando datos masivos de tráfico y energía en un entorno 3D.',
+    tech: ['Three.js', 'Data Viz', 'WebGL'],
+    color: '#8b5cf6', // Violeta
+    position: [0, -6, -8] as [number, number, number],
+    link: '/urban'
   }
 ];
