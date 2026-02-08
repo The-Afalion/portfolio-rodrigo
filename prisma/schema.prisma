@@ -63,18 +63,15 @@ model ChessPlayer {
   isAI         Boolean @default(false)
   profileIcon  String?
 
-  // Personalidad de la IA
-  personality  String? // e.g., "BERSERKER", "DEFENSIVE", "ADAPTIVE"
+  personality  String?
 
-  // Estadísticas del Torneo
   elo          Int @default(1200)
   winsDaily    Int @default(0)
   winsWeekly   Int @default(0)
   winsMonthly  Int @default(0)
   winsTotal    Int @default(0)
 
-  // Relaciones
-  assignedSide String? // Para Ajedrez Comunitario
+  assignedSide String?
   votes        CommunityVote[]
   matchesAsP1  AITournamentMatch[] @relation("Player1")
   matchesAsP2  AITournamentMatch[] @relation("Player2")
@@ -103,7 +100,7 @@ model CommunityVote {
 
 model AITournament {
   id        String   @id @default(cuid())
-  status    String   @default("PENDING") // PENDING, ACTIVE, FINISHED
+  status    String   @default("PENDING")
   createdAt DateTime @default(now())
   endedAt   DateTime?
 
@@ -113,8 +110,8 @@ model AITournament {
 
 model AITournamentMatch {
   id           String   @id @default(cuid())
-  round        Int // 1=Octavos, 2=Cuartos, 3=Semi, 4=Final
-  status       String   @default("PENDING") // PENDING, ACTIVE, FINISHED
+  round        Int
+  status       String   @default("PENDING")
 
   player1      ChessPlayer @relation("Player1", fields: [player1Id], references: [id])
   player1Id    String
@@ -124,8 +121,8 @@ model AITournamentMatch {
   winner       ChessPlayer? @relation("Winner", fields: [winnerId], references: [id])
   winnerId     String?
 
-  // Almacenará la partida completa en formato PGN o una lista de movimientos
   moves        Json?
+  lastMoveAt   DateTime? // Para controlar el ritmo de los movimientos
 
   tournament   AITournament @relation(fields: [tournamentId], references: [id])
   tournamentId String

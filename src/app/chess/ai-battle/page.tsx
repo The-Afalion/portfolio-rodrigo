@@ -2,14 +2,48 @@ import { supabaseAdmin } from '@/lib/db';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
-import ForceStartButton from './ForceStartButton';
+import TournamentClient from './TournamentClient';
 
 export const dynamic = 'force-dynamic';
 
-// Temporalmente, no renderizaremos el cliente para aislar el problema.
-// Solo mostraremos el botón de inicio.
+async function getInitialTournamentData() {
+  try {
+    const { data: tournament, error } = await supabaseAdmin
+      .from('AITournament')
+      .select(`
+        id,
+        status,
+        winner:winnerId ( name ),
+        matches:AITournamentMatch (
+          *,
+          player1:player1Id ( id, name, elo ),
+          player2:player2Id ( id, name, elo ),
+          winner:winnerId ( id, name )
+        )
+      `)
+      .order('createdAt', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw new Error(error.message);
+
+    const { data: leaderboard } = await supabaseAdmin
+      .from('ChessPlayer')
+      .select('name, elo, winsDaily, winsWeekly, winsMonthly, winsTotal')
+      .eq('isAI', true)
+      .order('elo', { ascending: false });
+
+    return { tournament, leaderboard: leaderboard || [] };
+
+  } catch (error: any) {
+    console.error("Error fetching initial tournament data:", error.message);
+    return { tournament: null, leaderboard: [] };
+  }
+}
 
 export default async function AiBattlePage() {
+  const { tournament, leaderboard } = await getInitialTournamentData();
+
   return (
     <main className="min-h-screen bg-background text-foreground p-4 sm:p-6 md:p-8 relative overflow-hidden">
       <FondoAjedrez />
@@ -28,11 +62,7 @@ export default async function AiBattlePage() {
       </div>
 
       <div className="max-w-7xl mx-auto z-10 relative">
-        <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg flex flex-col items-center">
-          <h2 className="text-2xl font-bold font-mono">Panel de Control del Torneo</h2>
-          <p className="text-muted-foreground mt-2">Usa este botón para iniciar un nuevo torneo y simular la primera ronda.</p>
-          <ForceStartButton />
-        </div>
+        <TournamentClient initialTournament={tournament} initialLeaderboard={leaderboard} />
       </div>
     </main>
   );
