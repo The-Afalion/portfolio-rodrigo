@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, Mail, Terminal, Eye, Rss } from "lucide-react";
+import { motion } from "framer-motion";
+import { Terminal, Eye, Rss, Mail } from "lucide-react";
 import Link from "next/link";
 import { usarContextoGlobal } from "@/context/ContextoGlobal";
+import ThemeToggle from "./ThemeToggle"; // Importamos el nuevo componente unificado
 
 const variantesElementoNav = {
   oculto: { y: -20, opacity: 0 },
@@ -31,7 +31,6 @@ function Logo() {
 }
 
 export default function BarraNavegacion() {
-  const { theme: tema, setTheme: setTema } = useTheme();
   const [haHechoScroll, setHaHechoScroll] = useState(false);
 
   useEffect(() => {
@@ -85,23 +84,8 @@ export default function BarraNavegacion() {
 
           <div className="h-6 w-px bg-border"></div>
 
-          <button
-            onClick={() => setTema(tema === "dark" ? "light" : "dark")}
-            className="p-2 rounded-full hover:bg-accent transition-colors relative overflow-hidden"
-            aria-label="Cambiar tema"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={tema}
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 20, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {tema === "dark" ? <Moon size={20} /> : <Sun size={20} />}
-              </motion.div>
-            </AnimatePresence>
-          </button>
+          {/* Botón de tema unificado */}
+          <ThemeToggle />
         </motion.div>
       </div>
     </motion.nav>

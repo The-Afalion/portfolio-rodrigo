@@ -18,26 +18,20 @@ export default function Home() {
   });
 
   return (
-    <main ref={refContenedor} className="min-h-screen bg-transparent text-white selection:bg-white selection:text-black overflow-x-hidden">
+    // El color de fondo y texto principal ahora viene de las variables de tema
+    <main ref={refContenedor} className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden">
       
-      {/* Fondo Global Interactivo (Plexo / Network) */}
       <BackgroundManager progresoScrollY={progresoScrollY} />
 
-      {/* Hero Section */}
+      {/* El resto de los componentes usarán las clases de Tailwind que heredan los colores */}
       <Presentacion progresoScrollY={progresoScrollY} />
-
-      {/* Secciones de Contenido */}
       <SobreMi />
       <Trayectoria />
       <Proyectos />
-
-      {/* Nueva Sección de Laboratorios (Las Dos Puertas) */}
       <LaboratoriosSection />
-
-      {/* Boletín y Footer */}
       <SeccionBoletin />
       
-      <footer className="relative z-10 py-8 text-center text-neutral-600 text-xs font-mono border-t border-white/5 bg-black/50 backdrop-blur-sm">
+      <footer className="relative z-10 py-8 text-center text-muted-foreground text-xs font-mono border-t bg-background/50 backdrop-blur-sm">
         © {new Date().getFullYear()} Rodrigo Alonso. Built with Next.js 14, R3F & Supabase.
       </footer>
     </main>
