@@ -1,19 +1,13 @@
-import { DATOS_PROYECTOS } from "@/datos/proyectos";
-import { notFound } from "next/navigation";
-import Modal from "./modal"; // Componente base del modal
-import DetalleProyecto from "@/components/DetalleProyecto"; // Componente con el contenido
+import { notFound } from 'next/navigation';
+import { PROYECTOS_CORE as DATOS_PROYECTOS } from '@/datos/proyectos'; // Corregido para usar el alias
+import DetalleProyecto from '@/components/DetalleProyecto';
 
-export default function ProyectoModal({ params }: { params: { slug: string } }) {
-  const { slug } = params;
-  const proyecto = DATOS_PROYECTOS.find((p) => p.slug === slug);
+export default function ModalProyecto({ params }: { params: { slug: string } }) {
+  const proyecto = DATOS_PROYECTOS.find(p => p.id === params.slug);
 
   if (!proyecto) {
     notFound();
   }
 
-  return (
-    <Modal>
-      <DetalleProyecto proyecto={proyecto} />
-    </Modal>
-  );
+  return <DetalleProyecto proyecto={proyecto} />;
 }
