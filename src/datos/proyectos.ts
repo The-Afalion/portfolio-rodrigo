@@ -61,14 +61,5 @@ export const PROYECTOS_CORE = [
     color: '#8b5cf6', // Violeta
     position: [0, -6, -8] as [number, number, number],
     link: '/urban'
-  },
-  {
-    id: 'vector-assault',
-    title: 'Vector Assault',
-    description: 'Shooter arcade 3D con estética "wireframe". Demostración de interacciones en tiempo real, colisiones y gestión de estado en Three.js.',
-    tech: ['R3F', 'Game Logic', 'State Management'],
-    color: '#ec4899', // Rosa Neón
-    position: [8, 0, -12] as [number, number, number],
-    link: '/vector-assault'
   }
 ];
