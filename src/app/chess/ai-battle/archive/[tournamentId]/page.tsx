@@ -2,9 +2,9 @@ import { supabaseAdmin } from '@/lib/db';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import FondoAjedrez from '@/components/FondoAjedrez';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic'; // Renombrado para evitar conflicto
 
-const ArchiveClient = dynamic(() => import('./ArchiveClient'), {
+const ArchiveClient = dynamicImport(() => import('./ArchiveClient'), {
   ssr: false,
   loading: () => <div className="text-center font-mono animate-pulse">Cargando Archivo...</div>,
 });
