@@ -1,40 +1,35 @@
 "use client";
 import { useMemo, useRef, useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { MotionValue, useTransform } from "framer-motion";
 import * as THREE from "three";
 
 const cantidadParticulasTotal = 500;
 
-function Particulas({ progresoScrollY }: { progresoScrollY: MotionValue<number> }) {
+function Particulas() {
   const refMalla = useRef<THREE.InstancedMesh>(null!);
   const objetoTemporal = useMemo(() => new THREE.Object3D(), []);
   const posRaton = useRef(new THREE.Vector2(0, 0));
   const [particleColor, setParticleColor] = useState("#3b82f6");
-  const [particleCount, setParticleCount] = useState(10); // Empezar con pocas partículas
 
-  // Carga progresiva de partículas
+  // Carga progresiva para evitar el tirón inicial
+  const [particleCount, setParticleCount] = useState(10);
   useEffect(() => {
     let count = 10;
     const interval = setInterval(() => {
-      count += 50; // Añadir en lotes
-      if (count >= cantidadParticulasTotal) {
-        setParticleCount(cantidadParticulasTotal);
-        clearInterval(interval);
-      } else {
-        setParticleCount(count);
-      }
-    }, 50); // Cada 50ms
+      count = Math.min(count + 50, cantidadParticulasTotal);
+      setParticleCount(count);
+      if (count === cantidadParticulasTotal) clearInterval(interval);
+    }, 50);
     return () => clearInterval(interval);
   }, []);
 
+  // Adaptación al tema claro/oscuro
   useEffect(() => {
     const updateColor = () => {
       const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-      setParticleColor(theme === 'dark' ? '#3b82f6' : '#475569'); // Azul en oscuro, gris-azulado en claro
+      setParticleColor(theme === 'dark' ? '#3b82f6' : '#475569');
     };
     updateColor();
-    // Escuchar cambios de tema
     const observer = new MutationObserver(updateColor);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
@@ -54,14 +49,17 @@ function Particulas({ progresoScrollY }: { progresoScrollY: MotionValue<number> 
     return temp;
   }, []);
 
-  const rotacionY = useTransform(progresoScrollY, [0, 1], [0, Math.PI]);
-
-  useFrame((estado) => {
+  useFrame((estado, delta) => {
+    if (!refMalla.current) return;
+    
     posRaton.current.lerp(estado.mouse, 0.05);
-    refMalla.current.rotation.y = rotacionY.get();
+    
+    // Animación constante y desacoplada del scroll
+    refMalla.current.rotation.y += delta * 0.05;
+    refMalla.current.rotation.x += delta * 0.02;
 
     particulas.forEach((particula, i) => {
-      if (i >= particleCount) return; // No procesar partículas que aún no se han añadido
+      if (i >= particleCount) return;
 
       let { t, factor, velocidad, x, y, z } = particula;
       t = particula.t += velocidad / 2;
@@ -85,7 +83,7 @@ function Particulas({ progresoScrollY }: { progresoScrollY: MotionValue<number> 
       objetoTemporal.updateMatrix();
       refMalla.current.setMatrixAt(i, objetoTemporal.matrix);
     });
-    refMalla.current.count = particleCount; // Actualizar el número de instancias a renderizar
+    refMalla.current.count = particleCount;
     refMalla.current.instanceMatrix.needsUpdate = true;
   });
 
@@ -97,14 +95,14 @@ function Particulas({ progresoScrollY }: { progresoScrollY: MotionValue<number> 
   );
 }
 
-export default function FondoPlexo({ progresoScrollY }: { progresoScrollY: MotionValue<number> }) {
+export default function FondoPlexo() {
   return (
     <div className="fixed inset-0 z-0 pointer-events-none bg-background">
       <Canvas camera={{ position: [0, 0, 10] }}>
-        <fog attach="fog" args={['#0a0f19', 15, 25]} />
+        <fog attach="fog" args={['#000000', 15, 25]} />
         <ambientLight intensity={0.2} />
         <pointLight position={[10, 10, 10]} intensity={0.5} />
-        <Particulas progresoScrollY={progresoScrollY} />
+        <Particulas />
       </Canvas>
     </div>
   );

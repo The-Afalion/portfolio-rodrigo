@@ -51,6 +51,7 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
     }
   };
 
+  // Las animaciones del contenido siguen vinculadas al scroll para el efecto de fade-out
   const yTitulo = useTransform(progresoScrollY, [0, 0.5], ["0%", "-50%"]);
   const escalaTitulo = useTransform(progresoScrollY, [0, 0.5], [1, 0.8]);
   const opacidadTitulo = useTransform(progresoScrollY, [0, 0.4, 0.5], [1, 1, 0]);
