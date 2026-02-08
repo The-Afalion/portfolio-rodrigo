@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, Users, Mail, LogOut, Trophy, User as UserIcon, Crown, Shield } from 'lucide-react'; // Shield AÑADIDO
+import { ArrowLeft, Users, Mail, LogOut, Trophy, User as UserIcon, Crown, Shield, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
 import { supabaseAdmin } from '@/lib/db';
@@ -127,15 +127,16 @@ export default async function ChessHubPage() {
     );
   }
 
+  const isGuest = email === 'guest';
   let user = null;
   let stats = { gamesPlayed: 0, wins: 0, rank: 'Novato' };
   
-  if (email && email !== 'guest') {
+  if (!isGuest) {
     const { data } = await supabaseAdmin.from('ChessPlayer').select('*').eq('email', email).single();
     user = data;
     if (user) {
       stats = { 
-        gamesPlayed: user.winsTotal || 0, // Placeholder
+        gamesPlayed: user.winsTotal || 0,
         wins: user.winsTotal || 0, 
         rank: (user.elo || 1200) > 1500 ? 'Maestro' : 'Aficionado' 
       };
@@ -161,19 +162,23 @@ export default async function ChessHubPage() {
             Chess Hub
           </h1>
           <p className="text-muted-foreground mt-2 max-w-md">
-            {user ? `Bienvenido de nuevo, ${user.name}. Tu centro de mando estratégico.` : 'Bienvenido, Invitado. Explora el universo del ajedrez.'}
+            {user ? `Bienvenido de nuevo, ${user.name}.` : 'Bienvenido, Invitado.'}
           </p>
         </div>
 
-        {user && (
-          <div className="flex items-center gap-4">
-            <form action={logout}>
+        <div className="flex items-center gap-4">
+          <form action={logout}>
+            {isGuest ? (
+              <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-border/50 bg-secondary/20 hover:bg-green-500/10 hover:text-green-400 hover:border-green-500/30 transition-all text-sm font-medium">
+                <LogIn size={14} /> Identificarse
+              </button>
+            ) : (
               <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-border/50 bg-secondary/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all text-sm font-medium">
                 <LogOut size={14} /> Cerrar Sesión
               </button>
-            </form>
-          </div>
-        )}
+            )}
+          </form>
+        </div>
       </header>
 
       {user && (
@@ -187,14 +192,14 @@ export default async function ChessHubPage() {
       <section className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
         <FeatureCard 
           title="Ajedrez Comunitario" 
-          description="Únete a la mente colmena. Vota el siguiente movimiento en una partida masiva contra el mundo. ¿Podrá la comunidad derrotar al caos?"
+          description="Únete a la mente colmena. Vota el siguiente movimiento en una partida masiva contra el mundo."
           href="/chess/community"
           icon={<Users size={32} className="text-primary" />}
         />
         
         <FeatureCard 
           title="Ajedrez por Correspondencia" 
-          description="Juega a tu propio ritmo. Desafía a otros usuarios, recibe notificaciones por email y analiza tus partidas con calma."
+          description="Juega a tu propio ritmo. Desafía a otros usuarios y recibe notificaciones por email."
           href="/chess/play-by-mail"
           icon={<Mail size={32} className="text-purple-400" />}
           active={false}
