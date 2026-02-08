@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { motion, useTransform, MotionValue } from "framer-motion";
 import { Terminal, Cpu, ChevronDown, Box } from "lucide-react";
 import Link from "next/link";
-import FondoPlexo from "./FondoPlexo";
+// import FondoPlexo from "./FondoPlexo"; // Desactivado para usar el fondo global
 
 type PresentacionProps = {
   progresoScrollY: MotionValue<number>;
@@ -59,7 +59,8 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
   const opacidadElementosUI = useTransform(progresoScrollY, [0, 0.05], [1, 0]);
 
   return (
-    <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-background text-foreground">
+    <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-transparent text-foreground">
+      {/* Fondo desactivado
       <motion.div 
         className="absolute inset-0 z-0"
         style={{ 
@@ -69,6 +70,7 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
       >
         <FondoPlexo progresoScrollY={progresoScrollY} />
       </motion.div>
+      */}
       
       <div className="z-10 text-center">
         <motion.div style={{ opacity: opacidadElementosUI }}>
@@ -90,7 +92,7 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
 
         <motion.h1 
           style={{ y: yTitulo, scale: escalaTitulo, opacity: opacidadTitulo }}
-          className="text-6xl md:text-8xl font-bold tracking-tighter mb-6"
+          className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 text-white"
         >
           <TituloAnimado texto="RODRIGO" />{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
@@ -103,12 +105,12 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1 }}
-            className="font-mono text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10"
+            className="font-mono text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10"
           >
             Ingeniero de Software. <br />
             Construyendo puentes entre{" "}
-            <span className="text-foreground font-bold">Sistemas de Precisión</span> y{" "}
-            <span className="text-foreground font-bold">Experiencias Inmersivas</span>.
+            <span className="text-white font-bold">Sistemas de Precisión</span> y{" "}
+            <span className="text-white font-bold">Experiencias Inmersivas</span>.
           </motion.p>
 
           <motion.div
@@ -118,8 +120,8 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
             className="flex flex-wrap justify-center gap-4"
           >
             <BotonAnimado href="#proyectos" icono={Terminal} texto="VER PROYECTOS" />
-            <BotonAnimado href="/modelos" icono={Box} texto="MODELOS 3D" />
-            <BotonAnimado href="#chess-hub" icono={Cpu} texto="LABS IA" />
+            <BotonAnimado href="/engineering" icono={Box} texto="ENGINEERING CORE" />
+            <BotonAnimado href="/chess" icono={Cpu} texto="CHESS HUB" />
           </motion.div>
         </motion.div>
       </div>
