@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Terminal, Eye, Rss, Mail } from "lucide-react";
 import Link from "next/link";
 import { usarContextoGlobal } from "@/context/ContextoGlobal";
-import ThemeToggle from "./ThemeToggle"; // Importamos el nuevo componente unificado
+import VisualControls from "./VisualControls"; // Importamos el control unificado
 
 const variantesElementoNav = {
   oculto: { y: -20, opacity: 0 },
@@ -13,19 +13,18 @@ const variantesElementoNav = {
 
 function Logo() {
   const { logoCambiado1984 } = usarContextoGlobal();
-
   return (
-    <span className="font-mono font-bold text-lg tracking-tight hidden sm:flex items-center">
+    <span className="font-mono font-bold text-lg tracking-tight hidden sm:flex items-center text-foreground">
       <span>r</span>
       {logoCambiado1984 ? (
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 }}>
-          <Eye size={18} className="text-green-500 mx-px" />
+          <Eye size={18} className="text-primary mx-px" />
         </motion.div>
       ) : (
         <span>o</span>
       )}
       <span>do</span>
-      <span className="text-blue-500">codes</span>
+      <span className="text-primary">codes</span>
     </span>
   );
 }
@@ -82,10 +81,10 @@ export default function BarraNavegacion() {
             <span>Contáctame</span>
           </a>
 
-          <div className="h-6 w-px bg-border"></div>
+          <div className="h-6 w-px bg-border hidden sm:block"></div>
 
-          {/* Botón de tema unificado */}
-          <ThemeToggle />
+          {/* Controles Visuales Unificados */}
+          <VisualControls />
         </motion.div>
       </div>
     </motion.nav>

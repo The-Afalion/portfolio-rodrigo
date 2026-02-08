@@ -4,38 +4,30 @@
 
 @layer base {
   :root {
-    /* Paleta Modo Claro Profesional */
-    --background: 240 10% 100%; /* Blanco puro */
-    --foreground: 240 6% 10%;   /* Negro suave */
-
-    --card: 240 10% 100%;
+    /* MODO CLARO: Alto contraste, profesional */
+    --background: 240 10% 100%; /* Blanco */
+    --foreground: 240 6% 10%;   /* Negro Suave */
+    --card: 240 5% 98%;
     --card-foreground: 240 6% 10%;
-
     --popover: 240 10% 100%;
     --popover-foreground: 240 6% 10%;
-
-    --primary: 221 83% 53%; /* Azul primario */
+    --primary: 221 83% 53%; /* Azul Intenso */
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 240 5% 96%; /* Gris muy claro */
+    --secondary: 240 5% 96%;
     --secondary-foreground: 240 6% 10%;
-
     --muted: 240 5% 90%;
     --muted-foreground: 240 4% 46%;
-
     --accent: 240 5% 96%;
     --accent-foreground: 240 6% 10%;
-
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 221 83% 53%;
-
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Paleta Modo Oscuro Original */
-    --background: 222 84% 4.9%;
+    /* MODO OSCURO: Negro puro para el fondo, como pediste */
+    --background: 0 0% 0%; /* Negro Puro */
     --foreground: 210 40% 98%;
     --card: 222 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -56,22 +48,11 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  html {
-    scroll-behavior: smooth;
-  }
-  body {
-    @apply bg-background text-foreground antialiased;
-  }
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-background text-foreground antialiased; }
 }
 
-/* --- Scrollbar Personalizada --- */
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: hsl(var(--background)); }
-::-webkit-scrollbar-thumb { background-color: hsl(var(--muted-foreground) / 0.3); border: 2px solid hsl(var(--background)); }
-::-webkit-scrollbar-thumb:hover { background-color: hsl(var(--primary)); }
-
-/* --- Selección de Texto --- */
-::selection { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+::selection {
+  @apply bg-primary text-primary-foreground;
+}
