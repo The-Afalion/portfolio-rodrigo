@@ -62,22 +62,17 @@ model ChessPlayer {
   name         String
   isAI         Boolean @default(false)
   profileIcon  String?
-
   personality  String?
-
   elo          Int @default(1200)
   winsDaily    Int @default(0)
   winsWeekly   Int @default(0)
   winsMonthly  Int @default(0)
   winsTotal    Int @default(0)
-
   assignedSide String?
   votes        CommunityVote[]
   matchesAsP1  AITournamentMatch[] @relation("Player1")
   matchesAsP2  AITournamentMatch[] @relation("Player2")
   wonMatches   AITournamentMatch[] @relation("Winner")
-
-  // Partidas por correspondencia
   correspondenceGamesAsP1 CorrespondenceGame[] @relation("Player1")
   correspondenceGamesAsP2 CorrespondenceGame[] @relation("Player2")
 }
@@ -95,7 +90,6 @@ model CommunityVote {
   move      String
   isFake    Boolean  @default(false)
   createdAt DateTime @default(now())
-
   player    ChessPlayer @relation(fields: [playerId], references: [id])
   playerId  String
   game      CommunityChessGame @relation(fields: [gameId], references: [id])
@@ -107,7 +101,6 @@ model AITournament {
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
   endedAt   DateTime?
-
   winnerId  String?
   matches   AITournamentMatch[]
 }
@@ -116,36 +109,47 @@ model AITournamentMatch {
   id           String   @id @default(cuid())
   round        Int
   status       String   @default("PENDING")
-
   player1      ChessPlayer @relation("Player1", fields: [player1Id], references: [id])
   player1Id    String
   player2      ChessPlayer @relation("Player2", fields: [player2Id], references: [id])
   player2Id    String
-
   winner       ChessPlayer? @relation("Winner", fields: [winnerId], references: [id])
   winnerId     String?
-
   moves        Json?
   lastMoveAt   DateTime?
-
   tournament   AITournament @relation(fields: [tournamentId], references: [id])
   tournamentId String
 }
 
-// Partida por correspondencia entre dos humanos
 model CorrespondenceGame {
   id        String   @id @default(cuid())
   fen       String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-  status    String   // WAITING_FOR_OPPONENT, ACTIVE, FINISHED
-  turn      String   @default("w") // 'w' o 'b'
-
+  status    String
+  turn      String   @default("w")
   player1    ChessPlayer @relation("Player1", fields: [player1Id], references: [id])
   player1Id  String
   player2    ChessPlayer? @relation("Player2", fields: [player2Id], references: [id])
   player2Id  String?
-
   winnerId  String?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// --- MODELOS DE SLALOM ARCHITECT ---
+
+model SlalomCourse {
+  id          String   @id @default(cuid())
+  name        String
+  authorName  String   @default("Anónimo") // Nombre para mostrar (puede ser invitado)
+  layout      Json     // Array de puertas: [{x, y, rotation, type, number}]
+  createdAt   DateTime @default(now())
+  votes       SlalomVote[]
+}
+
+model SlalomVote {
+  id        String   @id @default(cuid())
+  type      String   // 'TECHNICAL', 'PHYSICAL', 'FUN'
+  course    SlalomCourse @relation(fields: [courseId], references: [id])
+  courseId  String
+  createdAt DateTime @default(now())
 }

@@ -2,8 +2,7 @@ import { supabaseAdmin } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { Client } from '@upstash/qstash';
 
-// v7.0 - QStash Architecture: Hourly Tournament Setup
-
+// v7.1 - Forcing redeploy after regenerating service key
 const qstashClient = new Client({
   token: process.env.QSTASH_TOKEN!,
 });
@@ -25,8 +24,11 @@ export async function GET(request: Request) {
     const shuffled = players.sort(() => 0.5 - Math.random());
     const participants = shuffled.slice(0, 8);
 
-    const { data: newTournament } = await supabaseAdmin.from('AITournament').insert({ status: 'PENDING' }).select('id').single();
-    if (!newTournament) throw new Error("No se pudo crear el nuevo torneo.");
+    const { data: newTournament, error: createTourneyError } = await supabaseAdmin.from('AITournament').insert({ status: 'PENDING' }).select('id').single();
+    if (createTourneyError || !newTournament) {
+      throw new Error(`No se pudo crear el nuevo torneo: ${createTourneyError?.message}`);
+    }
+    console.log(`Nuevo torneo ${newTournament.id} creado.`);
 
     const firstRoundMatches = [];
     for (let i = 0; i < 8; i += 2) {
@@ -41,7 +43,6 @@ export async function GET(request: Request) {
     await supabaseAdmin.from('AITournamentMatch').insert(firstRoundMatches);
     console.log("Partidas de la primera ronda creadas.");
 
-    // Iniciar la cadena de QStash enviando el primer mensaje
     const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
     await qstashClient.publishJSON({
       url: `${baseUrl}/api/make-move`,
