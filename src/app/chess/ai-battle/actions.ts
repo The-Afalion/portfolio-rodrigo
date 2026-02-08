@@ -4,11 +4,13 @@ import { supabaseAdmin } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { Chess } from 'chess.js';
 
-// v2.2 - Adding logs to debug simulation hang
+// v2.3 - Optimizing AI Engine for Serverless environment
 
-// --- CONFIGURACIÓN DEL MOTOR ---
-const SEARCH_DEPTH = 3;
+// --- CONFIGURACIÓN DEL MOTOR OPTIMIZADA ---
+const SEARCH_DEPTH = 2; // REDUCIDO: De 3 a 2. El cambio más importante.
+
 const PIECE_VALUES: { [key: string]: number } = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
+
 const AI_PERSONALITIES: { [name: string]: any } = {
   "ByteBard": { type: "PAWN_MASTER", aggression: 1.0 }, "HexaMind": { type: "AGGRESSIVE", aggression: 1.5 }, "CodeCaster": { type: "ADAPTIVE", aggression: 1.0 }, 
   "NexoZero": { type: "BALANCED", aggression: 1.0 }, "QuantumLeap": { type: "CHAOTIC", aggression: 1.2 }, "SiliconSoul": { type: "DEFENSIVE", aggression: 0.8 }, 
@@ -17,28 +19,27 @@ const AI_PERSONALITIES: { [name: string]: any } = {
 };
 const OPENING_BOOK: any = { "e4": { "e5": { "Nf3": { "Nc6": {} } } }, "d4": { "d5": { "c4": { "e6": {} } } } };
 
-// --- NUEVO MOTOR MINIMAX ---
+// --- MOTOR MINIMAX OPTIMIZADO ---
 
-function evaluateBoard(game: Chess, personality: any) {
+function evaluateBoard(game: Chess) {
   let score = 0;
   game.board().forEach(row => {
     row.forEach(piece => {
       if (!piece) return;
-      const value = PIECE_VALUES[piece.type] * (piece.color === 'w' ? 1 : -1);
-      score += value * (piece.color === game.turn() ? personality.aggression : 1);
+      score += PIECE_VALUES[piece.type] * (piece.color === 'w' ? 1 : -1);
     });
   });
   return score;
 }
 
-function minimax(game: Chess, depth: number, alpha: number, beta: number, maximizingPlayer: boolean, personality: any) {
-  if (depth === 0 || game.isGameOver()) return evaluateBoard(game, personality);
+function minimax(game: Chess, depth: number, alpha: number, beta: number, maximizingPlayer: boolean) {
+  if (depth === 0 || game.isGameOver()) return evaluateBoard(game);
   const moves = game.moves();
   if (maximizingPlayer) {
     let maxEval = -Infinity;
     for (const move of moves) {
       game.move(move);
-      const evaluation = minimax(game, depth - 1, alpha, beta, false, personality);
+      const evaluation = minimax(game, depth - 1, alpha, beta, false);
       game.undo();
       maxEval = Math.max(maxEval, evaluation);
       alpha = Math.max(alpha, evaluation);
@@ -49,7 +50,7 @@ function minimax(game: Chess, depth: number, alpha: number, beta: number, maximi
     let minEval = Infinity;
     for (const move of moves) {
       game.move(move);
-      const evaluation = minimax(game, depth - 1, alpha, beta, true, personality);
+      const evaluation = minimax(game, depth - 1, alpha, beta, true);
       game.undo();
       minEval = Math.min(minEval, evaluation);
       beta = Math.min(beta, evaluation);
@@ -60,6 +61,7 @@ function minimax(game: Chess, depth: number, alpha: number, beta: number, maximi
 }
 
 function getBestMove(game: Chess, personality: any, opponentPersonality: any, moveNumber: number) {
+  // Lógicas especiales se mantienen
   if (personality.type === 'OPENING_BOOK' && moveNumber <= 4) { /* ... */ }
   if (personality.type === 'CHAOTIC' && Math.random() < 0.3) { /* ... */ }
 
@@ -69,17 +71,21 @@ function getBestMove(game: Chess, personality: any, opponentPersonality: any, mo
 
   for (const move of game.moves()) {
     game.move(move);
-    const boardValue = minimax(game, SEARCH_DEPTH - 1, -Infinity, Infinity, !isMaximizing, personality);
+    // La personalidad ahora solo afecta a la evaluación final, no a todo el árbol
+    const boardValue = minimax(game, SEARCH_DEPTH - 1, -Infinity, Infinity, !isMaximizing);
     game.undo();
     
+    let finalValue = boardValue;
+    if (move.flags.includes('c')) finalValue *= personality.aggression;
+
     if (isMaximizing) {
-      if (boardValue > bestValue) {
-        bestValue = boardValue;
+      if (finalValue > bestValue) {
+        bestValue = finalValue;
         bestMove = move;
       }
     } else {
-      if (bestMove === null || boardValue < bestValue) {
-        bestValue = boardValue;
+      if (bestMove === null || finalValue < bestValue) {
+        bestValue = finalValue;
         bestMove = move;
       }
     }
@@ -108,7 +114,6 @@ function simulateGame(p1: any, p2: any, startTime: Date) {
 async function simulateRound(matches: any[], players: any[]) {
   const startTime = new Date();
   for (const match of matches) {
-    console.log(`Simulando partida: ${match.id}`);
     if (!match || !match.player1Id || !match.player2Id) continue;
     const player1 = players.find(p => p.id === match.player1Id);
     const player2 = players.find(p => p.id === match.player2Id);
@@ -116,42 +121,35 @@ async function simulateRound(matches: any[], players: any[]) {
     const { winner, moves } = simulateGame(player1, player2, startTime);
     const winnerId = winner === 'p1' ? match.player1Id : match.player2Id;
     await supabaseAdmin.from('AITournamentMatch').update({ status: 'ACTIVE', winnerId, moves }).eq('id', match.id);
-    console.log(`Partida ${match.id} simulada y guardada.`);
   }
 }
 
-// --- ACCIÓN DEL SERVIDOR CON LOGS ---
+// --- ACCIÓN DEL SERVIDOR ---
 
 export async function startNewTournament() {
-  console.log("1. Iniciando 'startNewTournament'.");
   try {
-    console.log("2. Finalizando torneos antiguos...");
     await supabaseAdmin.from('AITournament').update({ status: 'FINISHED', endedAt: new Date().toISOString() }).eq('status', 'ACTIVE');
-    console.log("3. Obteniendo jugadores IA...");
     const { data: players } = await supabaseAdmin.from('ChessPlayer').select('id, name').eq('isAI', true);
-    if (!players || players.length < 8) throw new Error("No hay suficientes IAs.");
-    console.log("4. Creando nuevo torneo...");
-    const { data: newTournament } = await supabaseAdmin.from('AITournament').insert({ status: 'ACTIVE' }).select('id').single();
-    if (!newTournament) throw new Error("No se pudo crear el torneo.");
-    console.log(`5. Torneo ${newTournament.id} creado.`);
+    if (!players || players.length < 8) throw new Error("No hay suficientes IAs en la base de datos.");
     const shuffled = players.sort(() => 0.5 - Math.random());
     const participants = shuffled.slice(0, 8);
+    const { data: newTournament } = await supabaseAdmin.from('AITournament').insert({ status: 'ACTIVE' }).select('id').single();
+    if (!newTournament) throw new Error("No se pudo crear el torneo.");
     const firstRoundMatches = [];
     for (let i = 0; i < 8; i += 2) {
       firstRoundMatches.push({ tournamentId: newTournament.id, round: 1, player1Id: participants[i].id, player2Id: participants[i + 1].id });
     }
-    console.log("6. Creando partidas de la primera ronda...");
     const { data: insertedMatches } = await supabaseAdmin.from('AITournamentMatch').insert(firstRoundMatches).select();
     if (!insertedMatches) throw new Error("No se pudieron crear las partidas.");
-    console.log("7. Partidas creadas. Empezando simulación...");
     
-    await simulateRound(insertedMatches, players);
+    // No simulamos aquí por ahora para probar el flujo
+    // await simulateRound(insertedMatches, players);
     
-    console.log("8. Simulación completada.");
     revalidatePath('/chess/ai-battle');
-    return { success: `Nuevo torneo ${newTournament.id} iniciado.` };
+    return { success: `Nuevo torneo ${newTournament.id} creado. Partidas pendientes de simulación.` };
+
   } catch (error: any) {
-    console.error("Error en 'startNewTournament':", error.message);
+    console.error("Error al forzar el inicio del torneo:", error.message);
     return { error: error.message };
   }
 }
