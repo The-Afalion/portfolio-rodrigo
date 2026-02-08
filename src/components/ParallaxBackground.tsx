@@ -15,45 +15,41 @@ export default function ParallaxBackground() {
     let height = window.innerHeight;
     
     // Configuración
-    const particleCount = 100; // Cantidad de partículas
-    const connectionDistance = 150; // Distancia para conectar líneas
-    const moveSpeed = 0.5; // Velocidad de movimiento constante
+    const starCount = 200;
+    const speedMultiplier = 0.5; // Velocidad global
 
-    // Estado del ratón (para interacción sutil)
-    const mouse = { x: -1000, y: -1000 };
-
-    class Particle {
+    class Star {
       x: number;
       y: number;
-      vx: number;
-      vy: number;
+      z: number; // Profundidad (0 = lejos, 1 = cerca)
       size: number;
+      speed: number;
+      color: string;
 
       constructor() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * moveSpeed;
-        this.vy = (Math.random() - 0.5) * moveSpeed;
-        this.size = Math.random() * 2 + 1;
+        this.z = Math.random();
+        this.size = this.z * 2; // Más cerca = más grande
+        this.speed = (this.z + 0.1) * 3 * speedMultiplier; // Más cerca = más rápido
+        
+        // Paleta de azules y cyanes
+        const colors = ['#60a5fa', '#3b82f6', '#22d3ee', '#e0f2fe'];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
       }
 
       update() {
-        // Movimiento constante
-        this.x += this.vx;
-        this.y += this.vy;
+        // Movimiento diagonal (como lluvia de estrellas)
+        this.x -= this.speed;
+        this.y += this.speed * 0.5;
 
-        // Rebote en bordes
-        if (this.x < 0 || this.x > width) this.vx *= -1;
-        if (this.y < 0 || this.y > height) this.vy *= -1;
-
-        // Interacción con ratón (opcional: huir suavemente)
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < 100) {
-          const angle = Math.atan2(dy, dx);
-          this.x -= Math.cos(angle) * 1;
-          this.y -= Math.sin(angle) * 1;
+        // Reiniciar si sale de la pantalla
+        if (this.x < 0 || this.y > height) {
+          this.x = width + Math.random() * 100; // Reaparece por la derecha
+          this.y = -100 + Math.random() * height; // Reaparece por arriba
+          this.z = Math.random();
+          this.size = this.z * 2;
+          this.speed = (this.z + 0.1) * 3 * speedMultiplier;
         }
       }
 
@@ -61,14 +57,22 @@ export default function ParallaxBackground() {
         if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillStyle = this.color;
         ctx.fill();
+        
+        // Brillo extra para las cercanas
+        if (this.z > 0.8) {
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = this.color;
+        } else {
+          ctx.shadowBlur = 0;
+        }
       }
     }
 
-    const particles: Particle[] = [];
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
+    const stars: Star[] = [];
+    for (let i = 0; i < starCount; i++) {
+      stars.push(new Star());
     }
 
     const resize = () => {
@@ -78,50 +82,27 @@ export default function ParallaxBackground() {
       canvas.height = height;
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
-
     const animate = () => {
-      ctx.clearRect(0, 0, width, height);
+      // TRUCO DE LA ESTELA:
+      // En lugar de borrar (clearRect), pintamos un rectángulo negro semitransparente.
+      // Esto hace que los frames anteriores se desvanezcan lentamente, creando la estela.
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+      ctx.fillRect(0, 0, width, height);
       
-      // Actualizar y dibujar partículas
-      particles.forEach(p => {
-        p.update();
-        p.draw();
+      stars.forEach(star => {
+        star.update();
+        star.draw();
       });
-
-      // Dibujar líneas
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < connectionDistance) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance / connectionDistance})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
-      }
 
       requestAnimationFrame(animate);
     };
 
     window.addEventListener('resize', resize);
-    window.addEventListener('mousemove', handleMouseMove);
-    
     resize();
     animate();
 
     return () => {
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 
