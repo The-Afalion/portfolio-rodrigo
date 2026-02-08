@@ -68,7 +68,7 @@ function Particulas({ progresoScrollY }: { progresoScrollY: MotionValue<number> 
 
 export default function FondoPlexo({ progresoScrollY }: { progresoScrollY: MotionValue<number> }) {
   return (
-    <div className="absolute inset-0 z-0">
+    <div className="fixed inset-0 z-0 pointer-events-none">
       <Canvas camera={{ position: [0, 0, 5] }}>
         <ambientLight intensity={0.1} />
         <Particulas progresoScrollY={progresoScrollY} />

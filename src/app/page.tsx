@@ -20,8 +20,8 @@ export default function Home() {
   return (
     <main ref={refContenedor} className="min-h-screen bg-transparent text-white selection:bg-white selection:text-black overflow-x-hidden">
       
-      {/* Fondo Global Interactivo (Warp / Network) */}
-      <BackgroundManager />
+      {/* Fondo Global Interactivo (Plexo / Network) */}
+      <BackgroundManager progresoScrollY={progresoScrollY} />
 
       {/* Hero Section */}
       <Presentacion progresoScrollY={progresoScrollY} />
