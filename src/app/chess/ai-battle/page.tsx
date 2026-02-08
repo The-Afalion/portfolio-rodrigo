@@ -2,65 +2,14 @@ import { supabaseAdmin } from '@/lib/db';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
-import dynamicImport from 'next/dynamic'; // Importación renombrada para evitar conflicto
 import ForceStartButton from './ForceStartButton';
 
-// Usamos el nombre 'dynamicImport'
-const TournamentClient = dynamicImport(() => import('./TournamentClient'), {
-  ssr: false,
-  loading: () => <div className="text-center font-mono animate-pulse">Cargando Torneo...</div>,
-});
-
-// Ahora no hay conflicto con la constante de renderizado
 export const dynamic = 'force-dynamic';
 
-async function getTournamentData() {
-  try {
-    const { data: tournament, error: tourneyError } = await supabaseAdmin
-      .from('AITournament')
-      .select(`
-        id,
-        status,
-        matches:AITournamentMatch (
-          *,
-          player1:player1Id ( id, name, elo ),
-          player2:player2Id ( id, name, elo ),
-          winner:winnerId ( id, name )
-        )
-      `)
-      .eq('status', 'ACTIVE')
-      .order('createdAt', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (tourneyError && tourneyError.code !== 'PGRST116') {
-      console.error('Error fetching tournament:', tourneyError.message);
-      throw new Error(`Error al buscar torneo: ${tourneyError.message}`);
-    }
-
-    const { data: leaderboard, error: leaderboardError } = await supabaseAdmin
-      .from('ChessPlayer')
-      .select('name, elo, winsDaily, winsWeekly, winsMonthly, winsTotal')
-      .eq('isAI', true)
-      .order('elo', { ascending: false });
-
-    if (leaderboardError) {
-      console.error('Error fetching leaderboard:', leaderboardError.message);
-      throw new Error(`Error al cargar el leaderboard: ${leaderboardError.message}`);
-    }
-
-    return { tournament, leaderboard };
-
-  } catch (error: any) {
-    console.error("Fallo total en getTournamentData:", error.message);
-    return { tournament: null, leaderboard: [] };
-  }
-}
-
+// Temporalmente, no renderizaremos el cliente para aislar el problema.
+// Solo mostraremos el botón de inicio.
 
 export default async function AiBattlePage() {
-  const { tournament, leaderboard } = await getTournamentData();
-
   return (
     <main className="min-h-screen bg-background text-foreground p-4 sm:p-6 md:p-8 relative overflow-hidden">
       <FondoAjedrez />
@@ -79,15 +28,11 @@ export default async function AiBattlePage() {
       </div>
 
       <div className="max-w-7xl mx-auto z-10 relative">
-        {tournament ? (
-          <TournamentClient tournament={tournament} leaderboard={leaderboard} />
-        ) : (
-          <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg flex flex-col items-center">
-            <h2 className="text-2xl font-bold font-mono">Torneo en Preparación</h2>
-            <p className="text-muted-foreground mt-2">Un nuevo torneo comenzará en la próxima hora, o puedes forzar el inicio ahora.</p>
-            <ForceStartButton />
-          </div>
-        )}
+        <div className="text-center bg-secondary/50 backdrop-blur-sm border border-border p-8 rounded-lg flex flex-col items-center">
+          <h2 className="text-2xl font-bold font-mono">Panel de Control del Torneo</h2>
+          <p className="text-muted-foreground mt-2">Usa este botón para iniciar un nuevo torneo y simular la primera ronda.</p>
+          <ForceStartButton />
+        </div>
       </div>
     </main>
   );
