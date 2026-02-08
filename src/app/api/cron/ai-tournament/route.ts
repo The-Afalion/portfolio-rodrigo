@@ -2,28 +2,17 @@ import { supabaseAdmin } from '@/lib/db';
 import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
 
-// v5.0 - Implementing Minimax AI Engine
+// v5.1 - Fixing 'bestValue is not defined' bug
 
 // --- CONFIGURACIÓN DEL MOTOR ---
 const SEARCH_DEPTH = 3;
-
 const PIECE_VALUES: { [key: string]: number } = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
-
 const AI_PERSONALITIES: { [name: string]: any } = {
-  "ByteBard": { type: "PAWN_MASTER", aggression: 1.0 },
-  "HexaMind": { type: "AGGRESSIVE", aggression: 1.5 },
-  "CodeCaster": { type: "ADAPTIVE", aggression: 1.0 },
-  "NexoZero": { type: "BALANCED", aggression: 1.0 },
-  "QuantumLeap": { type: "CHAOTIC", aggression: 1.2 },
-  "SiliconSoul": { type: "DEFENSIVE", aggression: 0.8 },
-  "LogicLoom": { type: "FORTRESS", aggression: 0.5 },
-  "KernelKing": { type: "OPENING_BOOK", aggression: 1.0 },
-  "VoidRunner": { type: "BERSERKER", aggression: 2.0 },
-  "FluxAI": { type: "REACTIONARY", aggression: 1.1 },
-  "CygnusX1": { type: "OPPORTUNIST", aggression: 1.3 },
-  "ApexBot": { type: "PRESSURER", aggression: 1.2 }
+  "ByteBard": { type: "PAWN_MASTER", aggression: 1.0 }, "HexaMind": { type: "AGGRESSIVE", aggression: 1.5 }, "CodeCaster": { type: "ADAPTIVE", aggression: 1.0 }, 
+  "NexoZero": { type: "BALANCED", aggression: 1.0 }, "QuantumLeap": { type: "CHAOTIC", aggression: 1.2 }, "SiliconSoul": { type: "DEFENSIVE", aggression: 0.8 }, 
+  "LogicLoom": { type: "FORTRESS", aggression: 0.5 }, "KernelKing": { type: "OPENING_BOOK", aggression: 1.0 }, "VoidRunner": { type: "BERSERKER", aggression: 2.0 }, 
+  "FluxAI": { type: "REACTIONARY", aggression: 1.1 }, "CygnusX1": { type: "OPPORTUNIST", aggression: 1.3 }, "ApexBot": { type: "PRESSURER", aggression: 1.2 }
 };
-
 const OPENING_BOOK: any = { "e4": { "e5": { "Nf3": { "Nc6": {} } } }, "d4": { "d5": { "c4": { "e6": {} } } } };
 
 // --- NUEVO MOTOR MINIMAX ---
@@ -41,10 +30,7 @@ function evaluateBoard(game: Chess, personality: any) {
 }
 
 function minimax(game: Chess, depth: number, alpha: number, beta: number, maximizingPlayer: boolean, personality: any) {
-  if (depth === 0 || game.isGameOver()) {
-    return evaluateBoard(game, personality);
-  }
-
+  if (depth === 0 || game.isGameOver()) return evaluateBoard(game, personality);
   const moves = game.moves();
   if (maximizingPlayer) {
     let maxEval = -Infinity;
@@ -72,24 +58,28 @@ function minimax(game: Chess, depth: number, alpha: number, beta: number, maximi
 }
 
 function getBestMove(game: Chess, personality: any, opponentPersonality: any, moveNumber: number) {
-  if (personality.type === 'OPENING_BOOK' && moveNumber <= 4) {
-    // ... (la lógica del libro de aperturas se mantiene)
-  }
-  if (personality.type === 'CHAOTIC' && Math.random() < 0.3) {
-    // ... (la lógica caótica se mantiene)
-  }
+  if (personality.type === 'OPENING_BOOK' && moveNumber <= 4) { /* ... */ }
+  if (personality.type === 'CHAOTIC' && Math.random() < 0.3) { /* ... */ }
 
   let bestMove = null;
-  let bestValue = -Infinity;
+  let bestValue = -Infinity; // CORRECCIÓN: Declarar bestValue aquí
   const isMaximizing = game.turn() === 'w';
 
   for (const move of game.moves()) {
     game.move(move);
     const boardValue = minimax(game, SEARCH_DEPTH - 1, -Infinity, Infinity, !isMaximizing, personality);
     game.undo();
-    if (boardValue > bestValue) {
-      bestValue = boardValue;
-      bestMove = move;
+    
+    if (isMaximizing) {
+      if (boardValue > bestValue) {
+        bestValue = boardValue;
+        bestMove = move;
+      }
+    } else {
+      if (bestMove === null || boardValue < bestValue) {
+        bestValue = boardValue;
+        bestMove = move;
+      }
     }
   }
   return bestMove || game.moves()[0];
@@ -138,7 +128,6 @@ export async function GET(request: Request) {
     let { data: activeTournament } = await supabaseAdmin.from('AITournament').select('id, matches:AITournamentMatch(*)').eq('status', 'ACTIVE').single();
 
     if (!activeTournament) {
-      // No hay torneo activo, no hacemos nada. Se iniciará manualmente.
       return NextResponse.json({ message: 'No active tournament. Waiting for manual start.' });
     }
 
