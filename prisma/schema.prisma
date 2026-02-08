@@ -76,6 +76,10 @@ model ChessPlayer {
   matchesAsP1  AITournamentMatch[] @relation("Player1")
   matchesAsP2  AITournamentMatch[] @relation("Player2")
   wonMatches   AITournamentMatch[] @relation("Winner")
+
+  // Partidas por correspondencia
+  correspondenceGamesAsP1 CorrespondenceGame[] @relation("Player1")
+  correspondenceGamesAsP2 CorrespondenceGame[] @relation("Player2")
 }
 
 model CommunityChessGame {
@@ -122,8 +126,26 @@ model AITournamentMatch {
   winnerId     String?
 
   moves        Json?
-  lastMoveAt   DateTime? // Para controlar el ritmo de los movimientos
+  lastMoveAt   DateTime?
 
   tournament   AITournament @relation(fields: [tournamentId], references: [id])
   tournamentId String
+}
+
+// Partida por correspondencia entre dos humanos
+model CorrespondenceGame {
+  id        String   @id @default(cuid())
+  fen       String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  status    String   // WAITING_FOR_OPPONENT, ACTIVE, FINISHED
+  turn      String   @default("w") // 'w' o 'b'
+
+  player1    ChessPlayer @relation("Player1", fields: [player1Id], references: [id])
+  player1Id  String
+  player2    ChessPlayer? @relation("Player2", fields: [player2Id], references: [id])
+  player2Id  String?
+
+  winnerId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
