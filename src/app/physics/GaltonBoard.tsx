@@ -9,6 +9,8 @@ function gaussian(x: number, mean: number, std: number) {
   return (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
 }
 
+const rows = 12; // CORRECCIÓN: Mover la constante aquí para que sea accesible globalmente en el componente
+
 export default function GaltonBoard() {
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
@@ -20,7 +22,6 @@ export default function GaltonBoard() {
   const setup = () => {
     if (!sceneRef.current) return;
     
-    // Limpiar simulación anterior si existe
     if (engineRef.current) {
       Matter.World.clear(engineRef.current.world, false);
       Matter.Engine.clear(engineRef.current);
@@ -35,7 +36,7 @@ export default function GaltonBoard() {
 
     const engine = Engine.create();
     engineRef.current = engine;
-    engine.world.gravity.y = 1.2; // Gravedad un poco más fuerte
+    engine.world.gravity.y = 1.2;
 
     const width = sceneRef.current.clientWidth;
     const height = sceneRef.current.clientHeight;
@@ -55,7 +56,6 @@ export default function GaltonBoard() {
     const pegRadius = 3;
     const pegSpacing = 40;
     const startY = 100;
-    const rows = 12;
     const pegs = [];
 
     for (let row = 0; row < rows; row++) {
@@ -67,7 +67,7 @@ export default function GaltonBoard() {
         const y = startY + row * pegSpacing;
         pegs.push(Bodies.circle(x, y, pegRadius, { 
           isStatic: true,
-          restitution: 0.6, // Rebote más vivo
+          restitution: 0.6,
           friction: 0.01,
           render: { fillStyle: '#94a3b8' }
         }));
@@ -104,7 +104,6 @@ export default function GaltonBoard() {
   useEffect(() => {
     setup();
     return () => {
-      // Limpieza al desmontar el componente
       if (runnerRef.current) Runner.stop(runnerRef.current);
     };
   }, []);
@@ -134,25 +133,28 @@ export default function GaltonBoard() {
   // --- Gráfico de la Campana de Gauss ---
   const numBuckets = rows + 2;
   const mean = numBuckets / 2;
-  const stdDev = Math.sqrt(rows * 0.5 * 0.5); // Para una probabilidad de 0.5
+  const stdDev = Math.sqrt(rows * 0.5 * 0.5);
   const pathData = Array.from({ length: 100 }).map((_, i) => {
     const x = (i / 99) * numBuckets;
     const y = gaussian(x, mean, stdDev);
     return { x, y };
   });
   const maxGaussianY = gaussian(mean, mean, stdDev);
-  const svgPath = pathData.map(p => `${(startBucketX + p.x * pegSpacing) / sceneRef.current?.clientWidth * 100}%,${100 - (p.y / maxGaussianY) * 50}%`).join(' L ');
+  const svgPath = pathData.map(p => {
+    const width = sceneRef.current?.clientWidth || 0;
+    const totalBucketsWidth = numBuckets * pegSpacing;
+    const startBucketX = (width - totalBucketsWidth) / 2;
+    return `${startBucketX + p.x * pegSpacing},${350 - (p.y / maxGaussianY) * 150}`;
+  }).join(' L ');
 
   return (
     <div className="w-full h-full relative">
       <div ref={sceneRef} className="w-full h-full" />
       
-      {/* Gráfico SVG superpuesto */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${sceneRef.current?.clientWidth || 0} ${sceneRef.current?.clientHeight || 0}`}>
-        <polyline points={svgPath} fill="none" stroke="rgba(255, 255, 0, 0.5)" strokeWidth="2" strokeDasharray="4 4" />
+        <path d={`M ${svgPath}`} fill="none" stroke="rgba(255, 255, 0, 0.5)" strokeWidth="2" strokeDasharray="4 4" />
       </svg>
 
-      {/* Controles */}
       <div className="absolute top-4 left-4 flex gap-2">
         <button onClick={togglePause} className="p-2 bg-black/50 backdrop-blur rounded-md border border-white/20 hover:bg-white/20">
           {isPaused ? <Play size={16} /> : <Pause size={16} />}
