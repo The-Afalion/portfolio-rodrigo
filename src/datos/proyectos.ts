@@ -61,5 +61,14 @@ export const PROYECTOS_CORE = [
     color: '#8b5cf6', // Violeta
     position: [0, -6, -8] as [number, number, number],
     link: '/urban'
+  },
+  {
+    id: 'chrono-dasher',
+    title: 'Chrono Dasher',
+    description: 'Endless runner 3D con generación procedural de niveles y efectos de post-procesado.',
+    tech: ['R3F', 'Game Logic', 'WebGL'],
+    color: '#f97316', // Naranja Neón
+    position: [8, 0, -12] as [number, number, number],
+    link: '/chrono-dasher'
   }
 ];
