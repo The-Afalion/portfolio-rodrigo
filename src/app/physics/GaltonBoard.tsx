@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
 import { Play, Pause, RefreshCw, Plus } from 'lucide-react';
 
-// Función para la Distribución Normal (Campana de Gauss)
 function gaussian(x: number, mean: number, std: number) {
   return (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
 }
 
-const rows = 12; // CORRECCIÓN: Mover la constante aquí para que sea accesible globalmente en el componente
+const rows = 12;
+const pegSpacing = 40; // CORRECCIÓN: Mover la constante aquí
 
 export default function GaltonBoard() {
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -18,7 +18,6 @@ export default function GaltonBoard() {
   const [ballCount, setBallCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // --- Lógica de la Simulación ---
   const setup = () => {
     if (!sceneRef.current) return;
     
@@ -28,12 +27,7 @@ export default function GaltonBoard() {
       if (sceneRef.current) sceneRef.current.innerHTML = '';
     }
 
-    const Engine = Matter.Engine,
-          Render = Matter.Render,
-          Runner = Matter.Runner,
-          Composite = Matter.Composite,
-          Bodies = Matter.Bodies;
-
+    const Engine = Matter.Engine, Render = Matter.Render, Runner = Matter.Runner, Composite = Matter.Composite, Bodies = Matter.Bodies;
     const engine = Engine.create();
     engineRef.current = engine;
     engine.world.gravity.y = 1.2;
@@ -44,17 +38,10 @@ export default function GaltonBoard() {
     const render = Render.create({
       element: sceneRef.current,
       engine: engine,
-      options: {
-        width,
-        height,
-        wireframes: false,
-        background: 'transparent',
-        pixelRatio: window.devicePixelRatio
-      }
+      options: { width, height, wireframes: false, background: 'transparent', pixelRatio: window.devicePixelRatio }
     });
 
     const pegRadius = 3;
-    const pegSpacing = 40;
     const startY = 100;
     const pegs = [];
 
@@ -65,12 +52,7 @@ export default function GaltonBoard() {
       for (let col = 0; col < cols; col++) {
         const x = startX + col * pegSpacing;
         const y = startY + row * pegSpacing;
-        pegs.push(Bodies.circle(x, y, pegRadius, { 
-          isStatic: true,
-          restitution: 0.6,
-          friction: 0.01,
-          render: { fillStyle: '#94a3b8' }
-        }));
+        pegs.push(Bodies.circle(x, y, pegRadius, { isStatic: true, restitution: 0.6, friction: 0.01, render: { fillStyle: '#94a3b8' } }));
       }
     }
 
@@ -84,10 +66,7 @@ export default function GaltonBoard() {
 
     for (let i = 0; i <= numBuckets; i++) {
       const x = startBucketX + i * pegSpacing;
-      buckets.push(Bodies.rectangle(x, bucketY, bucketWidth, bucketHeight, { 
-        isStatic: true,
-        render: { fillStyle: '#1e293b' }
-      }));
+      buckets.push(Bodies.rectangle(x, bucketY, bucketWidth, bucketHeight, { isStatic: true, render: { fillStyle: '#1e293b' } }));
     }
     
     const ground = Bodies.rectangle(width / 2, height, width, 20, { isStatic: true });
@@ -103,22 +82,15 @@ export default function GaltonBoard() {
 
   useEffect(() => {
     setup();
-    return () => {
-      if (runnerRef.current) Runner.stop(runnerRef.current);
-    };
+    return () => { if (runnerRef.current) Runner.stop(runnerRef.current); };
   }, []);
 
   const addBalls = (count: number) => {
     if (!engineRef.current || !sceneRef.current) return;
     const width = sceneRef.current.clientWidth;
-    const ballRadius = 6;
     for (let i = 0; i < count; i++) {
       const x = width / 2 + (Math.random() - 0.5) * 10;
-      const ball = Bodies.circle(x, 50, ballRadius, {
-        restitution: 0.5,
-        friction: 0.005,
-        render: { fillStyle: '#ef4444' }
-      });
+      const ball = Bodies.circle(x, 50, 6, { restitution: 0.5, friction: 0.005, render: { fillStyle: '#ef4444' } });
       Matter.Composite.add(engineRef.current.world, ball);
     }
     setBallCount(c => c + count);
@@ -130,7 +102,6 @@ export default function GaltonBoard() {
     setIsPaused(!isPaused);
   };
 
-  // --- Gráfico de la Campana de Gauss ---
   const numBuckets = rows + 2;
   const mean = numBuckets / 2;
   const stdDev = Math.sqrt(rows * 0.5 * 0.5);
@@ -150,25 +121,15 @@ export default function GaltonBoard() {
   return (
     <div className="w-full h-full relative">
       <div ref={sceneRef} className="w-full h-full" />
-      
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${sceneRef.current?.clientWidth || 0} ${sceneRef.current?.clientHeight || 0}`}>
         <path d={`M ${svgPath}`} fill="none" stroke="rgba(255, 255, 0, 0.5)" strokeWidth="2" strokeDasharray="4 4" />
       </svg>
-
       <div className="absolute top-4 left-4 flex gap-2">
-        <button onClick={togglePause} className="p-2 bg-black/50 backdrop-blur rounded-md border border-white/20 hover:bg-white/20">
-          {isPaused ? <Play size={16} /> : <Pause size={16} />}
-        </button>
-        <button onClick={setup} className="p-2 bg-black/50 backdrop-blur rounded-md border border-white/20 hover:bg-white/20">
-          <RefreshCw size={16} />
-        </button>
-        <button onClick={() => addBalls(100)} className="p-2 bg-black/50 backdrop-blur rounded-md border border-white/20 hover:bg-white/20">
-          <Plus size={16} /> 100
-        </button>
+        <button onClick={togglePause} className="p-2 bg-black/50 backdrop-blur rounded-md border border-white/20 hover:bg-white/20">{isPaused ? <Play size={16} /> : <Pause size={16} />}</button>
+        <button onClick={setup} className="p-2 bg-black/50 backdrop-blur rounded-md border border-white/20 hover:bg-white/20"><RefreshCw size={16} /></button>
+        <button onClick={() => addBalls(100)} className="p-2 bg-black/50 backdrop-blur rounded-md border border-white/20 hover:bg-white/20"><Plus size={16} /> 100</button>
       </div>
-      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-4 py-2 rounded border border-white/20 font-mono text-xs">
-        BOLAS: {ballCount}
-      </div>
+      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-4 py-2 rounded border border-white/20 font-mono text-xs">BOLAS: {ballCount}</div>
     </div>
   );
 }

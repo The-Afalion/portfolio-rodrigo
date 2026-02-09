@@ -1,9 +1,13 @@
 "use client";
 
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, extend } from '@react-three/fiber';
 import { Stars, Effects } from '@react-three/drei';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
+import { UnrealBloomPass } from 'three-stdlib';
+
+// Extend R3F para que reconozca el efecto
+extend({ UnrealBloomPass });
 
 // --- Componente de la Nave ---
 function PlayerShip() {
@@ -21,7 +25,6 @@ function PlayerShip() {
 
   useFrame((_, delta) => {
     if (ref.current) {
-      // Movimiento lateral suave (lerp)
       ref.current.position.x += (targetX - ref.current.position.x) * 0.1;
     }
   });
@@ -44,7 +47,6 @@ function Tunnel() {
 
   useFrame((_, delta) => {
     if (groupRef.current) {
-      // Mover el túnel hacia el jugador para simular avance
       groupRef.current.position.z += delta * 20;
       if (groupRef.current.position.z > 20) {
         groupRef.current.position.z = 0;

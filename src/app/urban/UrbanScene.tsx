@@ -1,9 +1,14 @@
 "use client";
 
 import { useMemo, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, extend } from '@react-three/fiber';
 import { OrbitControls, Effects } from '@react-three/drei';
 import * as THREE from 'three';
+import { UnrealBloomPass } from 'three-stdlib';
+import { FilmPass } from 'three-stdlib';
+
+// Extend R3F to recognize these effects
+extend({ UnrealBloomPass, FilmPass });
 
 // --- Componente de la Ciudad (Optimizado con InstancedMesh) ---
 function City() {
@@ -22,7 +27,6 @@ function City() {
     return temp;
   }, [buildingCount, citySize]);
 
-  // Aplicar las posiciones a la InstancedMesh
   useEffect(() => {
     const tempObject = new THREE.Object3D();
     for (let i = 0; i < buildingCount; i++) {
@@ -42,7 +46,7 @@ function City() {
   );
 }
 
-// --- Componente del Tráfico (Splines y Estelas) ---
+// --- Componente del Tráfico ---
 function Traffic() {
   const count = 100;
   const curves = useMemo(() => {
@@ -93,7 +97,6 @@ export default function UrbanScene() {
       <pointLight position={[0, 50, 0]} intensity={0.8} color="#8b5cf6" />
       <directionalLight position={[-10, 10, 5]} intensity={0.2} color="#ffffff" />
 
-      {/* Suelo reflectante */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[100, 100]} />
         <meshStandardMaterial color="#111111" metalness={0.9} roughness={0.4} />
@@ -111,7 +114,6 @@ export default function UrbanScene() {
         maxPolarAngle={Math.PI / 2.1}
       />
       
-      {/* Efectos de Post-procesado */}
       <Effects>
         <unrealBloomPass args={[undefined, 0.5, 1, 0]} />
         <filmPass args={[0.1, 0.2, 1500, false]} />
