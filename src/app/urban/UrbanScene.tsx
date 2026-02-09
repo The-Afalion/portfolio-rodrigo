@@ -2,12 +2,13 @@
 
 import { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Effects } from '@react-three/drei';
 import * as THREE from 'three';
 
-// --- Componente para los Edificios (Sin cambios) ---
-function Buildings() {
-  const citySize = 50;
+// --- Componente de la Ciudad (Optimizado con InstancedMesh) ---
+function City() {
+  const instancedMeshRef = useRef<THREE.InstancedMesh>(null!);
+  const citySize = 60;
   const buildingCount = citySize * citySize;
 
   const buildings = useMemo(() => {
@@ -15,82 +16,106 @@ function Buildings() {
     for (let i = 0; i < buildingCount; i++) {
       const x = (i % citySize) - citySize / 2;
       const z = Math.floor(i / citySize) - citySize / 2;
-      const height = Math.random() * 5 + 0.1;
-      temp.push({ x, z, height });
+      const height = Math.random() * 8 + 1;
+      temp.push({ position: new THREE.Vector3(x * 1.2, height / 2, z * 1.2), height });
     }
     return temp;
   }, [buildingCount, citySize]);
 
+  // Aplicar las posiciones a la InstancedMesh
+  useEffect(() => {
+    const tempObject = new THREE.Object3D();
+    for (let i = 0; i < buildingCount; i++) {
+      tempObject.position.copy(buildings[i].position);
+      tempObject.scale.set(1, buildings[i].height, 1);
+      tempObject.updateMatrix();
+      instancedMeshRef.current.setMatrixAt(i, tempObject.matrix);
+    }
+    instancedMeshRef.current.instanceMatrix.needsUpdate = true;
+  }, [buildings, buildingCount]);
+
+  return (
+    <instancedMesh ref={instancedMeshRef} args={[undefined, undefined, buildingCount]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#1e1b4b" emissive="#312e81" emissiveIntensity={0.5} roughness={0.3} metalness={0.7} />
+    </instancedMesh>
+  );
+}
+
+// --- Componente del Tráfico (Splines y Estelas) ---
+function Traffic() {
+  const count = 100;
+  const curves = useMemo(() => {
+    const temp = [];
+    for (let i = 0; i < count; i++) {
+      const start = new THREE.Vector3((Math.random() - 0.5) * 70, 0.1, (Math.random() - 0.5) * 70);
+      const end = start.clone().add(new THREE.Vector3((Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 20));
+      const mid = start.clone().lerp(end, 0.5).add(new THREE.Vector3(0, 0, (Math.random() - 0.5) * 10));
+      temp.push(new THREE.QuadraticBezierCurve3(start, mid, end));
+    }
+    return temp;
+  }, []);
+
   return (
     <group>
-      {buildings.map((building, i) => (
-        <mesh key={i} position={[building.x * 1.2, building.height / 2, building.z * 1.2]}>
-          <boxGeometry args={[1, building.height, 1]} />
-          <meshStandardMaterial color="#1e1b4b" emissive="#312e81" emissiveIntensity={0.5} roughness={0.5} />
-        </mesh>
+      {curves.map((curve, i) => (
+        <TrafficParticle key={i} curve={curve} />
       ))}
     </group>
   );
 }
 
-// --- Componente de Tráfico (LÓGICA APLANADA) ---
-function Traffic() {
-  const count = 200;
-  const particles = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < count; i++) {
-      const pos = new THREE.Vector3((Math.random() - 0.5) * 60, 0.1, (Math.random() - 0.5) * 60);
-      const dir = Math.random() > 0.5 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
-      temp.push({ id: i, initialPosition: pos, direction: dir, speed: Math.random() * 0.1 + 0.05, pathLength: 10 });
-    }
-    return temp;
-  }, []);
-
-  const groupRef = useRef<THREE.Group>(null);
+function TrafficParticle({ curve }: { curve: THREE.QuadraticBezierCurve3 }) {
+  const ref = useRef<THREE.Mesh>(null!);
+  const speed = useMemo(() => Math.random() * 0.1 + 0.02, []);
 
   useFrame(({ clock }) => {
-    if (groupRef.current) {
-      groupRef.current.children.forEach((child, i) => {
-        const particle = particles[i];
-        const progress = (clock.getElapsedTime() * particle.speed) % particle.pathLength;
-        child.position.copy(particle.initialPosition).addScaledVector(particle.direction, progress);
-      });
-    }
+    const t = (clock.getElapsedTime() * speed) % 1;
+    curve.getPoint(t, ref.current.position);
   });
 
   return (
-    <group ref={groupRef}>
-      {particles.map((particle) => (
-        <mesh key={particle.id}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshBasicMaterial color={Math.random() > 0.1 ? "#ef4444" : "#f59e0b"} toneMapped={false} />
-        </mesh>
-      ))}
-    </group>
+    <mesh ref={ref}>
+      <boxGeometry args={[0.2, 0.1, 0.5]} />
+      <meshBasicMaterial color="#ef4444" toneMapped={false} />
+    </mesh>
   );
 }
 
 // --- Escena Principal ---
 export default function UrbanScene() {
   return (
-    <Canvas camera={{ position: [20, 20, 20], fov: 50 }}>
-      <color attach="background" args={['#0c0a09']} />
-      <fog attach="fog" args={['#0c0a09', 20, 80]} />
+    <Canvas camera={{ position: [0, 30, 40], fov: 60 }}>
+      <color attach="background" args={['#0a0a0a']} />
+      <fog attach="fog" args={['#0a0a0a', 30, 100]} />
       
       <ambientLight intensity={0.1} />
-      <pointLight position={[0, 30, 0]} intensity={0.5} color="#8b5cf6" />
+      <pointLight position={[0, 50, 0]} intensity={0.8} color="#8b5cf6" />
+      <directionalLight position={[-10, 10, 5]} intensity={0.2} color="#ffffff" />
 
-      <Buildings />
+      {/* Suelo reflectante */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[100, 100]} />
+        <meshStandardMaterial color="#111111" metalness={0.9} roughness={0.4} />
+      </mesh>
+
+      <City />
       <Traffic />
 
       <OrbitControls 
         autoRotate 
-        autoRotateSpeed={0.3} 
+        autoRotateSpeed={0.2} 
         enablePan={false} 
-        minDistance={10} 
-        maxDistance={50} 
-        maxPolarAngle={Math.PI / 2.2}
+        minDistance={15} 
+        maxDistance={60} 
+        maxPolarAngle={Math.PI / 2.1}
       />
+      
+      {/* Efectos de Post-procesado */}
+      <Effects>
+        <unrealBloomPass args={[undefined, 0.5, 1, 0]} />
+        <filmPass args={[0.1, 0.2, 1500, false]} />
+      </Effects>
     </Canvas>
   );
 }
