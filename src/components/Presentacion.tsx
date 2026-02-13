@@ -1,14 +1,9 @@
 "use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, useTransform, MotionValue } from "framer-motion";
+import { motion } from "framer-motion";
 import { Terminal, Cpu, ChevronDown, Box } from "lucide-react";
 import Link from "next/link";
-import FondoPlexo from "./FondoPlexo"; // Reactivado
-
-type PresentacionProps = {
-  progresoScrollY: MotionValue<number>;
-};
 
 const TituloAnimado = ({ texto, className }: { texto: string, className?: string }) => {
   return (
@@ -34,13 +29,13 @@ const BotonAnimado = ({ href, icono: Icono, texto }: { href: string, icono: Reac
     whileTap={{ scale: 0.95 }}
     transition={{ type: "spring", stiffness: 400, damping: 17 }}
   >
-    <Link href={href} className="group relative px-8 py-4 font-mono font-bold rounded-lg bg-foreground text-background overflow-hidden transition-all flex items-center gap-2">
-      <Icono size={18} /> {texto}
+    <Link href={href} className="group relative px-6 py-3 font-mono font-bold rounded-lg bg-foreground text-background overflow-hidden transition-all flex items-center gap-2 text-sm">
+      <Icono size={16} /> {texto}
     </Link>
   </motion.div>
 );
 
-export default function Presentacion({ progresoScrollY }: PresentacionProps) {
+export default function Presentacion() {
   const router = useRouter();
   const [clickCount, setClickCount] = useState(0);
 
@@ -52,32 +47,26 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
     }
   };
 
-  const opacidadContenido = useTransform(progresoScrollY, [0, 0.1], [1, 0]);
-
   return (
-    <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden text-foreground">
-      
-      {/* El fondo 3D ahora vive y muere aquí */}
-      <FondoPlexo progresoScrollY={progresoScrollY} />
-      
-      <div className="z-10 text-center">
-        <motion.div style={{ opacity: opacidadContenido }}>
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono mb-8 cursor-pointer"
-            onClick={handleAdminClick}
-            title={`Admin clicks: ${clickCount}`}
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            SISTEMA EN LÍNEA // v3.1
-          </div>
+    <section className="relative h-screen w-full flex flex-col justify-center items-center text-center overflow-hidden p-6">
+      <div className="z-10">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono mb-8 cursor-pointer"
+          onClick={handleAdminClick}
+          title={`Admin clicks: ${clickCount}`}
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </span>
+          SISTEMA EN LÍNEA
         </motion.div>
 
         <motion.h1 
-          style={{ opacity: opacidadContenido }}
-          className="text-6xl md:text-8xl font-bold tracking-tighter mb-6 text-foreground"
+          className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-foreground"
         >
           <TituloAnimado texto="RODRIGO" />{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
@@ -85,25 +74,33 @@ export default function Presentacion({ progresoScrollY }: PresentacionProps) {
           </span>
         </motion.h1>
 
-        <motion.div style={{ opacity: opacidadContenido }}>
-          <p className="font-mono text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10">
-            Ingeniero de Software. <br />
-            Construyendo puentes entre{" "}
-            <span className="text-foreground font-bold">Sistemas de Precisión</span> y{" "}
-            <span className="text-foreground font-bold">Experiencias Inmersivas</span>.
-          </p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1 }}
+          className="font-sans text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10"
+        >
+          Ingeniero de Software Full Stack.
+          <br />
+          Construyendo puentes entre sistemas de precisión y experiencias inmersivas.
+        </motion.p>
 
-          <div className="flex flex-wrap justify-center gap-4">
-            <BotonAnimado href="#proyectos" icono={Terminal} texto="VER PROYECTOS" />
-            <BotonAnimado href="/engineering" icono={Box} texto="ENGINEERING CORE" />
-            <BotonAnimado href="/chess" icono={Cpu} texto="CHESS HUB" />
-          </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, delay: 1.2 }}
+          className="flex flex-wrap justify-center gap-4"
+        >
+          <BotonAnimado href="#proyectos" icono={Terminal} texto="Proyectos" />
+          <BotonAnimado href="/engineering" icono={Cpu} texto="Engineering Core" />
         </motion.div>
       </div>
 
       <motion.div
-        style={{ opacity: opacidadContenido }}
-        className="absolute bottom-10 text-muted-foreground animate-bounce"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, y: [0, 10, 0] }}
+        transition={{ delay: 2, duration: 2, repeat: Infinity }}
+        className="absolute bottom-10 text-muted-foreground"
       >
         <ChevronDown size={24} />
       </motion.div>

@@ -4,14 +4,14 @@
 
 @layer base {
   :root {
-    /* MODO CLARO: Alto contraste, profesional */
+    /* MODO CLARO: Limpio y profesional */
     --background: 240 10% 100%; /* Blanco */
     --foreground: 240 6% 10%;   /* Negro Suave */
     --card: 240 5% 98%;
     --card-foreground: 240 6% 10%;
     --popover: 240 10% 100%;
     --popover-foreground: 240 6% 10%;
-    --primary: 221 83% 53%; /* Azul Intenso */
+    --primary: 221 83% 53%; /* Azul de acento */
     --primary-foreground: 210 40% 98%;
     --secondary: 240 5% 96%;
     --secondary-foreground: 240 6% 10%;
@@ -26,31 +26,35 @@
   }
 
   .dark {
-    /* MODO OSCURO: Negro puro para el fondo, como pediste */
-    --background: 0 0% 0%; /* Negro Puro */
+    /* MODO OSCURO: Elegante y sobrio */
+    --background: 224 71% 4%; /* Azul muy oscuro, casi negro */
     --foreground: 210 40% 98%;
-    --card: 222 84% 4.9%;
+    --card: 224 71% 6%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 84% 4.9%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
+    --primary: 217 91% 60%; /* Azul brillante pero no neón */
     --primary-foreground: 222 84% 4.9%;
-    --secondary: 217 33% 17%;
+    --secondary: 224 71% 9%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 17%;
     --muted-foreground: 210 20% 65%;
-    --accent: 217 33% 17%;
+    --accent: 224 71% 9%;
     --accent-foreground: 210 40% 98%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 210 40% 98%;
+    --ring: 217 91% 60%;
   }
 }
 
 @layer base {
   * { @apply border-border; }
   html { scroll-behavior: smooth; }
-  body { @apply bg-background text-foreground antialiased; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Fondo con gradiente sutil */
+    background-image: radial-gradient(circle at top, hsl(var(--secondary) / 0.5) 0%, transparent 50%);
+  }
 }
 
 ::selection {
