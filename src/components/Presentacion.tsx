@@ -1,27 +1,8 @@
 "use client";
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
-import { Terminal, Cpu, ChevronDown, Box } from "lucide-react";
+import { Terminal, Cpu, ChevronDown } from "lucide-react";
 import Link from "next/link";
-
-const TituloAnimado = ({ texto, className }: { texto: string, className?: string }) => {
-  return (
-    <span className={`inline-block ${className}`}>
-      {texto.split("").map((caracter, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 + i * 0.05 }}
-          className="inline-block"
-        >
-          {caracter}
-        </motion.span>
-      ))}
-    </span>
-  );
-};
+import PlexusBackground from "./PlexusBackground";
 
 const BotonAnimado = ({ href, icono: Icono, texto }: { href: string, icono: React.ElementType, texto: string }) => (
   <motion.div
@@ -36,71 +17,60 @@ const BotonAnimado = ({ href, icono: Icono, texto }: { href: string, icono: Reac
 );
 
 export default function Presentacion() {
-  const router = useRouter();
-  const [clickCount, setClickCount] = useState(0);
-
-  const handleAdminClick = () => {
-    const newCount = clickCount + 1;
-    setClickCount(newCount);
-    if (newCount >= 10) {
-      router.push('/admin');
-    }
-  };
-
   return (
-    <section className="relative h-screen w-full flex flex-col justify-center items-center text-center overflow-hidden p-6">
+    <section className="relative h-screen w-full flex flex-col justify-center items-center text-center overflow-hidden p-6 bg-black">
+      <PlexusBackground />
       <div className="z-10">
         <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono mb-8 cursor-pointer"
-          onClick={handleAdminClick}
-          title={`Admin clicks: ${clickCount}`}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, delay: 0.2 }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono mb-8"
         >
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          SISTEMA EN LÍNEA
+          DISPONIBLE PARA TRABAJAR
         </motion.div>
 
         <motion.h1 
-          className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-foreground"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.4 }}
+          className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-white"
         >
-          <TituloAnimado texto="RODRIGO" />{" "}
+          RODRIGO{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
-            <TituloAnimado texto="ALONSO" />
+            ALONSO
           </span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="font-sans text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10"
+          transition={{ duration: 1, delay: 0.8 }}
+          className="font-sans text-white/70 text-lg md:text-xl max-w-2xl mx-auto mb-10"
         >
           Ingeniero de Software Full Stack.
-          <br />
-          Construyendo puentes entre sistemas de precisión y experiencias inmersivas.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, delay: 1.2 }}
+          transition={{ type: "spring", stiffness: 100, delay: 1 }}
           className="flex flex-wrap justify-center gap-4"
         >
-          <BotonAnimado href="#proyectos" icono={Terminal} texto="Proyectos" />
-          <BotonAnimado href="/engineering" icono={Cpu} texto="Engineering Core" />
+          <BotonAnimado href="#proyectos" icono={Terminal} texto="Mis Proyectos" />
+          <BotonAnimado href="/engineering" icono={Cpu} texto="Sobre Ingeniería" />
         </motion.div>
       </div>
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, y: [0, 10, 0] }}
-        transition={{ delay: 2, duration: 2, repeat: Infinity }}
-        className="absolute bottom-10 text-muted-foreground"
+        transition={{ delay: 1.5, duration: 2, repeat: Infinity }}
+        className="absolute bottom-10 text-white/50"
       >
         <ChevronDown size={24} />
       </motion.div>

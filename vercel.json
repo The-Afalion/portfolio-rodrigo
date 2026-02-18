@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/fake-votes",
+      "path": "/api/cron/execute-move",
       "schedule": "0 0 * * *"
     }
   ]

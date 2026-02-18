@@ -40,10 +40,10 @@ export default function SobreMi() {
           </h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Soy un Ingeniero de Software con una obsesión: construir productos que no solo funcionen a la perfección, sino que también se sientan vivos. Mi pasión reside en la intersección entre la arquitectura de software robusta y la creación de experiencias de usuario memorables.
+              Como Ingeniero de Software, mi objetivo es transformar ideas complejas en productos digitales eficientes y escalables. Me especializo en el desarrollo full-stack, con un fuerte enfoque en la arquitectura de software y la optimización del rendimiento.
             </p>
             <p>
-              Disfruto desglosando sistemas complejos, ya sea un motor de ajedrez en tiempo real o un simulador de físicas, y presentándolos de una manera que sea a la vez intuitiva y visualmente impactante.
+              Mi experiencia abarca desde la creación de APIs robustas hasta el desarrollo de interfaces de usuario interactivas. Disfruto trabajando en proyectos que requieren un alto nivel de detalle técnico y un enfoque creativo para resolver problemas.
             </p>
           </div>
         </motion.div>

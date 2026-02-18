@@ -1,97 +1,131 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useReducer } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from "react-chessboard";
 import Countdown from './Countdown';
 import { submitVote } from './actions';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { ArrowLeft, Shield, Swords, Crown } from 'lucide-react';
+import { ArrowLeft, Crown, User, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FondoAjedrez from '@/components/FondoAjedrez';
 
-export default function CommunityChessClient({ gameData, error, playerEmail }: { gameData: any, error?: string | null, playerEmail: string }) {
-  const { fen, turn, nextMoveDue, sortedVotes, totalVotes } = gameData;
-  
-  const [selectedPiece, setSelectedPiece] = useState('');
-  const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
-  const [customSquareStyles, setCustomSquareStyles] = useState({});
-  const [playerSide, setPlayerSide] = useState<'w' | 'b' | null>(null);
+type GameState = {
+  fen: string;
+  sortedVotes: [string, number][];
+  totalVotes: number;
+  isSubmitting: boolean;
+};
 
-  const chessGame = useMemo(() => new Chess(fen), [fen]);
+type Action =
+  | { type: 'START_SUBMIT' }
+  | { type: 'END_SUBMIT' };
+
+function gameReducer(state: GameState, action: Action): GameState {
+  switch (action.type) {
+    case 'START_SUBMIT':
+      return { ...state, isSubmitting: true };
+    case 'END_SUBMIT':
+      return { ...state, isSubmitting: false };
+    default:
+      return state;
+  }
+}
+
+function StatusMessage({ playerEmail, playerSide, turn }: { playerEmail: string, playerSide: 'w' | 'b', turn: 'w' | 'b' }) {
+  const isMyTurn = playerSide === turn;
+  const turnColor = turn === 'w' ? 'Blancas' : 'Negras';
+  const myColor = playerSide === 'w' ? 'Blancas' : 'Negras';
+
+  return (
+    <div className="bg-secondary/50 backdrop-blur-sm p-4 rounded-lg border border-border text-center">
+      <p className="text-sm text-muted-foreground font-mono">
+        Hola, <span className="font-bold text-foreground">{playerEmail}</span> (juegas con {myColor})
+      </p>
+      <p className={`text-md font-bold mt-1 ${isMyTurn ? 'text-green-400' : 'text-amber-400'}`}>
+        {isMyTurn ? "Es tu turno para votar." : `Le toca mover a las ${turnColor}.`}
+      </p>
+    </div>
+  );
+}
+
+export default function CommunityChessClient({ gameData, playerEmail, playerSide }: { gameData: any, playerEmail: string, playerSide: 'w' | 'b' }) {
+  const { fen, turn, nextMoveDue, sortedVotes, totalVotes } = gameData;
+
+  const [state, dispatch] = useReducer(gameReducer, {
+    fen,
+    sortedVotes,
+    totalVotes,
+    isSubmitting: false,
+  });
+
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+  const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
+  
+  const chessGame = useMemo(() => new Chess(state.fen), [state.fen]);
   const targetDate = useMemo(() => new Date(nextMoveDue), [nextMoveDue]);
 
-  // Obtener el bando del jugador al cargar
-  useEffect(() => {
-    // Pequeña trampa: como no tenemos el bando del jugador en el cliente,
-    // lo inferimos del primer voto que hizo o lo guardamos en el estado.
-    // Por ahora, lo simularemos. En una app real, lo obtendríamos de la DB.
-    // Para este caso, simplemente lo asignaremos basado en el turno.
-    // Esto es una simplificación visual. La validación real está en el servidor.
-    setPlayerSide(turn === 'w' ? 'w' : 'b');
-  }, [turn]);
-
-
-  function onPieceClick(piece: string, sourceSquare: string) {
-    // Solo permitir mover piezas si es el turno de tu bando (visualmente)
-    if (chessGame.turn() !== playerSide) return;
-
-    const moves = chessGame.moves({ square: sourceSquare, verbose: true });
-    if (moves.length === 0) return;
-
-    const newPossibleMoves = moves.map(move => move.to);
-    setPossibleMoves(newPossibleMoves);
-    setSelectedPiece(sourceSquare);
-
-    const newStyles: { [key: string]: any } = {};
-    newStyles[sourceSquare] = { background: "rgba(255, 255, 0, 0.4)" };
-    newPossibleMoves.forEach(move => {
-      newStyles[move] = {
-        background: "radial-gradient(circle, rgba(0,0,0,0.1) 25%, transparent 25%)",
-        borderRadius: "50%",
-      };
-    });
-    setCustomSquareStyles(newStyles);
-  }
-
   async function onSquareClick(square: string) {
-    if (!selectedPiece || !possibleMoves.includes(square)) return;
-
-    const move = chessGame.move({ from: selectedPiece, to: square, promotion: 'q' });
-    if (!move) return;
-
-    toast.loading('Registrando voto...');
-    const result = await submitVote(playerEmail, move.san);
-    toast.dismiss();
-    if (result.error) {
-      toast.error(result.error);
-      chessGame.undo(); // Revertir si hay error
-    } else {
-      toast.success(result.success || 'Voto registrado.');
-      // No revertimos el movimiento para dar feedback instantáneo,
-      // la página se recargará con el estado real de la DB.
+    if (!selectedSquare || !possibleMoves.includes(square) || state.isSubmitting) {
+      setSelectedSquare(null);
+      setPossibleMoves([]);
+      return;
     }
 
-    setSelectedPiece('');
+    const move = { from: selectedSquare, to: square, promotion: 'q' };
+    const moveSAN = new Chess(state.fen).move(move).san;
+    
+    dispatch({ type: 'START_SUBMIT' });
+    const toastId = toast.loading('Registrando tu voto...');
+
+    const result = await submitVote(playerEmail, moveSAN);
+    
+    toast.dismiss(toastId);
+    dispatch({ type: 'END_SUBMIT' });
+
+    if (result.error) {
+      toast.error(result.error, { duration: 4000 });
+    } else {
+      toast.success(result.success || '¡Voto registrado!', { duration: 3000 });
+      // Esperamos un momento para que el usuario lea el toast y luego recargamos
+      setTimeout(() => window.location.reload(), 1500);
+    }
+
+    setSelectedSquare(null);
     setPossibleMoves([]);
-    setCustomSquareStyles({});
   }
+
+  function onPieceClick(piece: string, sourceSquare: string) {
+    if (state.isSubmitting || chessGame.turn() !== playerSide) return;
+
+    const moves = chessGame.moves({ square: sourceSquare, verbose: true });
+    if (moves.length === 0) {
+      setSelectedSquare(null);
+      setPossibleMoves([]);
+      return;
+    }
+
+    setSelectedSquare(sourceSquare);
+    setPossibleMoves(moves.map(m => m.to));
+  }
+
+  const customSquareStyles: { [key: string]: any } = {};
+  if (selectedSquare) customSquareStyles[selectedSquare] = { background: "rgba(255, 215, 0, 0.5)" };
+  possibleMoves.forEach(move => {
+    customSquareStyles[move] = { background: "radial-gradient(circle, rgba(0,0,0,0.2) 25%, transparent 25%)" };
+  });
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 overflow-hidden relative">
       <FondoAjedrez />
       <div className="absolute top-6 left-6 z-20">
-        <Link href="/#chess-hub" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono">
+        <Link href="/chess" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono">
             <ArrowLeft size={20} />
-            Volver al Laboratorio
+            Volver al Chess Hub
         </Link>
       </div>
-      {error && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg font-mono z-30">
-          {error}
-        </div>
-      )}
+      
       <div className="flex flex-col lg:flex-row items-center justify-center gap-12 w-full z-10">
         <motion.div 
           className="w-full max-w-lg lg:max-w-xl"
@@ -100,11 +134,12 @@ export default function CommunityChessClient({ gameData, error, playerEmail }: {
           transition={{ duration: 0.5 }}
         >
           <Chessboard
-            position={fen}
+            position={state.fen}
             onPieceClick={onPieceClick}
             onSquareClick={onSquareClick}
             customSquareStyles={customSquareStyles}
-            boardOrientation={playerSide === 'w' ? 'white' : 'black'}
+            boardOrientation={playerSide}
+            arePiecesDraggable={false}
           />
         </motion.div>
 
@@ -119,21 +154,16 @@ export default function CommunityChessClient({ gameData, error, playerEmail }: {
             <p className="text-muted-foreground font-mono">El mundo decide el próximo movimiento.</p>
           </div>
 
-          <div className="bg-secondary/50 backdrop-blur-sm p-4 rounded-lg border border-border mb-6 text-center">
-            <p className="text-sm text-muted-foreground font-mono">Bienvenido, <span className="text-foreground font-bold">{playerEmail}</span></p>
-            <p className="text-sm text-muted-foreground font-mono">
-              Es el turno de las {turn === 'w' ? 'Blancas' : 'Negras'}.
-            </p>
-          </div>
+          <StatusMessage playerEmail={playerEmail} playerSide={playerSide} turn={turn} />
 
-          <div className="bg-secondary/50 backdrop-blur-sm p-6 rounded-lg border border-border mb-6">
+          <div className="bg-secondary/50 backdrop-blur-sm p-6 rounded-lg border border-border my-6">
             <h2 className="text-lg font-bold text-center mb-2">Tiempo para el Próximo Movimiento</h2>
             <Countdown targetDate={targetDate} />
           </div>
 
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-center">Movimientos Más Votados</h3>
-            {sortedVotes.slice(0, 5).map(([move, count]: [string, number], index: number) => (
+            {state.sortedVotes.slice(0, 5).map(([move, count]: [string, number], index: number) => (
               <motion.div 
                 key={move} 
                 className="bg-secondary/50 backdrop-blur-sm p-3 rounded-lg border border-border overflow-hidden"
@@ -146,19 +176,19 @@ export default function CommunityChessClient({ gameData, error, playerEmail }: {
                     {index === 0 && <Crown size={16} className="text-yellow-500" />}
                     <span className="font-bold text-lg">{move}</span>
                   </div>
-                  <span className="text-muted-foreground">{totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) + '%' : '0%'}</span>
+                  <span className="text-muted-foreground">{state.totalVotes > 0 ? ((count / state.totalVotes) * 100).toFixed(1) + '%' : '0%'}</span>
                 </div>
                 <div className="w-full bg-background rounded-full h-1.5 mt-2">
                   <motion.div 
-                    className="bg-blue-600 h-1.5 rounded-full" 
+                    className="bg-primary h-1.5 rounded-full"
                     initial={{ width: 0 }}
-                    animate={{ width: `${totalVotes > 0 ? (count / totalVotes) * 100 : 0}%` }}
+                    animate={{ width: `${state.totalVotes > 0 ? (count / state.totalVotes) * 100 : 0}%` }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                   />
                 </div>
               </motion.div>
             ))}
-            {sortedVotes.length === 0 && <p className="text-muted-foreground text-center font-mono">Aún no hay votos para esta ronda.</p>}
+            {state.sortedVotes.length === 0 && <p className="text-muted-foreground text-center font-mono">Aún no hay votos para esta ronda.</p>}
           </div>
         </motion.div>
       </div>
