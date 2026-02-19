@@ -54,7 +54,6 @@ function ProjectPlanet({ project }: { project: typeof PROYECTOS_CORE[0] }) {
         color="white"
         anchorX="center"
         anchorY="middle"
-        // Eliminamos la fuente personalizada para evitar errores si no existe el archivo
       >
         {project.title}
       </Text>

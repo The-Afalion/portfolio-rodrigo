@@ -79,7 +79,7 @@ export default function Proyectos() {
               variants={variantesTarjeta}
               className={`
                 group relative p-8 rounded-2xl overflow-hidden
-                bg-background/50 border border-border
+                bg-card border border-border
                 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10
                 ${proyecto.destacado ? "md:col-span-2" : "md:col-span-1"}
               `}
@@ -100,7 +100,7 @@ export default function Proyectos() {
 
                 <div className="flex flex-wrap gap-2">
                   {proyecto.etiquetas.map((etiqueta, i) => (
-                    <span key={i} className="px-3 py-1 text-xs font-mono rounded-full bg-secondary text-muted-foreground">
+                    <span key={i} className="px-3 py-1 text-xs font-mono rounded-full bg-secondary text-secondary-foreground">
                       {etiqueta}
                     </span>
                   ))}

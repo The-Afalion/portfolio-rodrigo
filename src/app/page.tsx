@@ -23,9 +23,7 @@ export default function Home() {
         <SeccionBoletin />
       </div>
       
-      <footer className="relative z-10 py-8 text-center text-muted-foreground text-xs font-mono border-t bg-background/50 backdrop-blur-sm">
-        © {new Date().getFullYear()} Rodrigo Alonso. Built with Next.js 14, R3F & Supabase.
-      </footer>
+      {/* Footer eliminado de aquí porque ya está en layout.tsx o PieDePagina.tsx */}
     </main>
   );
 }

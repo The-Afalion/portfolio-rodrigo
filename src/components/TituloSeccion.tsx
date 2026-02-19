@@ -8,7 +8,7 @@ export default function TituloSeccion({ children }: { children: React.ReactNode 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ type: "spring", stiffness: 100 }}
-      className="text-4xl md:text-5xl font-bold mb-16 text-center"
+      className="text-4xl md:text-5xl font-bold mb-16 text-center text-foreground"
     >
       {children}
     </motion.h2>

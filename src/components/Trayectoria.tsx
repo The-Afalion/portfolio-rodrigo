@@ -44,16 +44,16 @@ export default function Trayectoria() {
             transition={{ duration: 0.5, delay: indice * 0.1 }}
           >
             {/* Círculo con el icono */}
-            <div className="absolute left-5 -translate-x-1/2 top-1 w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary">
+            <div className="absolute left-5 -translate-x-1/2 top-1 w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary z-10">
               {hito.icono}
             </div>
 
             {/* Contenido del hito */}
-            <div>
-              <p className="text-sm text-muted-foreground font-mono">{hito.fecha}</p>
-              <h3 className="text-xl font-bold mt-1 text-foreground">{hito.titulo}</h3>
-              <p className="text-sm font-semibold text-primary">{hito.institucion}</p>
-              <p className="text-muted-foreground mt-2">{hito.descripcion}</p>
+            <div className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
+              <p className="text-sm text-muted-foreground font-mono mb-1">{hito.fecha}</p>
+              <h3 className="text-xl font-bold text-foreground">{hito.titulo}</h3>
+              <p className="text-sm font-semibold text-primary mb-2">{hito.institucion}</p>
+              <p className="text-muted-foreground">{hito.descripcion}</p>
             </div>
           </motion.div>
         ))}

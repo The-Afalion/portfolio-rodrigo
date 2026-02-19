@@ -8,7 +8,7 @@ const Card = ({ href, icon, title, description, accentColor, children }: any) =>
   <Link href={href}>
     <motion.div
       whileHover={{ y: -5, boxShadow: `0 10px 25px -5px rgba(${accentColor}, 0.1), 0 8px 10px -6px rgba(${accentColor}, 0.1)` }}
-      className="group relative overflow-hidden rounded-xl bg-secondary border border-border p-8 h-full flex flex-col"
+      className="group relative overflow-hidden rounded-xl bg-card border border-border p-8 h-full flex flex-col transition-all"
     >
       <div className="relative z-10">
         <div className={`mb-6 inline-block p-4 rounded-lg bg-primary/10 text-primary`}>
@@ -28,7 +28,7 @@ const Card = ({ href, icon, title, description, accentColor, children }: any) =>
 
 export default function LaboratoriosSection() {
   return (
-    <section className="py-32 px-4">
+    <section id="laboratorios" className="py-32 px-4">
       <div className="max-w-5xl mx-auto">
         <TituloSeccion>Laboratorios Interactivos</TituloSeccion>
         

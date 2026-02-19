@@ -16,6 +16,7 @@ function RotatingShape() {
             color="hsl(var(--primary))" 
             roughness={0.1} 
             metalness={0.1} 
+            wireframe
           />
         </mesh>
       </Float>

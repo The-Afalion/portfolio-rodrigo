@@ -26,7 +26,7 @@ export default function FondoRejilla() {
   }, []);
 
   return (
-    <div ref={ref} className="absolute inset-0 overflow-hidden">
+    <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none">
       <div
         className="absolute inset-0 transition-all duration-300"
         style={{

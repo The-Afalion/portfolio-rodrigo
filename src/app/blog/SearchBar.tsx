@@ -17,17 +17,19 @@ export default function SearchBar() {
       params.delete('q');
     }
     replace(`${pathname}?${params.toString()}`);
-  }, 300); // Espera 300ms después de que el usuario deja de escribir
+  }, 300);
 
   return (
-    <div className="relative max-w-lg mx-auto">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+    <div className="relative w-full max-w-md mx-auto">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+      </div>
       <input
         type="text"
+        className="block w-full pl-10 pr-3 py-2 border border-border rounded-md leading-5 bg-background placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
         placeholder="Buscar artículos..."
         defaultValue={searchParams.get('q')?.toString()}
         onChange={(e) => handleSearch(e.target.value)}
-        className="w-full pl-10 pr-4 py-3 rounded-full border border-border bg-secondary focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
       />
     </div>
   );

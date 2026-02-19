@@ -11,7 +11,7 @@ export default function SeccionBoletin() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.8 }}
-        className="max-w-4xl mx-auto bg-secondary rounded-2xl border border-border p-8 md:p-12"
+        className="max-w-4xl mx-auto bg-card rounded-2xl border border-border p-8 md:p-12 shadow-sm"
       >
         <div className="grid md:grid-cols-2 gap-10 items-center">
           {/* Columna de Texto */}

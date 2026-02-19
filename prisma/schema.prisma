@@ -10,9 +10,47 @@ datasource db {
 }
 
 // --- MODELOS GENERALES ---
-// ... (sin cambios)
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tags      Tag[]
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts Post[]
+}
 
 // --- MODELOS DE AJEDREZ ---
+
+model ChessUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  password     String   // Hash de la contraseña
+  elo          Int      @default(1000)
+  botsDefeated String[] // Array de IDs de bots vencidos
+  createdAt    DateTime @default(now())
+  games        ChessGame[]
+}
+
+model ChessGame {
+  id        String   @id @default(cuid())
+  userId    String
+  user      ChessUser @relation(fields: [userId], references: [id])
+  botId     String
+  result    String   // "win", "loss", "draw"
+  moves     String   // PGN o lista de movimientos
+  playedAt  DateTime @default(now())
+}
+
+// --- MODELOS ANTIGUOS (Mantenidos por compatibilidad si se usan) ---
 
 model ChessPlayer {
   id           String @id @default(cuid())
@@ -27,126 +65,5 @@ model ChessPlayer {
   winsMonthly  Int @default(0)
   winsTotal    Int @default(0)
   assignedSide String?
-  votes        CommunityVote[]
-  matchesAsP1  AITournamentMatch[] @relation("Player1")
-  matchesAsP2  AITournamentMatch[] @relation("Player2")
-  wonMatches   AITournamentMatch[] @relation("Winner")
-  correspondenceGamesAsP1 CorrespondenceGame[] @relation("Player1")
-  correspondenceGamesAsP2 CorrespondenceGame[] @relation("Player2")
-}
-
-model CommunityChessGame {
-  id          String   @id @default("main_game")
-  fen         String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-  nextMoveDue DateTime
-  lastMoveAt  DateTime @default(now())
-  votes       CommunityVote[]
-  suggestions CommunityMoveSuggestion[]
-}
-
-model CommunityMoveSuggestion {
-  id        String   @id @default(cuid())
-  move      String   // El movimiento en formato SAN
-  score     Int      // La puntuación de Lichess (centipawns)
-  rank      Int      // 1 para el mejor, 2 para el segundo, etc.
-  game      CommunityChessGame @relation(fields: [gameId], references: [id])
-  gameId    String
-}
-
-model CommunityVote {
-  id        String   @id @default(cuid())
-  move      String
-  isFake    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  player    ChessPlayer @relation(fields: [playerId], references: [id])
-  playerId  String
-  game      CommunityChessGame @relation(fields: [gameId], references: [id])
-  gameId    String
-}
-
-// ... (resto de modelos sin cambios)
-model AITournament {
-  id        String   @id @default(cuid())
-  status    String   @default("PENDING")
-  createdAt DateTime @default(now())
-  endedAt   DateTime?
-  winnerId  String?
-  matches   AITournamentMatch[]
-}
-
-model AITournamentMatch {
-  id           String   @id @default(cuid())
-  round        Int
-  status       String   @default("PENDING")
-  player1      ChessPlayer @relation("Player1", fields: [player1Id], references: [id])
-  player1Id    String
-  player2      ChessPlayer @relation("Player2", fields: [player2Id], references: [id])
-  player2Id    String
-  winner       ChessPlayer? @relation("Winner", fields: [winnerId], references: [id])
-  winnerId     String?
-  moves        Json?
-  lastMoveAt   DateTime?
-  tournament   AITournament @relation(fields: [tournamentId], references: [id])
-  tournamentId String
-}
-
-model CorrespondenceGame {
-  id        String   @id @default(cuid())
-  fen       String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-  status    String
-  turn      String   @default("w")
-  player1    ChessPlayer @relation("Player1", fields: [player1Id], references: [id])
-  player1Id  String
-  player2    ChessPlayer? @relation("Player2", fields: [player2Id], references: [id])
-  player2Id  String?
-  winnerId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model SlalomCourse {
-  id          String   @id @default(cuid())
-  name        String
-  authorName  String   @default("Anónimo")
-  layout      Json
-  createdAt   DateTime @default(now())
-  votes       SlalomVote[]
-}
-
-model SlalomVote {
-  id        String   @id @default(cuid())
-  type      String
-  course    SlalomCourse @relation(fields: [courseId], references: [id])
-  courseId  String
-  createdAt DateTime @default(now())
-}
-
-model NexusNode {
-  id        String   @id @default(cuid())
-  name      String
-  region    String
-  status    String   @default("ONLINE")
-  capacity  Int      @default(1000)
-  used      Int      @default(0)
-  chunks    NexusChunk[]
-}
-
-model NexusFile {
-  id        String   @id @default(cuid())
-  name      String
-  size      Int
-  mimeType  String
-  uploadedAt DateTime @default(now())
-  chunks    NexusChunk[]
-}
-
-model NexusChunk {
-  id        String   @id @default(cuid())
-  index     Int
-  hash      String
-  size      Int
-  file      NexusFile @relation(fields: [fileId], references: [id])
-  fileId    String
-  node      NexusNode @relation(fields: [nodeId], references: [id])
-  nodeId    String
+  // Relaciones omitidas para simplificar, ya que usaremos ChessUser
 }

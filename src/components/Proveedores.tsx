@@ -1,9 +1,8 @@
 "use client";
 import { ThemeProvider } from "next-themes";
 import { ReactNode, useEffect, useState } from "react";
-import { ProveedorContextoApp } from "@/context/ContextoApp";
-import { ProveedorContextoEasterEggs } from "@/context/ContextoEasterEggs";
 import { ProveedorContextoGlobal } from "@/context/ContextoGlobal";
+import { ProveedorContextoChess } from "@/context/ContextoChess";
 
 export function Proveedores({ children }: { children: ReactNode }) {
   const [estaMontado, setEstaMontado] = useState(false);
@@ -18,13 +17,11 @@ export function Proveedores({ children }: { children: ReactNode }) {
 
   return (
     <ProveedorContextoGlobal>
-      <ProveedorContextoApp>
-        <ProveedorContextoEasterEggs>
-          <ThemeProvider attribute="class" defaultTheme="dark">
-            {children}
-          </ThemeProvider>
-        </ProveedorContextoEasterEggs>
-      </ProveedorContextoApp>
+      <ProveedorContextoChess>
+        <ThemeProvider attribute="class" defaultTheme="dark">
+          {children}
+        </ThemeProvider>
+      </ProveedorContextoChess>
     </ProveedorContextoGlobal>
   );
 }
