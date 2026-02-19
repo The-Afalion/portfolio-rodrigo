@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { Proveedores } from "@/components/Proveedores";
 import ContenidoPrincipal from "@/components/ContenidoPrincipal";
+import ChatRealtime from "@/components/ChatRealtime"; // Importamos el chat
 
 const fuenteSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"], 
@@ -102,6 +103,7 @@ export default function DisposicionRaiz({
         <Proveedores>
           <ContenidoPrincipal>{children}</ContenidoPrincipal>
           {modal} {/* Renderizamos el modal aquí */}
+          <ChatRealtime /> {/* Añadimos el chat global */}
         </Proveedores>
       </body>
     </html>
