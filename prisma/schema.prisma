@@ -30,40 +30,93 @@ model Tag {
 
 // --- MODELOS DE AJEDREZ ---
 
-model ChessUser {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  password     String   // Hash de la contraseña
-  elo          Int      @default(1000)
-  botsDefeated String[] // Array de IDs de bots vencidos
-  createdAt    DateTime @default(now())
-  games        ChessGame[]
+// Perfil de usuario, extiende la tabla `auth.users` de Supabase
+model Profile {
+  id                  String           @id // Coincide con el ID de `auth.users`
+  elo                 Int              @default(1000)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  gamesAsWhite        ChessGame[]      @relation("GamesAsWhite")
+  gamesAsBlack        ChessGame[]      @relation("GamesAsBlack")
+  sentMessages        Message[]        @relation("SentMessages")
+  sentInvitations     GameInvitation[] @relation("SentInvitations")
+  receivedInvitations GameInvitation[] @relation("ReceivedInvitations")
+}
+
+model ChessBot {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  personality String?
+  elo         Int         @default(1200)
+  profileIcon String?
+  gamesAsBot  ChessGame[] @relation("BotGames")
+  createdAt   DateTime    @default(now())
 }
 
 model ChessGame {
-  id        String   @id @default(cuid())
-  userId    String
-  user      ChessUser @relation(fields: [userId], references: [id])
-  botId     String
-  result    String   // "win", "loss", "draw"
-  moves     String   // PGN o lista de movimientos
-  playedAt  DateTime @default(now())
+  id            String    @id @default(cuid())
+  whitePlayerId String?
+  whitePlayer   Profile?  @relation("GamesAsWhite", fields: [whitePlayerId], references: [id])
+  blackPlayerId String?
+  blackPlayer   Profile?  @relation("GamesAsBlack", fields: [blackPlayerId], references: [id])
+  botId         String?
+  bot           ChessBot?   @relation("BotGames", fields: [botId], references: [id])
+  moves         String // PGN format
+  fen           String?   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  result        String?   // e.g., "1-0", "0-1", "1/2-1/2"
+  status        String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, ABANDONED
+
+  // Link to the invitation that started this game
+  invitationId  String?      @unique
+  invitation    GameInvitation? @relation(fields: [invitationId], references: [id])
+  messages      Message[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([whitePlayerId])
+  @@index([blackPlayerId])
+  @@index([botId])
 }
 
-// --- MODELOS ANTIGUOS (Mantenidos por compatibilidad si se usan) ---
+// --- MODELOS DE CHAT Y NOTIFICACIONES ---
 
-model ChessPlayer {
-  id           String @id @default(cuid())
-  email        String @unique
-  name         String
-  isAI         Boolean @default(false)
-  profileIcon  String?
-  personality  String?
-  elo          Int @default(1200)
-  winsDaily    Int @default(0)
-  winsWeekly   Int @default(0)
-  winsMonthly  Int @default(0)
-  winsTotal    Int @default(0)
-  assignedSide String?
-  // Relaciones omitidas para simplificar, ya que usaremos ChessUser
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum GameType {
+  CHESS
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  senderId  String
+  sender    Profile  @relation("SentMessages", fields: [senderId], references: [id])
+  gameId    String
+  game      ChessGame @relation(fields: [gameId], references: [id])
+
+  @@index([senderId])
+  @@index([gameId])
+}
+
+model GameInvitation {
+  id        String           @id @default(cuid())
+  status    InvitationStatus @default(PENDING)
+  gameType  GameType         @default(CHESS)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  inviterId String
+  inviter   Profile          @relation("SentInvitations", fields: [inviterId], references: [id])
+  inviteeId String
+  invitee   Profile          @relation("ReceivedInvitations", fields: [inviteeId], references: [id])
+
+  game      ChessGame?
+
+  @@index([inviterId])
+  @@index([inviteeId])
 }

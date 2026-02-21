@@ -27,9 +27,8 @@ export async function GET() {
     }
 
     const { data: leaderboard } = await supabaseAdmin
-      .from('ChessPlayer')
-      .select('name, elo, winsDaily, winsWeekly, winsMonthly, winsTotal')
-      .eq('isAI', true)
+      .from('ChessBot')
+      .select('name, elo, winsTotal')
       .order('elo', { ascending: false });
 
     return NextResponse.json({ tournament, leaderboard });

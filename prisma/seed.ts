@@ -13,15 +13,13 @@ async function main() {
   console.log(`Start seeding ...`);
 
   const aisToCreate = Object.entries(AI_PERSONALITIES).map(([name, personality]) => ({
-    email: `${name.toLowerCase()}@system.io`,
     name,
-    isAI: true,
     personality,
   }));
 
   for (const aiData of aisToCreate) {
-    const ai = await prisma.chessPlayer.upsert({
-      where: { email: aiData.email },
+    const ai = await prisma.chessBot.upsert({
+      where: { name: aiData.name },
       update: { personality: aiData.personality },
       create: aiData,
     });

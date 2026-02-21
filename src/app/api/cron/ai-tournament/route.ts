@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     await supabaseAdmin.from('AITournament').update({ status: 'FINISHED', endedAt: new Date().toISOString() }).eq('status', 'ACTIVE');
     
-    const { data: players } = await supabaseAdmin.from('ChessPlayer').select('id').eq('isAI', true);
+    const { data: players } = await supabaseAdmin.from('ChessBot').select('id');
     if (!players || players.length < 8) throw new Error("No hay suficientes IAs.");
 
     const shuffled = players.sort(() => 0.5 - Math.random());

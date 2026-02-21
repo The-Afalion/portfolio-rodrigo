@@ -3,11 +3,11 @@ import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
 
 // Lista de jugadores "bot" que generarán los votos
-const BOT_EMAILS = [
-  'bot-kasparov@system.io',
-  'bot-carlsen@system.io',
-  'bot-fischer@system.io',
-  'bot-alpha-zero@system.io',
+const BOT_NAMES = [
+  'bot-kasparov',
+  'bot-carlsen',
+  'bot-fischer',
+  'bot-alpha-zero',
 ];
 
 // Función simple para evaluar un movimiento
@@ -46,23 +46,19 @@ export async function GET(request: Request) {
     const turn = game.turn();
 
     // 3. Obtener los jugadores bot o crearlos si no existen
-    let { data: bots } = await supabaseAdmin.from('ChessPlayer').select('id, email').in('email', BOT_EMAILS);
-    if (!bots || bots.length < BOT_EMAILS.length) {
-      const newBots = BOT_EMAILS.filter(email => !bots?.some(b => b.email === email))
-        .map(email => ({
-          email,
-          name: email.split('@')[0],
-          isAI: true,
-          assignedSide: Math.random() > 0.5 ? 'w' : 'b' // Asignación aleatoria inicial
+    let { data: bots } = await supabaseAdmin.from('ChessBot').select('id, name').in('name', BOT_NAMES);
+    if (!bots || bots.length < BOT_NAMES.length) {
+      const newBots = BOT_NAMES.filter(name => !bots?.some(b => b.name === name))
+        .map(name => ({
+          name: name,
+          personality: 'Voter' // A default personality for voting bots
         }));
       
-      await supabaseAdmin.from('ChessPlayer').insert(newBots);
-      bots = (await supabaseAdmin.from('ChessPlayer').select('id, email').in('email', BOT_EMAILS)).data;
-    }
-
-    // Asegurarse de que los bots tengan el bando correcto para el turno actual
-    for (const bot of bots!) {
-      await supabaseAdmin.from('ChessPlayer').update({ assignedSide: turn }).eq('id', bot.id);
+      if (newBots.length > 0) {
+        await supabaseAdmin.from('ChessBot').insert(newBots);
+        const { data: allBots } = await supabaseAdmin.from('ChessBot').select('id, name').in('name', BOT_NAMES);
+        bots = allBots;
+      }
     }
 
     // 4. Analizar los mejores movimientos
@@ -81,32 +77,40 @@ export async function GET(request: Request) {
     const bestMoves = evaluatedMoves.slice(0, 4);
     const voteDistribution = [0.4, 0.3, 0.2, 0.1]; // 40%, 30%, 20%, 10%
 
-    for (let i = 0; i < bestMoves.length; i++) {
-      const move = bestMoves[i];
-      const votesForThisMove = Math.round(VOTES_TO_ADD * voteDistribution[i]);
-      for (let j = 0; j < votesForThisMove && remainingVotes > 0; j++) {
-        votes.push({ move: move.san, botIndex: j % bots!.length });
-        remainingVotes--;
+    if (bots && bots.length > 0) {
+      for (let i = 0; i < bestMoves.length; i++) {
+        const move = bestMoves[i];
+        const votesForThisMove = Math.round(VOTES_TO_ADD * voteDistribution[i]);
+        for (let j = 0; j < votesForThisMove && remainingVotes > 0; j++) {
+          votes.push({ move: move.san, botIndex: j % bots.length });
+          remainingVotes--;
+        }
       }
     }
+
 
     // Asignar votos restantes a otros movimientos aleatorios
     while (remainingVotes > 0) {
       const randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
-      votes.push({ move: randomMove.san, botIndex: Math.floor(Math.random() * bots!.length) });
+      if (bots && bots.length > 0) {
+        votes.push({ move: randomMove.san, botIndex: Math.floor(Math.random() * bots.length) });
+      }
       remainingVotes--;
     }
 
     // 6. Crear los registros de votos en la base de datos
-    const voteRecords = votes.map(vote => ({
-      move: vote.move,
-      playerId: bots![vote.botIndex].id,
-      gameId: 'main_game',
-      isFake: true,
-    }));
+    if (bots && bots.length > 0) {
+      const voteRecords = votes.map(vote => ({
+        move: vote.move,
+        playerId: bots[vote.botIndex].id,
+        gameId: 'main_game',
+        isFake: true,
+      }));
 
-    const { error: insertError } = await supabaseAdmin.from('CommunityVote').insert(voteRecords);
-    if (insertError) throw new Error(`Error al insertar votos falsos: ${insertError.message}`);
+      const { error: insertError } = await supabaseAdmin.from('CommunityVote').insert(voteRecords);
+      if (insertError) throw new Error(`Error al insertar votos falsos: ${insertError.message}`);
+    }
+
 
     return NextResponse.json({ ok: true, message: `${VOTES_TO_ADD} votos falsos añadidos.` });
 

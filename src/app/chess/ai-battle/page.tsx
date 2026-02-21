@@ -28,9 +28,8 @@ async function getInitialTournamentData() {
     if (error && error.code !== 'PGRST116') throw new Error(error.message);
 
     const { data: leaderboard } = await supabaseAdmin
-      .from('ChessPlayer')
-      .select('name, elo, winsDaily, winsWeekly, winsMonthly, winsTotal')
-      .eq('isAI', true)
+      .from('ChessBot')
+      .select('name, elo, winsTotal')
       .order('elo', { ascending: false });
 
     return { tournament, leaderboard: leaderboard || [] };

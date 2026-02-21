@@ -140,7 +140,7 @@ async function simulateRound(matches: any[], players: any[]) {
 export async function startNewTournament() {
   try {
     await supabaseAdmin.from('AITournament').update({ status: 'FINISHED', endedAt: new Date().toISOString() }).eq('status', 'ACTIVE');
-    const { data: players } = await supabaseAdmin.from('ChessPlayer').select('id, name').eq('isAI', true);
+    const { data: players } = await supabaseAdmin.from('ChessBot').select('id, name');
     if (!players || players.length < 8) throw new Error("No hay suficientes IAs en la base de datos.");
     const shuffled = players.sort(() => 0.5 - Math.random());
     const participants = shuffled.slice(0, 8);
