@@ -120,3 +120,21 @@ model GameInvitation {
   @@index([inviterId])
   @@index([inviteeId])
 }
+
+model AITournament {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  status      String
+  winner      String?
+}
+
+model SlalomCourse {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  location    String
+  bestTime    Float?
+}
