@@ -3,7 +3,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export async function signInWithPassword(email, password) {
+export async function signUp(email, password) {
   const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,7 +16,6 @@ export async function signInWithPassword(email, password) {
             cookieStore.set({ name, value, ...options });
           } catch (error) {
             // This is a server-only action, so cookies can be set.
-            // If it fails, it's likely due to deployment config.
           }
         },
         remove: (name, options) => {
@@ -31,23 +30,24 @@ export async function signInWithPassword(email, password) {
   );
 
   try {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (error) {
-      if (error.message === 'Invalid login credentials') {
-        return { error: 'Usuario o contraseña incorrectos.' };
-      }
-      // Aseguramos devolver siempre un JSON
       return { error: `Error de Supabase: ${error.message}` };
+    }
+
+    // After signing up, Supabase automatically signs the user in.
+    // We need to create a profile for the new user.
+    if (data.user) {
+      await supabase.from('Profile').insert({ id: data.user.id });
     }
 
     return { success: true };
 
   } catch (e) {
-    // Capturamos cualquier otro error inesperado
     if (e instanceof Error) {
       return { error: `Ha ocurrido un error inesperado: ${e.message}` };
     }
