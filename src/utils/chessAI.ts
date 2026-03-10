@@ -103,7 +103,7 @@ function encontrarMejorMovimientoConDijkstra(partida: Chess, profundidad: number
         if (camino.length > profundidad) continue; // Salvaguarda.
 
         const partidaActual = new Chess(fen);
-        const movimientosPosibles = partidaActual.moves();
+        const movimientosPosibles = partidaActual.moves() as string[];
 
         for (const movimiento of movimientosPosibles) {
             partidaActual.move(movimiento);
@@ -127,40 +127,52 @@ function encontrarMejorMovimientoConDijkstra(partida: Chess, profundidad: number
         return mejorMovimiento;
     }
 
-    const movimientos = partida.moves();
+    const movimientos = partida.moves() as string[];
     return movimientos.length > 0 ? movimientos[Math.floor(Math.random() * movimientos.length)] : null;
 }
 
 /**
- * Función principal que decide el movimiento de la IA según la dificultad.
+ * Función principal que decide el movimiento de la IA según el bot específico.
  * @param partida - El estado actual de la partida.
- * @param dificultad - El nivel de dificultad seleccionado ("Fácil", "Medio", "Difícil").
- * @returns El movimiento que debe realizar la IA.
+ * @param elo - Dificultad del bot (determina la profundidad de búsqueda).
+ * @param estilo - Estilos de juego (ej. agresivo prefiere capturas).
+ * @returns El movimiento que debe realizar la IA (algebráico SAN).
  */
-export function obtenerMovimientoIA(partida: Chess, dificultad: Dificultad): string | null {
-    const movimientosPosibles = partida.moves();
+export function obtenerMovimientoIA(partida: Chess, elo: number, estilo: 'agresivo' | 'defensivo' | 'equilibrado' | 'caotico'): string | null {
+    const movimientosPosibles = partida.moves() as string[];
     if (movimientosPosibles.length === 0) return null;
 
-    // La IA siempre juega con negras en esta configuración.
+    // La IA siempre juega con negras en este hub.
     if (partida.turn() === 'w') {
         return movimientosPosibles[Math.floor(Math.random() * movimientosPosibles.length)];
     }
 
-    switch (dificultad) {
-        case "Fácil":
-            // Profundidad 1: Movimiento "codicioso", elige el mejor resultado inmediato.
-            return encontrarMejorMovimientoConDijkstra(partida, 1);
-        
-        case "Medio":
-            // Profundidad 2: Piensa un movimiento de la IA y una posible respuesta del jugador.
+    // Estilo Caótico (Peón Oxidado o Joker)
+    if (estilo === 'caotico') {
+        // Joker.js mezcla jugadas troll aleatorias (50%) o nivel Difícil (50%) si su ELO es alto
+        if (elo > 1000 && Math.random() > 0.5) {
             return encontrarMejorMovimientoConDijkstra(partida, 2);
+        }
+        return movimientosPosibles[Math.floor(Math.random() * movimientosPosibles.length)];
+    }
 
-        case "Difícil":
-            // Profundidad 3: Mayor anticipación. Será más lento.
-            return encontrarMejorMovimientoConDijkstra(partida, 3);
-            
-        default:
-            const indiceAleatorio = Math.floor(Math.random() * movimientosPosibles.length);
-            return movimientosPosibles[indiceAleatorio];
+    // Estilo Agresivo (Viper): Fuerza capturas si es posible y busca mate corto
+    if (estilo === 'agresivo') {
+        const movesVerbose = partida.moves({ verbose: true }) as any[];
+        const captures = movesVerbose.filter(m => m.flags.includes('c') || m.flags.includes('e'));
+        if (captures.length > 0 && Math.random() > 0.2) { // 80% de chance de priorizar captura brutal
+            return captures[Math.floor(Math.random() * captures.length)].san;
+        }
+        return encontrarMejorMovimientoConDijkstra(partida, 1);
+    }
+
+    // Estilos Equilibrado y Defensivo basados puramente en ELO y profundidad del árbol Dijkstra
+    if (elo <= 800) {
+        return encontrarMejorMovimientoConDijkstra(partida, 1);
+    } else if (elo <= 1500) {
+        return encontrarMejorMovimientoConDijkstra(partida, 2);
+    } else {
+        // Deep Blue II etc (Profundidad 3: cuidado con performance, en un navegador tomará segundos)
+        return encontrarMejorMovimientoConDijkstra(partida, 3);
     }
 }

@@ -49,14 +49,14 @@ export default function GamePage() {
         const presences = Object.values(state).map((p: any) => p[0]);
         const opponentPresence = presences.find(p => p.user !== playerEmail);
         if (opponentPresence) setOpponent(opponentPresence.user);
-        
+
         if (presences.length === 1 && presences[0].user === playerEmail && !playerSide) {
           setPlayerSide('white');
         } else if (presences.length > 1 && !playerSide) {
           setPlayerSide('black');
         }
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
           setIsConnected(true);
           await channel.track({ user: playerEmail, online_at: new Date().toISOString() });
@@ -76,7 +76,7 @@ export default function GamePage() {
     if (move === null) return false;
 
     setGame(gameCopy);
-    
+
     const channel = supabase.channel(`game-${gameId}`);
     channel.send({ type: 'broadcast', event: 'move', payload: { fen: gameCopy.fen() } });
 

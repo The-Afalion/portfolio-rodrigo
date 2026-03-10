@@ -20,7 +20,7 @@ export default function GaltonBoard() {
 
   const setup = () => {
     if (!sceneRef.current) return;
-    
+
     if (engineRef.current) {
       Matter.World.clear(engineRef.current.world, false);
       Matter.Engine.clear(engineRef.current);
@@ -68,7 +68,7 @@ export default function GaltonBoard() {
       const x = startBucketX + i * pegSpacing;
       buckets.push(Bodies.rectangle(x, bucketY, bucketWidth, bucketHeight, { isStatic: true, render: { fillStyle: '#1e293b' } }));
     }
-    
+
     const ground = Bodies.rectangle(width / 2, height, width, 20, { isStatic: true });
     Composite.add(engine.world, [...pegs, ...buckets, ground]);
 
@@ -82,7 +82,7 @@ export default function GaltonBoard() {
 
   useEffect(() => {
     setup();
-    return () => { if (runnerRef.current) Runner.stop(runnerRef.current); };
+    return () => { if (runnerRef.current) Matter.Runner.stop(runnerRef.current); };
   }, []);
 
   const addBalls = (count: number) => {
@@ -90,7 +90,7 @@ export default function GaltonBoard() {
     const width = sceneRef.current.clientWidth;
     for (let i = 0; i < count; i++) {
       const x = width / 2 + (Math.random() - 0.5) * 10;
-      const ball = Bodies.circle(x, 50, 6, { restitution: 0.5, friction: 0.005, render: { fillStyle: '#ef4444' } });
+      const ball = Matter.Bodies.circle(x, 50, 6, { restitution: 0.5, friction: 0.005, render: { fillStyle: '#ef4444' } });
       Matter.Composite.add(engineRef.current.world, ball);
     }
     setBallCount(c => c + count);

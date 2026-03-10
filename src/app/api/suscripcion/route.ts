@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import CorreoBienvenida from "@/emails/CorreoBienvenida";
 
-const clienteResend = new Resend(process.env.RESEND_API_KEY);
+const clienteResend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 const ID_AUDIENCIA = process.env.RESEND_AUDIENCE_ID;
 
 // Expresión regular simple para validar un correo electrónico.
@@ -25,7 +25,7 @@ export async function POST(peticion: NextRequest) {
     try {
       await clienteResend.contacts.create({
         email: correo,
-        audienceId: ID_AUDIencia,
+        audienceId: ID_AUDIENCIA,
         unsubscribed: false,
       });
     } catch (error: any) {

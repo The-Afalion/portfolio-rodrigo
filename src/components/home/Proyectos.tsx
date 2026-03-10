@@ -1,9 +1,9 @@
 "use client";
 import { motion } from "framer-motion";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, Code } from "lucide-react";
 import Link from "next/link";
 import EscenaCubo from "../escenas-3d/EscenaCubo";
-import { DATOS_PROYECTOS } from "@/datos/proyectos";
+import { PROYECTOS_CORE as DATOS_PROYECTOS } from "@/datos/proyectos";
 
 const variantesTarjeta = {
   oculto: { opacity: 0, scale: 0.95 },
@@ -24,7 +24,7 @@ export default function Proyectos() {
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -34,11 +34,11 @@ export default function Proyectos() {
         </motion.h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {DATOS_PROYECTOS.map((proyecto, indice) => {
-            const Icono = proyecto.icono;
+          {DATOS_PROYECTOS.map((proyecto: any, indice: number) => {
+            const Icono = Code;
             return (
               <motion.div
-                key={proyecto.slug}
+                key={proyecto.id}
                 variants={variantesTarjeta}
                 initial="oculto"
                 whileInView="visible"
@@ -52,7 +52,7 @@ export default function Proyectos() {
                 `}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                     style={{ transform: 'skewX(-20deg) translateX(-150%)', transition: 'transform 0.7s' }}
+                  style={{ transform: 'skewX(-20deg) translateX(-150%)', transition: 'transform 0.7s' }}
                 />
 
                 <div className="relative z-10 flex flex-col h-full">
@@ -61,21 +61,21 @@ export default function Proyectos() {
                       <Icono size={28} />
                     </div>
                     <div className="flex gap-4 text-muted-foreground">
-                      {proyecto.github !== "#" && (
-                        <a href={proyecto.github} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors"><Github size={20}/></a>
+                      {(proyecto.github && proyecto.github !== "#") && (
+                        <a href={proyecto.github} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors"><Github size={20} /></a>
                       )}
                       {/* El enlace principal ahora apunta a la página de detalle */}
-                      <Link href={`/proyectos/${proyecto.slug}`} className="hover:text-blue-500 transition-colors"><ExternalLink size={20}/></Link>
+                      <Link href={`/proyectos/${proyecto.id}`} className="hover:text-blue-500 transition-colors"><ExternalLink size={20} /></Link>
                     </div>
                   </div>
 
                   <div className="flex-grow">
-                    <h3 className="text-xl font-bold text-foreground mb-2">{proyecto.titulo}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed mb-6">{proyecto.descripcionCorta}</p>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{proyecto.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-6">{proyecto.description}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-auto">
-                    {proyecto.etiquetas.map((etiqueta) => (
+                    {proyecto.tech.map((etiqueta: string) => (
                       <span key={etiqueta} className="px-3 py-1 text-xs font-mono rounded-full bg-background text-muted-foreground">
                         {etiqueta}
                       </span>

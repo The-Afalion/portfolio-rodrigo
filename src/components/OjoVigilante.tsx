@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usarContextoGlobal } from '@/context/ContextoGlobal';
+import { useContextoGlobal } from '@/context/ContextoGlobal';
 import { X, Camera } from 'lucide-react';
 
 // --- Componente del Ojo Cibernético (Estilo Tech/HAL 9000) ---
@@ -192,7 +192,7 @@ function Interrogatorio({ onRespuesta }: { onRespuesta: (respuesta: string) => v
 
 // --- Gestor Principal del Huevo de Pascua 1984 ---
 export default function OjoVigilante() {
-  const { estado1984, setEstado1984, setLogoCambiado1984 } = usarContextoGlobal();
+  const { estado1984, setEstado1984, setLogoCambiado1984 } = useContextoGlobal();
   const [colorPupila, setColorPupila] = useState('#ef4444'); // Rojo neón
 
   const gestionarPermiso = () => {

@@ -6,7 +6,7 @@ import FormButton from './FormButton';
 import { createPost } from './actions';
 import toast from 'react-hot-toast';
 
-const initialState = { message: null, errors: {} };
+const initialState: any = { message: null, errors: {} };
 
 export default function PostForm() {
   const [state, dispatch] = useFormState(createPost, initialState);
@@ -32,7 +32,7 @@ export default function PostForm() {
         className="p-2 bg-background border border-border rounded"
       />
       {state.errors?.title && <p className="text-sm text-red-500">{state.errors.title.join(', ')}</p>}
-      
+
       <textarea
         name="content"
         placeholder="Escribe tu artículo aquí... (Markdown soportado)"
@@ -41,7 +41,7 @@ export default function PostForm() {
         className="p-2 bg-background border border-border rounded"
       />
       {state.errors?.content && <p className="text-sm text-red-500">{state.errors.content.join(', ')}</p>}
-      
+
       <FormButton />
     </form>
   );

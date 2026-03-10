@@ -15,7 +15,7 @@ function SubmitButton() {
 }
 
 export default function ContactPage() {
-  const initialState = { message: null, errors: {} };
+  const initialState: { message: string | null; errors: Record<string, string[]> } = { message: null, errors: {} };
   const [state, dispatch] = useFormState(saveMessage, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 

@@ -8,7 +8,7 @@ import { Stage, OrbitControls, useGLTF, Loader } from '@react-three/drei';
 // Suspense se encargará de mostrar el Loader mientras el modelo carga.
 function Modelo({ rutaModelo, escala }: { rutaModelo: string, escala: number }) {
   const { scene } = useGLTF(rutaModelo);
-  
+
   // Usamos <primitive> para renderizar la escena del modelo directamente.
   // Ajustamos la escala para que todos los modelos tengan un tamaño similar en la vista.
   return <primitive object={scene} scale={escala} />;
@@ -25,11 +25,11 @@ export default function VisorModelo3D({ rutaModelo, escala = 1 }: { rutaModelo: 
             'remaster' es un preset de iluminación de alta calidad.
             'soft' añade sombras suaves.
           */}
-          <Stage environment="city" intensity={0.6} shadows="soft">
+          <Stage environment="city" intensity={0.6} shadows="contact">
             <Modelo rutaModelo={rutaModelo} escala={escala} />
           </Stage>
         </Suspense>
-        
+
         {/* 
           <OrbitControls> permite al usuario rotar, hacer zoom y mover la cámara.
           'autoRotate' hace que el modelo gire lentamente por defecto.

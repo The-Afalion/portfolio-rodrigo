@@ -29,24 +29,24 @@ function LoginScreen() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-100 font-serif relative overflow-hidden">
       {/* Fondo de Tablero Sutil */}
       <div className="absolute inset-0 opacity-5 pointer-events-none bg-[conic-gradient(at_center,_var(--tw-gradient-stops))] from-zinc-100 via-zinc-900 to-zinc-900" style={{ backgroundSize: '100px 100px' }}></div>
-      
+
       {/* Piezas Flotantes Decorativas */}
-      <motion.div 
-        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }} 
+      <motion.div
+        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         className="absolute top-20 left-20 text-9xl opacity-10 select-none"
       >
         ♔
       </motion.div>
-      <motion.div 
-        animate={{ y: [0, 30, 0], rotate: [0, -10, 0] }} 
+      <motion.div
+        animate={{ y: [0, 30, 0], rotate: [0, -10, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         className="absolute bottom-20 right-20 text-9xl opacity-10 select-none"
       >
         ♘
       </motion.div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-xl shadow-2xl relative z-10"
@@ -56,7 +56,7 @@ function LoginScreen() {
             ♟
           </div>
         </div>
-        
+
         <h1 className="text-3xl font-bold text-center mb-2 font-serif tracking-tight">CHESS CLUB</h1>
         <p className="text-sm text-center text-zinc-500 mb-8 font-sans">Accede al santuario de la estrategia.</p>
 
@@ -69,8 +69,8 @@ function LoginScreen() {
         <form onSubmit={handleSubmit} className="space-y-5 font-sans">
           <div>
             <label className="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Usuario</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               className="w-full bg-zinc-950 border border-zinc-800 p-3 text-zinc-100 focus:border-zinc-100 focus:outline-none transition-all rounded-lg placeholder-zinc-700"
@@ -79,11 +79,11 @@ function LoginScreen() {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-xs font-bold text-zinc-400 mb-1 uppercase tracking-wider">Contraseña</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-zinc-950 border border-zinc-800 p-3 text-zinc-100 focus:border-zinc-100 focus:outline-none transition-all rounded-lg placeholder-zinc-700"
@@ -91,8 +91,8 @@ function LoginScreen() {
               required
             />
           </div>
-          
-          <button 
+
+          <button
             type="submit"
             disabled={cargando}
             className="w-full bg-zinc-100 text-zinc-900 py-3 font-bold hover:bg-white transition-all rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -100,12 +100,12 @@ function LoginScreen() {
             {cargando ? 'Procesando...' : (modoRegistro ? 'Crear Cuenta' : 'Entrar al Club')}
           </button>
         </form>
-        
+
         <div className="mt-6 text-center">
-          <button 
+          <button
             onClick={() => {
               setModoRegistro(!modoRegistro);
-              setError(null);
+              // setError(null);
             }}
             className="text-xs text-zinc-500 hover:text-zinc-300 underline transition-colors font-sans"
           >
@@ -138,13 +138,13 @@ function Dashboard() {
             </div>
             <span className="font-bold tracking-tight text-xl font-serif">CHESS<span className="text-zinc-500">CLUB</span></span>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end">
               <span className="text-sm font-bold">{usuario?.username}</span>
               <span className="text-xs text-zinc-500 font-mono bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">ELO: {usuario?.elo}</span>
             </div>
-            <button 
+            <button
               onClick={cerrarSesion}
               className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-red-400"
               title="Cerrar Sesión"
@@ -174,18 +174,17 @@ function Dashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`relative group rounded-xl border transition-all duration-300 ${
-                  unlocked 
-                    ? 'border-zinc-800 bg-zinc-900 hover:border-zinc-600 hover:shadow-2xl hover:-translate-y-1' 
+                className={`relative group rounded-xl border transition-all duration-300 ${unlocked
+                    ? 'border-zinc-800 bg-zinc-900 hover:border-zinc-600 hover:shadow-2xl hover:-translate-y-1'
                     : 'border-zinc-900 bg-zinc-950 opacity-50 grayscale'
-                } overflow-hidden flex flex-col`}
+                  } overflow-hidden flex flex-col`}
               >
                 {/* Estado Bloqueado Overlay */}
                 {!unlocked && (
                   <div className="absolute inset-0 z-20 bg-zinc-950/80 backdrop-blur-[1px] flex flex-col items-center justify-center text-zinc-600">
                     <Lock size={48} className="mb-4" />
                     <span className="text-sm font-bold uppercase tracking-widest">Nivel Bloqueado</span>
-                    <p className="text-xs mt-2 font-mono">Requiere vencer a {BOTS[index-1].nombre}</p>
+                    <p className="text-xs mt-2 font-mono">Requiere vencer a {BOTS[index - 1].nombre}</p>
                   </div>
                 )}
 
@@ -199,11 +198,11 @@ function Dashboard() {
                 <div className="p-8 flex flex-col items-center text-center flex-grow relative">
                   {/* Fondo sutil del avatar */}
                   <div className="absolute inset-0 bg-gradient-to-b from-zinc-800/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  
+
                   <div className={`w-24 h-24 rounded-full bg-zinc-800 flex items-center justify-center text-5xl mb-6 border-4 shadow-xl relative z-10 ${unlocked ? 'border-zinc-700' : 'border-zinc-900'}`}>
                     {bot.avatar}
                   </div>
-                  
+
                   <h3 className="text-2xl font-bold mb-1 font-serif relative z-10">{bot.nombre}</h3>
                   <div className="flex items-center gap-2 mb-4 relative z-10">
                     <span className={`text-xs font-bold px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400`}>
@@ -211,20 +210,19 @@ function Dashboard() {
                     </span>
                     <span className="text-xs font-mono text-zinc-500">ELO {bot.elo}</span>
                   </div>
-                  
+
                   <p className="text-sm text-zinc-400 leading-relaxed mb-6 relative z-10">
                     {bot.descripcion}
                   </p>
                 </div>
 
                 <div className="p-4 border-t border-zinc-800 bg-zinc-950/50 mt-auto relative z-10">
-                  <Link 
+                  <Link
                     href={unlocked ? `/chess/play/${bot.id}` : '#'}
-                    className={`block w-full py-3 text-center rounded-lg font-bold transition-all uppercase tracking-wider text-sm ${
-                      unlocked 
-                        ? 'bg-zinc-100 hover:bg-white text-zinc-900 shadow-lg' 
+                    className={`block w-full py-3 text-center rounded-lg font-bold transition-all uppercase tracking-wider text-sm ${unlocked
+                        ? 'bg-zinc-100 hover:bg-white text-zinc-900 shadow-lg'
                         : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
-                    }`}
+                      }`}
                   >
                     {unlocked ? 'Jugar Partida' : 'Bloqueado'}
                   </Link>

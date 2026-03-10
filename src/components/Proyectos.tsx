@@ -58,13 +58,11 @@ const variantesTarjeta = {
 
 export default function Proyectos() {
   return (
-    <section id="proyectos" className="relative py-32 px-4 md:px-10 bg-background text-foreground overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <FondoRejilla />
-      </div>
-
+    <section id="proyectos" className="relative py-32 px-4 md:px-10 bg-secondary text-foreground overflow-hidden border-t border-border">
       <div className="max-w-6xl mx-auto relative z-10">
-        <TituloSeccion>Proyectos Destacados</TituloSeccion>
+        <div className="flex justify-center mb-16">
+          <TituloSeccion>Proyectos Destacados</TituloSeccion>
+        </div>
 
         <motion.div
           variants={variantesContenedor}
@@ -78,29 +76,29 @@ export default function Proyectos() {
               key={indice}
               variants={variantesTarjeta}
               className={`
-                group relative p-8 rounded-2xl overflow-hidden
+                group relative p-8 rounded-none overflow-hidden
                 bg-card border border-border
-                transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10
+                transition-all duration-300 hover:border-foreground
                 ${proyecto.destacado ? "md:col-span-2" : "md:col-span-1"}
               `}
             >
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="text-foreground transition-transform duration-500 group-hover:scale-110">
                     {proyecto.icono}
                   </div>
                   <div className="flex gap-4 text-muted-foreground">
-                    {proyecto.github && <Link href={proyecto.github} target="_blank" className="hover:text-foreground transition-colors"><Github size={20}/></Link>}
-                    {proyecto.enlace && <Link href={proyecto.enlace} className="hover:text-primary transition-colors"><ExternalLink size={20}/></Link>}
+                    {proyecto.github && <Link href={proyecto.github} target="_blank" className="hover:text-foreground transition-colors"><Github size={20} strokeWidth={1.5} /></Link>}
+                    {proyecto.enlace && <Link href={proyecto.enlace} className="hover:text-foreground transition-colors"><ExternalLink size={20} strokeWidth={1.5} /></Link>}
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-foreground mb-2">{proyecto.titulo}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow">{proyecto.descripcion}</p>
+                <h3 className="text-2xl font-serif font-bold text-foreground mb-3 group-hover:text-primary transition-colors">{proyecto.titulo}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-8 flex-grow font-light">{proyecto.descripcion}</p>
 
                 <div className="flex flex-wrap gap-2">
                   {proyecto.etiquetas.map((etiqueta, i) => (
-                    <span key={i} className="px-3 py-1 text-xs font-mono rounded-full bg-secondary text-secondary-foreground">
+                    <span key={i} className="px-3 py-1 text-[10px] font-mono tracking-widest uppercase border border-border text-muted-foreground group-hover:border-foreground/30 transition-colors">
                       {etiqueta}
                     </span>
                   ))}

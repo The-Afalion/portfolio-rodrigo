@@ -11,13 +11,13 @@ import { AI_DATA } from './ai-data';
 
 // --- COMPONENTES DE UI ---
 // (Los componentes pequeños como AiCard, Champions, etc. no cambian)
-function SpiderChart({ stats }: { stats: { [key: string]: number } }) { /* ... */ }
-function AiCard({ ai }: { ai: any }) { /* ... */ }
-function Champions({ leaderboard }: { leaderboard: any[] }) { /* ... */ }
-function MatchList({ matches, onSelect, selectedId }: { matches: any[], onSelect: (match: any) => void, selectedId: string | null }) { /* ... */ }
-function GameInfo({ game, activeMatch }: { game: any, activeMatch: any }) { /* ... */ }
-function Bracket({ tournament }: { tournament: any }) { /* ... */ }
-function ForceStartButton() { /* ... */ }
+function SpiderChart({ stats }: { stats: { [key: string]: number } }) { return null; }
+function AiCard({ ai }: { ai: any }) { return null; }
+function Champions({ leaderboard }: { leaderboard: any[] }) { return null; }
+function MatchList({ matches, onSelect, selectedId }: { matches: any[], onSelect: (match: any) => void, selectedId: string | null }) { return null; }
+function GameInfo({ game, activeMatch }: { game: any, activeMatch: any }) { return null; }
+function Bracket({ tournament }: { tournament: any }) { return null; }
+function ForceStartButton() { return null; }
 
 // --- COMPONENTE PRINCIPAL CON LÓGICA DE POLLING ---
 
@@ -44,13 +44,13 @@ export default function TournamentClient({ initialTournament, initialLeaderboard
     return () => clearInterval(interval);
   }, []);
 
-  const activeRoundMatches = useMemo(() => 
-    tournament?.matches.filter((m: any) => m.status === 'ACTIVE' || m.status === 'PENDING') || [], 
-  [tournament]);
+  const activeRoundMatches = useMemo(() =>
+    tournament?.matches.filter((m: any) => m.status === 'ACTIVE' || m.status === 'PENDING') || [],
+    [tournament]);
 
-  const currentMatch = useMemo(() => 
+  const currentMatch = useMemo(() =>
     activeRoundMatches.find((m: any) => m.status === 'ACTIVE') || activeRoundMatches[0],
-  [activeRoundMatches]);
+    [activeRoundMatches]);
 
   useEffect(() => {
     if (currentMatch) {
@@ -63,7 +63,7 @@ export default function TournamentClient({ initialTournament, initialLeaderboard
       setGame(new Chess());
       return;
     };
-    
+
     const newGame = new Chess();
     activeMatch.moves.forEach((m: any) => newGame.move(m.move));
     setGame(newGame);

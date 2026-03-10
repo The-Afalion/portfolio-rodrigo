@@ -31,7 +31,7 @@ export default async function AdminMessagesPage() {
       <h1 className="text-3xl font-bold mb-8">Bandeja de Entrada</h1>
 
       <div className="space-y-4">
-        {messages.map((message) => (
+        {messages.map((message: any) => (
           <div key={message.id} className={`p-6 border rounded-lg ${message.read ? 'bg-secondary/50 border-border' : 'bg-secondary border-blue-500/50'}`}>
             <div className="flex justify-between items-start">
               <div>
@@ -44,7 +44,7 @@ export default async function AdminMessagesPage() {
                     <Mail size={18} />
                   </button>
                 </form>
-                <form action={async () => { "use server"; if(confirm('¿Eliminar este mensaje?')) await deleteMessage(message.id); }}>
+                <form action={async () => { "use server"; if (confirm('¿Eliminar este mensaje?')) await deleteMessage(message.id); }}>
                   <button type="submit" className="p-2 text-red-500 hover:bg-red-900/20 rounded" title="Eliminar">
                     <Trash2 size={18} />
                   </button>

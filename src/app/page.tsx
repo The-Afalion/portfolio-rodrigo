@@ -6,12 +6,13 @@ import SobreMi from "@/components/SobreMi";
 import Trayectoria from "@/components/Trayectoria";
 import SeccionBoletin from "@/components/SeccionBoletin";
 import LaboratoriosSection from "@/components/LaboratoriosSection";
+import DynamicThemeBackground from "@/components/backgrounds/DynamicThemeBackground";
 
 export default function Home() {
   return (
-    <main className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden">
-      
-      {/* El fondo ahora es un gradiente sutil definido en globals.css */}
+    <main className="bg-transparent text-foreground selection:bg-primary/20 selection:text-foreground overflow-x-hidden min-h-screen">
+
+      <DynamicThemeBackground />
 
       <div className="relative z-10">
         {/* La Presentacion ya no necesita el scrollYProgress para el fondo */}
@@ -22,7 +23,7 @@ export default function Home() {
         <LaboratoriosSection />
         <SeccionBoletin />
       </div>
-      
+
       {/* Footer eliminado de aquí porque ya está en layout.tsx o PieDePagina.tsx */}
     </main>
   );

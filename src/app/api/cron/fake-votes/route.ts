@@ -15,7 +15,7 @@ function evaluateMove(move: any, game: Chess) {
   let score = 0;
   if (move.flags.includes('c')) score += 10; // Captura
   if (move.flags.includes('p')) score += 100; // Promoción
-  
+
   // Simular el movimiento para ver si da jaque
   game.move(move.san);
   if (game.isCheck()) score += 25;
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
           name: name,
           personality: 'Voter' // A default personality for voting bots
         }));
-      
+
       if (newBots.length > 0) {
         await supabaseAdmin.from('ChessBot').insert(newBots);
         const { data: allBots } = await supabaseAdmin.from('ChessBot').select('id, name').in('name', BOT_NAMES);
@@ -62,10 +62,10 @@ export async function GET(request: Request) {
     }
 
     // 4. Analizar los mejores movimientos
-    const legalMoves = game.moves({ verbose: true });
+    const legalMoves = game.moves({ verbose: true }) as any[];
     const evaluatedMoves = legalMoves.map(move => ({
       san: move.san,
-      score: evaluateMove(move, new Chess(game.fen)),
+      score: evaluateMove(move, new Chess(game.fen())),
     })).sort((a, b) => b.score - a.score);
 
     // 5. Distribuir los votos

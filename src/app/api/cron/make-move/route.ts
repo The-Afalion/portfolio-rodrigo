@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         .eq('id', pendingMatch.id)
         .select('*, tournament:tournamentId(status)')
         .single();
-      
+
       activeMatch = updatedMatch;
     }
 
@@ -81,20 +81,22 @@ export async function GET(request: Request) {
 
     const bestMoveUci = await getLichessBestMove(game.fen());
     if (!bestMoveUci) throw new Error("Lichess no devolvió un movimiento.");
-    
-    const moveResult = game.move({ 
-      from: bestMoveUci.substring(0, 2), 
-      to: bestMoveUci.substring(2, 4), 
-      promotion: bestMoveUci.length > 4 ? bestMoveUci.substring(4) : undefined 
+
+    const moveResult = game.move({
+      from: bestMoveUci.substring(0, 2),
+      to: bestMoveUci.substring(2, 4),
+      promotion: bestMoveUci.length > 4 ? bestMoveUci.substring(4) : undefined
     });
 
-    const updatedMoves = [...(activeMatch.moves || []), { move: moveResult.san }];
+    if (!moveResult) throw new Error("Movimiento inválido.");
+
+    const updatedMoves = [...(activeMatch.moves || []), { move: (moveResult as any).san }];
     await supabaseAdmin
       .from('AITournamentMatch')
       .update({ moves: updatedMoves, lastMoveAt: new Date().toISOString() })
       .eq('id', activeMatch.id);
 
-    return NextResponse.json({ message: `Movimiento ${moveResult.san} realizado.` });
+    return NextResponse.json({ message: `Movimiento ${(moveResult as any).san} realizado.` });
 
   } catch (error: any) {
     console.error("Error en la API de movimiento:", error.message);

@@ -3,7 +3,7 @@ import { motion, useTransform, MotionValue } from "framer-motion";
 import { Terminal, Cpu, ChevronDown, Box } from "lucide-react";
 import Link from "next/link";
 import PlexusBackground from "./PlexusBackground";
-import { usarContextoGlobal } from "@/context/ContextoGlobal";
+import { useContextoGlobal } from "@/context/ContextoGlobal";
 
 type HeroProps = {
   scrollYProgress: MotionValue<number>;
@@ -11,9 +11,9 @@ type HeroProps = {
 
 // Componente para el Ojo Verde Pequeño en el título
 const OjoVerdeTitulo = () => (
-  <motion.span 
-    initial={{ scale: 0 }} 
-    animate={{ scale: 1 }} 
+  <motion.span
+    initial={{ scale: 0 }}
+    animate={{ scale: 1 }}
     className="inline-flex items-center justify-center w-[0.8em] h-[0.8em] align-middle relative mx-[0.05em]"
   >
     <div className="w-full h-full bg-white rounded-full overflow-hidden border border-green-900 relative shadow-[0_0_10px_#22c55e]">
@@ -27,7 +27,7 @@ const OjoVerdeTitulo = () => (
 );
 
 const Title = ({ text }: { text: string }) => {
-  const { logoCambiado1984 } = usarContextoGlobal();
+  const { logoCambiado1984 } = useContextoGlobal();
 
   return (
     <span className="inline-block">
@@ -46,7 +46,7 @@ const Title = ({ text }: { text: string }) => {
             </motion.span>
           );
         }
-        
+
         return (
           <motion.span
             key={i}
@@ -68,8 +68,8 @@ export default function Hero({ scrollYProgress }: HeroProps) {
 
   return (
     <section className="relative h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-background text-foreground">
-      <PlexusBackground scrollYProgress={scrollYProgress} />
-      
+      <PlexusBackground />
+
       <motion.div style={{ y }} className="z-10 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}

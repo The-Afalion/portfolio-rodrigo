@@ -22,8 +22,8 @@ export default function EngineeringPage() {
       </div>
 
       <div className="absolute bottom-6 left-6 z-50 pointer-events-none">
-        <h1 className="text-4xl font-bold text-white tracking-tighter">ENGINEERING CORE</h1>
-        <p className="text-white/50 font-mono text-xs mt-1">Navegación: Scroll / Drag</p>
+        <h1 className="text-4xl font-bold text-white tracking-tighter">PROCEDURAL AI HUB</h1>
+        <p className="text-white/50 font-mono text-xs mt-1">Navegación espacial: Click & Drag</p>
       </div>
 
       {/* Escena 3D */}

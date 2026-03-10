@@ -16,7 +16,7 @@ export default async function PaginaBlog({
   searchParams?: { q?: string };
 }) {
   const query = searchParams?.q || '';
-  
+
   const posts = await prisma.post.findMany({
     where: {
       published: true,
@@ -32,7 +32,7 @@ export default async function PaginaBlog({
   return (
     <main className="bg-background text-foreground min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        
+
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Blog Técnico</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -45,7 +45,7 @@ export default async function PaginaBlog({
 
         {query && (
           <p className="text-center text-muted-foreground mb-12">
-            Mostrando resultados para "<span className="font-semibold text-foreground">{query}</span>"
+            Mostrando resultados para &quot;<span className="font-semibold text-foreground">{query}</span>&quot;
           </p>
         )}
 
@@ -70,11 +70,11 @@ export default async function PaginaBlog({
                     ))}
                   </div>
                 </div>
-                
+
                 <h2 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
                   {post.title}
                 </h2>
-                
+
                 <p className="text-muted-foreground line-clamp-3 leading-relaxed">
                   {post.content.replace(/<[^>]*>?/gm, '').substring(0, 200)}...
                 </p>

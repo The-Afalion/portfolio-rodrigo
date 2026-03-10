@@ -1,20 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 import { Proveedores } from "@/components/Proveedores";
 import ContenidoPrincipal from "@/components/ContenidoPrincipal";
-import ChatRealtime from "@/components/ChatRealtime"; // Importamos el chat
+import ChatRealtime from "@/components/ChatRealtime";
 
-const fuenteSans = Plus_Jakarta_Sans({ 
-  subsets: ["latin"], 
+const fuenteSans = Inter({
+  subsets: ["latin"],
   variable: "--font-sans",
   display: 'swap',
 });
 
-const fuenteMono = JetBrains_Mono({ 
-  subsets: ["latin"], 
+const fuenteDisplay = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: 'swap',
+});
+
+const fuenteMono = JetBrains_Mono({
+  subsets: ["latin"],
   variable: "--font-mono",
   display: 'swap',
 });
@@ -88,9 +94,9 @@ export default function DisposicionRaiz({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${fuenteSans.variable} ${fuenteMono.variable} font-sans antialiased selection:bg-green-500 selection:text-black`}
+        className={`${fuenteSans.variable} ${fuenteDisplay.variable} ${fuenteMono.variable} font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-foreground`}
       >
-        <Toaster 
+        <Toaster
           position="bottom-right"
           toastOptions={{
             className: 'font-mono',

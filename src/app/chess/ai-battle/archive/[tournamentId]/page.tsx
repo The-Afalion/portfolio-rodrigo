@@ -57,7 +57,7 @@ export default async function ArchivedTournamentPage({ params }: { params: { tou
         </h1>
         {tournament ? (
           <p className="text-muted-foreground font-mono mt-2">
-            Finalizado el {new Date(tournament.createdAt).toLocaleDateString()} - Campeón: {tournament.winner?.name}
+            Finalizado el {new Date(tournament.createdAt).toLocaleDateString()} - Campeón: {(tournament.winner as any)?.name}
           </p>
         ) : (
           <p className="text-muted-foreground font-mono mt-2">

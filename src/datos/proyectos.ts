@@ -70,5 +70,41 @@ export const PROYECTOS_CORE = [
     color: '#f97316', // Naranja Neón
     position: [8, 0, -12] as [number, number, number],
     link: '/chrono-dasher'
+  },
+  {
+    id: 'neural-racing',
+    title: 'Neural Racing',
+    description: 'Vehículos evolucionan sus Redes Neuronales mediante Algoritmos Genéticos en el cliente.',
+    tech: ['TypeScript', 'Neuroevolution', 'Canvas'],
+    color: '#10b981', // Verde IA
+    position: [4, 4, -5] as [number, number, number],
+    link: '/engineering/neural-racing'
+  },
+  {
+    id: 'eco-engine',
+    title: 'Ecosystem Engine',
+    description: 'Sandbox de Vida Artificial evolutivo. Presas, depredadores y especiación algorítmica.',
+    tech: ['TypeScript', 'Artificial Life', 'ProcGen'],
+    color: '#8b5cf6', // Violeta evolutivo
+    position: [-4, -4, -2] as [number, number, number],
+    link: '/engineering/ecosystem'
+  },
+  {
+    id: 'neural-swarm',
+    title: 'Neural Swarm',
+    description: 'Sandbox interactivo. Dibuja laberintos y observa a enjambres neuronales evolucionar para resolverlos.',
+    tech: ['TypeScript', 'Genetic Algorithm', 'Raycasting'],
+    color: '#fbbf24', // Amber/Yellow
+    position: [0, 3, 4] as [number, number, number],
+    link: '/engineering/swarm'
+  },
+  {
+    id: 'lumina-flow',
+    title: 'Lumina Flow',
+    description: 'Boids interactivos y arte generativo. Relájate observando bancos de luz orgánicos.',
+    tech: ['Flocking Math', 'Canvas', 'Generative'],
+    color: '#0ea5e9', // Ocean Blue
+    position: [-8, 2, 2] as [number, number, number],
+    link: '/engineering/lumina'
   }
 ];

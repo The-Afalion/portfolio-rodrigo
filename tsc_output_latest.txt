@@ -1,0 +1,37 @@
+src/app/api/cron/fake-votes/route.ts(67,17): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/app/api/cron/fake-votes/route.ts(68,43): error TS2345: Argument of type '() => string' is not assignable to parameter of type 'string'.
+src/app/api/cron/fake-votes/route.ts(96,39): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/app/api/cron/make-move/route.ts(93,76): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/api/cron/make-move/route.ts(99,66): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/api/make-move/route.ts(57,5): error TS2353: Object literal may only specify known properties, and 'body' does not exist in type 'NextApiHandler'.
+src/app/api/make-move/route.ts(95,59): error TS18047: 'moveResult' is possibly 'null'.
+src/app/api/make-move/route.ts(95,70): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/api/make-move/route.ts(101,7): error TS2322: Type '`${number}s`' is not assignable to type 'number | `${bigint}s` | `${bigint}d` | `${bigint}h` | `${bigint}m` | undefined'.
+src/app/api/make-move/route.ts(104,49): error TS18047: 'moveResult' is possibly 'null'.
+src/app/api/make-move/route.ts(104,60): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/chess/ai-battle/actions.ts(24,24): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/app/chess/ai-battle/actions.ts(25,17): error TS7006: Parameter 'piece' implicitly has an 'any' type.
+src/app/chess/ai-battle/actions.ts(86,14): error TS2339: Property 'flags' does not exist on type 'string | object'.
+  Property 'flags' does not exist on type 'string'.
+src/app/chess/ai-battle/actions.ts(119,18): error TS2322: Type 'string | object' is not assignable to type 'string'.
+  Type 'object' is not assignable to type 'string'.
+src/app/chess/play/[gameId]/page.tsx(248,21): error TS2322: Type 'string | string[]' is not assignable to type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/app/chess/play/[gameId]/page.tsx(251,27): error TS2322: Type 'string | string[]' is not assignable to type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/app/nexus/game/[gameId]/page.tsx(59,25): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/components/BackgroundManager.tsx(29,21): error TS2322: Type '{ progresoScrollY: MotionValue<number>; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'progresoScrollY' does not exist on type 'IntrinsicAttributes'.
+src/lib/chess-ai.ts(72,35): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/utils/chessAI.ts(119,56): error TS2345: Argument of type '(string | object)[]' is not assignable to parameter of type 'string[]'.
+  Type 'string | object' is not assignable to type 'string'.
+    Type 'object' is not assignable to type 'string'.
+src/utils/chessAI.ts(131,37): error TS2322: Type 'string | object' is not assignable to type 'string | null'.
+  Type 'object' is not assignable to type 'string'.
+src/utils/chessAI.ts(146,9): error TS2322: Type 'string | object' is not assignable to type 'string | null'.
+  Type 'object' is not assignable to type 'string'.
+src/utils/chessAI.ts(164,13): error TS2322: Type 'string | object' is not assignable to type 'string | null'.
+  Type 'object' is not assignable to type 'string'.

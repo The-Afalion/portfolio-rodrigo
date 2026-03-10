@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usarContextoGlobal } from '@/context/ContextoGlobal';
+import { useContextoGlobal } from '@/context/ContextoGlobal';
 import { Type, Printer, ShieldAlert, FileText, Zap, X } from 'lucide-react';
 
 const ANCHO_JUEGO = 900;
@@ -171,7 +171,7 @@ function GuardiaView({ g }: { g: Guardia }) {
 // --- Componente Principal ---
 
 export default function Minijuego1984() {
-  const { setEstado1984, setLogoCambiado1984 } = usarContextoGlobal();
+  const { setEstado1984, setLogoCambiado1984 } = useContextoGlobal();
   
   // Estados del Juego
   const [posicionJugador, setPosicionJugador] = useState(100);

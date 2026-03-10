@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { usePathname } from 'next/navigation'; // Importamos el hook
 import { Terminal, Eye, Rss, Mail } from "lucide-react";
 import Link from "next/link";
-import { usarContextoGlobal } from "@/context/ContextoGlobal";
-import VisualControls from "./VisualControls";
+import { useContextoGlobal } from "@/context/ContextoGlobal";
+import ThemeToggle from "./ThemeToggle";
 
 const variantesElementoNav = {
   oculto: { y: -20, opacity: 0 },
@@ -13,7 +13,7 @@ const variantesElementoNav = {
 };
 
 function Logo() {
-  const { logoCambiado1984 } = usarContextoGlobal();
+  const { logoCambiado1984 } = useContextoGlobal();
   return (
     <span className="font-mono font-bold text-lg tracking-tight hidden sm:flex items-center text-foreground">
       <span>r</span>
@@ -50,11 +50,10 @@ export default function BarraNavegacion() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        haHechoScroll
-          ? "bg-background/80 backdrop-blur-md border-b border-border py-3"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${haHechoScroll
+          ? "bg-background border-b border-border py-4 shadow-sm"
           : "bg-transparent py-6"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         <motion.div variants={variantesElementoNav} initial="oculto" animate="visible" transition={{ delay: 0.6 }}>
@@ -90,7 +89,7 @@ export default function BarraNavegacion() {
 
           <div className="h-6 w-px bg-border hidden sm:block"></div>
 
-          <VisualControls />
+          <ThemeToggle />
         </motion.div>
       </div>
     </motion.nav>

@@ -1,0 +1,242 @@
+prisma/seed.ts(3,7): error TS2451: Cannot redeclare block-scoped variable 'prisma'.
+src/app/@modal/(.)proyectos/[slug]/page.tsx(12,27): error TS2740: Type '{ id: string; title: string; description: string; tech: string[]; color: string; position: [number, number, number]; link: string; }' is missing the following properties from type 'Proyecto': titulo, descripcionLarga, etiquetas, enlace, and 2 more.
+src/app/admin/chess/page.tsx(26,25): error TS7006: Parameter 'game' implicitly has an 'any' type.
+src/app/admin/messages/page.tsx(34,24): error TS7006: Parameter 'message' implicitly has an 'any' type.
+src/app/admin/page.tsx(20,24): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/admin/posts/[id]/edit/EditPostForm.tsx(22,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(action: (state: { message: string; errors?: undefined; } | { message: string; errors: { content?: string[] | undefined; title?: string[] | undefined; tags?: string[] | undefined; }; }) => { message: string; errors?: undefined; } | { ...; } | Promise<...>, initialState: { ...; } | { ...; }, permalink?: string | undefined): [state: ...]', gave the following error.
+    Argument of type '(prevState: any, formData: FormData) => Promise<{ message: string; errors?: undefined; } | { message: string; errors: { content?: string[] | undefined; title?: string[] | undefined; tags?: string[] | undefined; }; }>' is not assignable to parameter of type '(state: { message: string; errors?: undefined; } | { message: string; errors: { content?: string[] | undefined; title?: string[] | undefined; tags?: string[] | undefined; }; }) => { message: string; errors?: undefined; } | { ...; } | Promise<...>'.
+      Target signature provides too few arguments. Expected 2 or more, but got 1.
+  Overload 2 of 2, '(action: (state: { message: string; errors?: undefined; } | { message: string; errors: { content?: string[] | undefined; title?: string[] | undefined; tags?: string[] | undefined; }; }, payload: FormData) => { ...; } | ... 1 more ... | Promise<...>, initialState: { ...; } | { ...; }, permalink?: string | undefined): [state: ...]', gave the following error.
+    Argument of type '{ message: null; errors: {}; }' is not assignable to parameter of type '{ message: string; errors?: undefined; } | { message: string; errors: { content?: string[] | undefined; title?: string[] | undefined; tags?: string[] | undefined; }; }'.
+      Type '{ message: null; errors: {}; }' is not assignable to type '{ message: string; errors: { content?: string[] | undefined; title?: string[] | undefined; tags?: string[] | undefined; }; }'.
+        Types of property 'message' are incompatible.
+          Type 'null' is not assignable to type 'string'.
+src/app/admin/posts/actions.ts(22,24): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/admin/posts/page.tsx(36,21): error TS7006: Parameter 'post' implicitly has an 'any' type.
+src/app/admin/posts/PostForm.tsx(12,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(action: (state: void) => void | Promise<void>, initialState: void, permalink?: string | undefined): [state: void, dispatch: () => void, isPending: boolean]', gave the following error.
+    Argument of type '(prevState: any, formData: FormData) => Promise<void>' is not assignable to parameter of type '(state: void) => void | Promise<void>'.
+      Target signature provides too few arguments. Expected 2 or more, but got 1.
+  Overload 2 of 2, '(action: (state: void, payload: FormData) => void | Promise<void>, initialState: void, permalink?: string | undefined): [state: void, dispatch: (payload: FormData) => void, isPending: boolean]', gave the following error.
+    Argument of type '{ message: null; errors: {}; }' is not assignable to parameter of type 'void'.
+src/app/admin/posts/PostForm.tsx(16,15): error TS2339: Property 'message' does not exist on type 'void'.
+src/app/admin/posts/PostForm.tsx(17,17): error TS2339: Property 'message' does not exist on type 'void'.
+src/app/admin/posts/PostForm.tsx(18,27): error TS2339: Property 'message' does not exist on type 'void'.
+src/app/admin/posts/PostForm.tsx(20,29): error TS2339: Property 'message' does not exist on type 'void'.
+src/app/admin/posts/PostForm.tsx(34,14): error TS2339: Property 'errors' does not exist on type 'void'.
+src/app/admin/posts/PostForm.tsx(34,74): error TS2339: Property 'errors' does not exist on type 'void'.
+src/app/admin/posts/PostForm.tsx(43,14): error TS2339: Property 'errors' does not exist on type 'void'.
+src/app/admin/posts/PostForm.tsx(43,76): error TS2339: Property 'errors' does not exist on type 'void'.
+src/app/admin/subscribers/page.tsx(23,31): error TS7006: Parameter 'subscriber' implicitly has an 'any' type.
+src/app/api/auth/callback/route.ts(16,26): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/api/cron/community-move/route.ts(19,45): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/app/api/cron/community-move/route.ts(19,50): error TS7006: Parameter 'vote' implicitly has an 'any' type.
+src/app/api/cron/community-move/route.ts(32,7): error TS2322: Type 'string | object' is not assignable to type 'string | null'.
+  Type 'object' is not assignable to type 'string'.
+src/app/api/cron/community-move/route.ts(33,18): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | object'.
+  Type 'null' is not assignable to type 'string | object'.
+src/app/api/cron/fake-votes/route.ts(21,12): error TS2339: Property 'isCheck' does not exist on type 'Chess'.
+src/app/api/cron/fake-votes/route.ts(22,12): error TS2551: Property 'isCheckmate' does not exist on type 'Chess'. Did you mean 'in_checkmate'?
+src/app/api/cron/fake-votes/route.ts(23,8): error TS2339: Property 'undo' does not exist on type 'Chess'.
+src/app/api/cron/fake-votes/route.ts(67,17): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/app/api/cron/fake-votes/route.ts(68,43): error TS2345: Argument of type '() => string' is not assignable to parameter of type 'string'.
+src/app/api/cron/fake-votes/route.ts(96,39): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/app/api/cron/make-move/route.ts(76,14): error TS2551: Property 'isGameOver' does not exist on type 'Chess'. Did you mean 'game_over'?
+src/app/api/cron/make-move/route.ts(91,65): error TS18047: 'moveResult' is possibly 'null'.
+src/app/api/cron/make-move/route.ts(91,76): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/api/cron/make-move/route.ts(97,55): error TS18047: 'moveResult' is possibly 'null'.
+src/app/api/cron/make-move/route.ts(97,66): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/api/make-move/route.ts(57,5): error TS2353: Object literal may only specify known properties, and 'body' does not exist in type 'NextApiHandler'.
+src/app/api/make-move/route.ts(84,14): error TS2551: Property 'isGameOver' does not exist on type 'Chess'. Did you mean 'game_over'?
+src/app/api/make-move/route.ts(95,59): error TS18047: 'moveResult' is possibly 'null'.
+src/app/api/make-move/route.ts(95,70): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/api/make-move/route.ts(101,7): error TS2322: Type '`${number}s`' is not assignable to type 'number | `${bigint}d` | `${bigint}h` | `${bigint}m` | `${bigint}s` | undefined'.
+src/app/api/make-move/route.ts(104,49): error TS18047: 'moveResult' is possibly 'null'.
+src/app/api/make-move/route.ts(104,60): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/api/suscripcion/route.ts(28,21): error TS2552: Cannot find name 'ID_AUDIencia'. Did you mean 'ID_AUDIENCIA'?
+src/app/blog/[slug]/page.tsx(55,26): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/app/blog/page.tsx(53,23): error TS7006: Parameter 'post' implicitly has an 'any' type.
+src/app/blog/page.tsx(66,36): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/app/blog/tags/[tag]/page.tsx(44,23): error TS7006: Parameter 'post' implicitly has an 'any' type.
+src/app/chess/ai-battle/actions.ts(24,8): error TS2339: Property 'board' does not exist on type 'Chess'.
+src/app/chess/ai-battle/actions.ts(24,24): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/app/chess/ai-battle/actions.ts(25,17): error TS7006: Parameter 'piece' implicitly has an 'any' type.
+src/app/chess/ai-battle/actions.ts(33,27): error TS2551: Property 'isGameOver' does not exist on type 'Chess'. Did you mean 'game_over'?
+src/app/chess/ai-battle/actions.ts(40,12): error TS2339: Property 'undo' does not exist on type 'Chess'.
+src/app/chess/ai-battle/actions.ts(51,12): error TS2339: Property 'undo' does not exist on type 'Chess'.
+src/app/chess/ai-battle/actions.ts(82,10): error TS2339: Property 'undo' does not exist on type 'Chess'.
+src/app/chess/ai-battle/actions.ts(86,14): error TS2339: Property 'flags' does not exist on type 'string | object'.
+  Property 'flags' does not exist on type 'string'.
+src/app/chess/ai-battle/actions.ts(107,16): error TS2551: Property 'isGameOver' does not exist on type 'Chess'. Did you mean 'game_over'?
+src/app/chess/ai-battle/actions.ts(119,18): error TS2322: Type 'string | object' is not assignable to type 'string'.
+  Type 'object' is not assignable to type 'string'.
+src/app/chess/ai-battle/archive/[tournamentId]/page.tsx(60,112): error TS2339: Property 'name' does not exist on type '{ name: any; }[]'.
+src/app/chess/ai-battle/archive/page.tsx(55,41): error TS2339: Property 'name' does not exist on type '{ name: any; }[]'.
+src/app/chess/ai-battle/TournamentClient.tsx(79,10): error TS2786: 'ForceStartButton' cannot be used as a JSX component.
+  Its type '() => void' is not a valid JSX element type.
+    Type '() => void' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'void' is not assignable to type 'ReactNode'.
+src/app/chess/ai-battle/TournamentClient.tsx(86,8): error TS2786: 'Champions' cannot be used as a JSX component.
+  Its type '({ leaderboard }: { leaderboard: any[]; }) => void' is not a valid JSX element type.
+    Type '({ leaderboard }: { leaderboard: any[]; }) => void' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'void' is not assignable to type 'ReactNode'.
+src/app/chess/ai-battle/TournamentClient.tsx(97,12): error TS2786: 'MatchList' cannot be used as a JSX component.
+  Its type '({ matches, onSelect, selectedId }: { matches: any[]; onSelect: (match: any) => void; selectedId: string | null; }) => void' is not a valid JSX element type.
+    Type '({ matches, onSelect, selectedId }: { matches: any[]; onSelect: (match: any) => void; selectedId: string | null; }) => void' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'void' is not assignable to type 'ReactNode'.
+src/app/chess/ai-battle/TournamentClient.tsx(98,12): error TS2786: 'GameInfo' cannot be used as a JSX component.
+  Its type '({ game, activeMatch }: { game: any; activeMatch: any; }) => void' is not a valid JSX element type.
+    Type '({ game, activeMatch }: { game: any; activeMatch: any; }) => void' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'void' is not assignable to type 'ReactNode'.
+src/app/chess/ai-battle/TournamentClient.tsx(103,10): error TS2786: 'Bracket' cannot be used as a JSX component.
+  Its type '({ tournament }: { tournament: any; }) => void' is not a valid JSX element type.
+    Type '({ tournament }: { tournament: any; }) => void' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'void' is not assignable to type 'ReactNode'.
+src/app/chess/ai-battle/TournamentClient.tsx(108,46): error TS2786: 'AiCard' cannot be used as a JSX component.
+  Its type '({ ai }: { ai: any; }) => void' is not a valid JSX element type.
+    Type '({ ai }: { ai: any; }) => void' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'void' is not assignable to type 'ReactNode'.
+src/app/chess/community/ChessCommunityClient.tsx(6,10): error TS2305: Module '"./actions"' has no exported member 'executeMoveAndInjectVotes'.
+src/app/chess/community/ChessCommunityClient.tsx(27,30): error TS2339: Property 'san' does not exist on type 'object'.
+src/app/chess/community/ChessCommunityClient.tsx(63,65): error TS2571: Object is of type 'unknown'.
+src/app/chess/community/ChessCommunityClient.tsx(63,72): error TS2571: Object is of type 'unknown'.
+src/app/chess/community/ChessCommunityClient.tsx(89,53): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/app/chess/community/ChessCommunityClient.tsx(89,62): error TS18046: 'count' is of type 'unknown'.
+src/app/chess/community/PlayerList.tsx(23,30): error TS7031: Binding element 'players' implicitly has an 'any' type.
+src/app/chess/community/PlayerList.tsx(23,39): error TS7031: Binding element 'currentUser' implicitly has an 'any' type.
+src/app/chess/community/PlayerList.tsx(28,21): error TS7006: Parameter 'player' implicitly has an 'any' type.
+src/app/chess/invitations/page.tsx(42,27): error TS7006: Parameter 'invitation' implicitly has an 'any' type.
+src/app/chess/page.tsx(108,15): error TS2304: Cannot find name 'setError'.
+src/app/chess/play/[gameId]/page.tsx(7,45): error TS2307: Cannot find module '@supabase/auth-helpers-nextjs' or its corresponding type declarations.
+src/app/chess/play/[gameId]/page.tsx(19,42): error TS2339: Property 'flags' does not exist on type 'string | object'.
+  Property 'flags' does not exist on type 'string'.
+src/app/chess/play/[gameId]/page.tsx(19,67): error TS2339: Property 'flags' does not exist on type 'string | object'.
+  Property 'flags' does not exist on type 'string'.
+src/app/chess/play/[gameId]/page.tsx(21,68): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/app/chess/play/[gameId]/page.tsx(24,58): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/app/chess/play/[gameId]/page.tsx(27,20): error TS7031: Binding element 'botId' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(56,20): error TS2551: Property 'isCheckmate' does not exist on type 'Chess'. Did you mean 'in_checkmate'?
+src/app/chess/play/[gameId]/page.tsx(59,27): error TS2339: Property 'isCheck' does not exist on type 'Chess'.
+src/app/chess/play/[gameId]/page.tsx(61,22): error TS18047: 'result' is possibly 'null'.
+src/app/chess/play/[gameId]/page.tsx(61,29): error TS2339: Property 'captured' does not exist on type 'object'.
+src/app/chess/play/[gameId]/page.tsx(78,16): error TS2551: Property 'isCheckmate' does not exist on type 'Chess'. Did you mean 'in_checkmate'?
+src/app/chess/play/[gameId]/page.tsx(82,23): error TS2339: Property 'isDraw' does not exist on type 'Chess'.
+src/app/chess/play/[gameId]/page.tsx(150,17): error TS7031: Binding element 'gameId' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(150,25): error TS7031: Binding element 'supabase' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(150,35): error TS7031: Binding element 'user' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(160,169): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(160,195): error TS2345: Argument of type '(prev: never[]) => any[]' is not assignable to parameter of type 'SetStateAction<never[]>'.
+  Type '(prev: never[]) => any[]' is not assignable to type '(prevState: never[]) => never[]'.
+    Type 'any[]' is not assignable to type 'never[]'.
+      Type 'any' is not assignable to type 'never'.
+src/app/chess/play/[gameId]/page.tsx(164,36): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(174,47): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/chess/play/[gameId]/page.tsx(174,74): error TS2339: Property 'senderId' does not exist on type 'never'.
+src/app/chess/play/[gameId]/page.tsx(174,160): error TS2339: Property 'content' does not exist on type 'never'.
+src/app/chess/play/[gameId]/page.tsx(184,28): error TS7031: Binding element 'gameId' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(211,16): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/chess/play/[gameId]/page.tsx(211,58): error TS2345: Argument of type '"w"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/app/chess/play/[gameId]/page.tsx(212,21): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/chess/play/[gameId]/page.tsx(212,63): error TS2345: Argument of type '"b"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/app/chess/play/[gameId]/page.tsx(215,166): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(224,25): error TS7006: Parameter 'sourceSquare' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(224,39): error TS7006: Parameter 'targetSquare' implicitly has an 'any' type.
+src/app/chess/play/[gameId]/page.tsx(230,72): error TS2339: Property 'pgn' does not exist on type 'Chess'.
+src/app/chess/play/[gameId]/page.tsx(237,34): error TS2322: Type '(sourceSquare: any, targetSquare: any) => Promise<boolean>' is not assignable to type '(sourceSquare: Square, targetSquare: Square, piece: Piece) => boolean'.
+  Type 'Promise<boolean>' is not assignable to type 'boolean'.
+src/app/chrono-dasher/Game.tsx(101,9): error TS2339: Property 'unrealBloomPass' does not exist on type 'JSX.IntrinsicElements'.
+src/app/contact/page.tsx(19,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(action: (state: { message: string; errors: { name?: string[] | undefined; message?: string[] | undefined; email?: string[] | undefined; }; }) => { message: string; errors: { name?: string[] | undefined; message?: string[] | undefined; email?: string[] | undefined; }; } | Promise<...>, initialState: { ...; }, permalink?: string | undefined): [state: ...]', gave the following error.
+    Argument of type '(prevState: any, formData: FormData) => Promise<{ message: string; errors: { name?: string[] | undefined; message?: string[] | undefined; email?: string[] | undefined; }; }>' is not assignable to parameter of type '(state: { message: string; errors: { name?: string[] | undefined; message?: string[] | undefined; email?: string[] | undefined; }; }) => { message: string; errors: { name?: string[] | undefined; message?: string[] | undefined; email?: string[] | undefined; }; } | Promise<...>'.
+      Target signature provides too few arguments. Expected 2 or more, but got 1.
+  Overload 2 of 2, '(action: (state: { message: string; errors: { name?: string[] | undefined; message?: string[] | undefined; email?: string[] | undefined; }; }, payload: FormData) => { message: string; errors: { ...; }; } | Promise<...>, initialState: { ...; }, permalink?: string | undefined): [state: ...]', gave the following error.
+    Argument of type '{ message: null; errors: {}; }' is not assignable to parameter of type '{ message: string; errors: { name?: string[] | undefined; message?: string[] | undefined; email?: string[] | undefined; }; }'.
+      Types of property 'message' are incompatible.
+        Type 'null' is not assignable to type 'string'.
+src/app/login/actions.ts(6,42): error TS7006: Parameter 'email' implicitly has an 'any' type.
+src/app/login/actions.ts(6,49): error TS7006: Parameter 'password' implicitly has an 'any' type.
+src/app/login/actions.ts(14,17): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/login/actions.ts(15,17): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/login/actions.ts(15,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/app/login/actions.ts(15,30): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/app/login/actions.ts(18,20): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/login/actions.ts(18,26): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/app/nexus/game/[gameId]/page.tsx(59,25): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/app/nexus/game/[gameId]/page.tsx(108,19): error TS2551: Property 'isGameOver' does not exist on type 'Chess'. Did you mean 'game_over'?
+src/app/nexus/NexusClient.tsx(66,77): error TS2347: Untyped function calls may not accept type arguments.
+src/app/nexus/NexusClient.tsx(66,121): error TS18046: 'p' is of type 'unknown'.
+src/app/nexus/NexusClient.tsx(86,25): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/app/physics/GaltonBoard.tsx(85,43): error TS2304: Cannot find name 'Runner'.
+src/app/physics/GaltonBoard.tsx(93,20): error TS2304: Cannot find name 'Bodies'.
+src/app/signup/actions.ts(6,30): error TS7006: Parameter 'email' implicitly has an 'any' type.
+src/app/signup/actions.ts(6,37): error TS7006: Parameter 'password' implicitly has an 'any' type.
+src/app/signup/actions.ts(14,17): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/signup/actions.ts(15,17): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/signup/actions.ts(15,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/app/signup/actions.ts(15,30): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/app/signup/actions.ts(18,20): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/app/signup/actions.ts(18,26): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/app/urban/UrbanScene.tsx(30,3): error TS2304: Cannot find name 'useEffect'.
+src/app/urban/UrbanScene.tsx(118,9): error TS2339: Property 'unrealBloomPass' does not exist on type 'JSX.IntrinsicElements'.
+src/app/urban/UrbanScene.tsx(119,9): error TS2339: Property 'filmPass' does not exist on type 'JSX.IntrinsicElements'.
+src/components/About.tsx(3,24): error TS2305: Module '"lucide-react"' has no exported member 'Rowing'.
+src/components/BackgroundManager.tsx(29,21): error TS2322: Type '{ progresoScrollY: MotionValue<number>; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'progresoScrollY' does not exist on type 'IntrinsicAttributes'.
+src/components/ChessGame.tsx(60,17): error TS2551: Property 'isCheckmate' does not exist on type 'Chess'. Did you mean 'in_checkmate'?
+src/components/ChessGame.tsx(62,24): error TS2339: Property 'isDraw' does not exist on type 'Chess'.
+src/components/ChessGame.tsx(66,19): error TS2339: Property 'isCheck' does not exist on type 'Chess'.
+src/components/EfectoMatrix.tsx(31,7): error TS18047: 'ctx' is possibly 'null'.
+src/components/EfectoMatrix.tsx(32,7): error TS18047: 'ctx' is possibly 'null'.
+src/components/EfectoMatrix.tsx(32,26): error TS18047: 'canvas' is possibly 'null'.
+src/components/EfectoMatrix.tsx(32,40): error TS18047: 'canvas' is possibly 'null'.
+src/components/EfectoMatrix.tsx(34,7): error TS18047: 'ctx' is possibly 'null'.
+src/components/EfectoMatrix.tsx(35,7): error TS18047: 'ctx' is possibly 'null'.
+src/components/EfectoMatrix.tsx(39,9): error TS18047: 'ctx' is possibly 'null'.
+src/components/EfectoMatrix.tsx(42,39): error TS18047: 'canvas' is possibly 'null'.
+src/components/escenas-3d/VisorModelo3D.tsx(28,53): error TS2322: Type '"soft"' is not assignable to type 'boolean | "contact" | "accumulative" | StageShadows | undefined'.
+src/components/Hero.tsx(71,25): error TS2322: Type '{ scrollYProgress: MotionValue<number>; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'scrollYProgress' does not exist on type 'IntrinsicAttributes'.
+src/components/home/Proyectos.tsx(5,24): error TS2307: Cannot find module '../escenas-3d/EscenaCubo' or its corresponding type declarations.
+src/components/home/Proyectos.tsx(6,10): error TS2305: Module '"@/datos/proyectos"' has no exported member 'DATOS_PROYECTOS'.
+src/components/home/Proyectos.tsx(37,33): error TS7006: Parameter 'proyecto' implicitly has an 'any' type.
+src/components/home/Proyectos.tsx(37,43): error TS7006: Parameter 'indice' implicitly has an 'any' type.
+src/components/home/Proyectos.tsx(78,46): error TS7006: Parameter 'etiqueta' implicitly has an 'any' type.
+src/components/Vortex.tsx(5,25): error TS7016: Could not find a declaration file for module 'maath/random/dist/maath-random.esm'. 'C:/Users/RAHer/Downloads/portfolio-rodrigo-main/portfolio-rodrigo-main/node_modules/maath/random/dist/maath-random.esm.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/maath` if it exists or add a new declaration (.d.ts) file containing `declare module 'maath/random/dist/maath-random.esm';`
+src/components/Vortex.tsx(81,23): error TS2322: Type 'MutableRefObject<VortexMaterialImpl>' is not assignable to type 'Ref<ShaderMaterial> | undefined'.
+  Type 'MutableRefObject<VortexMaterialImpl>' is not assignable to type 'RefObject<ShaderMaterial>'.
+    Types of property 'current' are incompatible.
+      Type 'VortexMaterialImpl' is not assignable to type 'ShaderMaterial | null'.
+        Type 'VortexMaterialImpl' is not assignable to type 'ShaderMaterial'.
+          Types of property 'isShaderMaterial' are incompatible.
+            Type 'true | undefined' is not assignable to type 'true'.
+              Type 'undefined' is not assignable to type 'true'.
+src/lib/chess-ai.ts(71,10): error TS2339: Property 'undo' does not exist on type 'Chess'.
+src/lib/chess-ai.ts(72,35): error TS2339: Property 'san' does not exist on type 'string | object'.
+  Property 'san' does not exist on type 'string'.
+src/lib/db.ts(6,7): error TS2451: Cannot redeclare block-scoped variable 'prisma'.
+src/lib/db.ts(8,23): error TS2339: Property 'prisma' does not exist on type 'typeof globalThis'.
+src/lib/db.ts(10,10): error TS2339: Property 'prisma' does not exist on type 'typeof globalThis'.
+src/lib/prisma.ts(5,7): error TS2451: Cannot redeclare block-scoped variable 'prisma'.
+src/lib/prisma.ts(8,23): error TS2339: Property 'prisma' does not exist on type 'typeof globalThis'.
+src/lib/prisma.ts(17,10): error TS2339: Property 'prisma' does not exist on type 'typeof globalThis'.
+src/utils/chessAI.ts(18,17): error TS2551: Property 'isCheckmate' does not exist on type 'Chess'. Did you mean 'in_checkmate'?
+src/utils/chessAI.ts(22,17): error TS2339: Property 'isDraw' does not exist on type 'Chess'.
+src/utils/chessAI.ts(27,29): error TS2339: Property 'board' does not exist on type 'Chess'.
+src/utils/chessAI.ts(119,56): error TS2345: Argument of type '(string | object)[]' is not assignable to parameter of type 'string[]'.
+  Type 'string | object' is not assignable to type 'string'.
+    Type 'object' is not assignable to type 'string'.
+src/utils/chessAI.ts(121,27): error TS2339: Property 'undo' does not exist on type 'Chess'.
+src/utils/chessAI.ts(131,37): error TS2322: Type 'string | object' is not assignable to type 'string | null'.
+  Type 'object' is not assignable to type 'string'.
+src/utils/chessAI.ts(146,9): error TS2322: Type 'string | object' is not assignable to type 'string | null'.
+  Type 'object' is not assignable to type 'string'.
+src/utils/chessAI.ts(164,13): error TS2322: Type 'string | object' is not assignable to type 'string | null'.
+  Type 'object' is not assignable to type 'string'.
+src/utils/neuralNetwork.ts(1,21): error TS2307: Cannot find module '@tensorflow/tfjs' or its corresponding type declarations.
+src/utils/neuralNetwork.ts(74,40): error TS7006: Parameter 'tensor' implicitly has an 'any' type.

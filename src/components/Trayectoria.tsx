@@ -33,7 +33,7 @@ export default function Trayectoria() {
       <div className="relative max-w-2xl mx-auto">
         {/* Línea vertical */}
         <div className="absolute left-5 top-5 h-full w-0.5 bg-border -translate-x-1/2" />
-        
+
         {hitos.map((hito, indice) => (
           <motion.div
             key={indice}
@@ -43,17 +43,16 @@ export default function Trayectoria() {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.5, delay: indice * 0.1 }}
           >
-            {/* Círculo con el icono */}
-            <div className="absolute left-5 -translate-x-1/2 top-1 w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary z-10">
+            <div className="absolute left-5 -translate-x-1/2 top-1 w-10 h-10 bg-background border border-foreground flex items-center justify-center text-foreground z-10 transition-colors group-hover:bg-foreground group-hover:text-background duration-300">
               {hito.icono}
             </div>
 
             {/* Contenido del hito */}
-            <div className="bg-card p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-sm text-muted-foreground font-mono mb-1">{hito.fecha}</p>
-              <h3 className="text-xl font-bold text-foreground">{hito.titulo}</h3>
-              <p className="text-sm font-semibold text-primary mb-2">{hito.institucion}</p>
-              <p className="text-muted-foreground">{hito.descripcion}</p>
+            <div className="bg-card p-8 border border-border transition-all duration-300 hover:border-foreground group">
+              <p className="text-xs text-muted-foreground font-mono tracking-widest uppercase mb-4">{hito.fecha}</p>
+              <h3 className="text-2xl font-serif text-foreground mb-2">{hito.titulo}</h3>
+              <p className="text-sm font-sans font-medium text-foreground mb-4">{hito.institucion}</p>
+              <p className="text-muted-foreground leading-relaxed font-light">{hito.descripcion}</p>
             </div>
           </motion.div>
         ))}

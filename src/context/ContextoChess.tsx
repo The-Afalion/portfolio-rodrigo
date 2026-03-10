@@ -22,38 +22,85 @@ interface ContextoChessProps {
 
 const ContextoChess = createContext<ContextoChessProps | undefined>(undefined);
 
+import { supabase } from '@/lib/supabase-client';
+
 export function ProveedorContextoChess({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<UsuarioChess | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
   const router = useRouter();
 
-  // Cargar sesión al iniciar (si existe token o cookie, aquí simplificado con localStorage para persistencia básica de sesión)
   useEffect(() => {
-    const savedUser = localStorage.getItem('chess_user_session');
-    if (savedUser) {
-      setUsuario(JSON.parse(savedUser));
-    }
+    // 1. Cargar la sesión actual desde Supabase JWT
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await cargarDatosPerfil(session.user.id);
+      }
+    };
+    getSession();
+
+    // 2. Suscribirse a cambios de estado de Auth (Login, Logout)
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await cargarDatosPerfil(session.user.id);
+      } else {
+        setUsuario(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
+
+  const cargarDatosPerfil = async (userId: string) => {
+    try {
+      // Pedir los datos extendidos del jugador a nuestra tabla personalizada
+      const { data, error } = await supabase
+        .from('chess_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error("Error cargando perfil:", error);
+        return;
+      }
+
+      if (data) {
+        setUsuario({
+          id: data.id,
+          username: data.username,
+          elo: data.elo,
+          botsDefeated: data.bots_defeated || [],
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const iniciarSesion = async (username: string, password: string) => {
     setCargando(true);
     setError(null);
     try {
-      const res = await fetch('/api/chess/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+      // Para iniciar sesión con Supabase Auth necesitamos un email.
+      // Así que generamos un email virtual en base al username.
+      const virtualEmail = `${username.toLowerCase()}@chesshub.local`;
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: virtualEmail,
+        password: password,
       });
 
-      const data = await res.json();
+      if (error) throw new Error(error.message);
 
-      if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
-
-      setUsuario(data);
-      localStorage.setItem('chess_user_session', JSON.stringify(data));
+      if (data.user) {
+        await cargarDatosPerfil(data.user.id);
+      }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message === "Invalid login credentials" ? "Credenciales incorrectas" : err.message);
     } finally {
       setCargando(false);
     }
@@ -63,51 +110,71 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
     setCargando(true);
     setError(null);
     try {
-      const res = await fetch('/api/chess/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+      const virtualEmail = `${username.toLowerCase()}@chesshub.local`;
+
+      // 1. Crear el usuario en auth.users
+      const { data, error } = await supabase.auth.signUp({
+        email: virtualEmail,
+        password: password,
+        options: {
+          data: {
+            username: username // Esto viaja a auth.users.raw_user_meta_data para el Trigger SQL
+          }
+        }
       });
 
-      const data = await res.json();
+      if (error) throw new Error(error.message);
 
-      if (!res.ok) throw new Error(data.error || 'Error al registrarse');
+      if (data.user) {
+        // En este punto, el Trigger SQL ya debió haber insertado en 'chess_profiles'
+        // pero le daremos 1 segundo de margen para evitar condiciones de carrera por red local.
+        setTimeout(() => {
+          cargarDatosPerfil(data.user!.id);
+        }, 1000);
+      }
 
-      setUsuario(data);
-      localStorage.setItem('chess_user_session', JSON.stringify(data));
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message === "User already registered" ? "El usuario ya existe" : err.message);
     } finally {
       setCargando(false);
     }
   };
 
-  const cerrarSesion = () => {
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut();
     setUsuario(null);
-    localStorage.removeItem('chess_user_session');
     router.push('/chess');
   };
 
   const registrarVictoria = async (botId: string) => {
     if (!usuario) return;
-    
-    // Optimistic UI update
-    const nuevosBots = [...usuario.botsDefeated, botId];
-    const nuevoElo = usuario.elo + 50;
-    
-    setUsuario({ ...usuario, botsDefeated: nuevosBots, elo: nuevoElo });
-    localStorage.setItem('chess_user_session', JSON.stringify({ ...usuario, botsDefeated: nuevosBots, elo: nuevoElo }));
 
-    // Aquí deberías llamar a una API para guardar el progreso en la DB real
-    // await fetch('/api/chess/progress', { ... });
+    // UI Optimista
+    const nuevosBots = [...new Set([...usuario.botsDefeated, botId])];
+    const nuevoElo = usuario.elo + 50;
+
+    setUsuario({ ...usuario, botsDefeated: nuevosBots, elo: nuevoElo });
+
+    // Actualizar BBDD Real
+    const { error } = await supabase
+      .from('chess_profiles')
+      .update({
+        elo: nuevoElo,
+        bots_defeated: nuevosBots
+      })
+      .eq('id', usuario.id);
+
+    if (error) {
+      console.error("Error guardando victoria:", error);
+    }
   };
 
   return (
-    <ContextoChess.Provider value={{ 
-      usuario, 
-      iniciarSesion, 
-      registrarse, 
-      cerrarSesion, 
+    <ContextoChess.Provider value={{
+      usuario,
+      iniciarSesion,
+      registrarse,
+      cerrarSesion,
       registrarVictoria,
       error,
       cargando

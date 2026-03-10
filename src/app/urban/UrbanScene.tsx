@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
 import { OrbitControls, Effects } from '@react-three/drei';
 import * as THREE from 'three';
@@ -92,7 +92,7 @@ export default function UrbanScene() {
     <Canvas camera={{ position: [0, 30, 40], fov: 60 }}>
       <color attach="background" args={['#0a0a0a']} />
       <fog attach="fog" args={['#0a0a0a', 30, 100]} />
-      
+
       <ambientLight intensity={0.1} />
       <pointLight position={[0, 50, 0]} intensity={0.8} color="#8b5cf6" />
       <directionalLight position={[-10, 10, 5]} intensity={0.2} color="#ffffff" />
@@ -105,17 +105,19 @@ export default function UrbanScene() {
       <City />
       <Traffic />
 
-      <OrbitControls 
-        autoRotate 
-        autoRotateSpeed={0.2} 
-        enablePan={false} 
-        minDistance={15} 
-        maxDistance={60} 
+      <OrbitControls
+        autoRotate
+        autoRotateSpeed={0.2}
+        enablePan={false}
+        minDistance={15}
+        maxDistance={60}
         maxPolarAngle={Math.PI / 2.1}
       />
-      
+
       <Effects>
+        {/* @ts-expect-error R3F extension */}
         <unrealBloomPass args={[undefined, 0.5, 1, 0]} />
+        {/* @ts-expect-error R3F extension */}
         <filmPass args={[0.1, 0.2, 1500, false]} />
       </Effects>
     </Canvas>

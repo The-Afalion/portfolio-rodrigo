@@ -3,77 +3,145 @@
 @tailwind utilities;
 
 @layer base {
+
+  /* TEMA CLARO: Alabaster (Hueso y Carbón) */
   :root {
-    /* MODO CLARO: Limpio y profesional */
-    --background: 240 10% 100%; /* Blanco */
-    --foreground: 240 6% 10%;   /* Negro Suave */
-    --card: 240 5% 98%;
-    --card-foreground: 240 6% 10%;
-    --popover: 240 10% 100%;
-    --popover-foreground: 240 6% 10%;
-    --primary: 221 83% 53%; /* Azul de acento */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 90%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 221 83% 53%;
-    --radius: 0.5rem;
+    --background: 40 15% 94%;
+    --foreground: 20 10% 12%;
+    --card: 40 10% 92%;
+    --card-foreground: 20 10% 12%;
+    --popover: 40 15% 94%;
+    --popover-foreground: 20 10% 12%;
+    --primary: 15 30% 35%;
+    --primary-foreground: 40 15% 94%;
+    --secondary: 40 5% 85%;
+    --secondary-foreground: 20 10% 12%;
+    --muted: 40 5% 88%;
+    --muted-foreground: 20 5% 45%;
+    --accent: 70 10% 80%;
+    --accent-foreground: 20 10% 12%;
+    --border: 40 10% 80%;
+    --input: 40 10% 80%;
+    --ring: 15 30% 35%;
+    --radius: 0rem;
+    /* Geometría Brutalista */
   }
 
+  /* TEMA OSCURO: Obsidian (Charcoal y Ámbar) */
   .dark {
-    /* MODO OSCURO: Elegante y sobrio */
-    --background: 224 71% 4%; /* Azul muy oscuro, casi negro */
-    --foreground: 210 40% 98%;
-    --card: 224 71% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%; /* Azul brillante pero no neón */
-    --primary-foreground: 222 84% 4.9%;
-    --secondary: 224 71% 9%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 210 20% 65%;
-    --accent: 224 71% 9%;
-    --accent-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 217 91% 60%;
+    --background: 20 5% 10%;
+    --foreground: 40 15% 90%;
+    --card: 20 5% 13%;
+    --card-foreground: 40 15% 90%;
+    --popover: 20 5% 10%;
+    --popover-foreground: 40 15% 90%;
+    --primary: 35 70% 50%;
+    --primary-foreground: 20 5% 10%;
+    --secondary: 20 5% 15%;
+    --secondary-foreground: 40 15% 90%;
+    --muted: 20 5% 18%;
+    --muted-foreground: 40 10% 60%;
+    --accent: 20 5% 15%;
+    --accent-foreground: 35 70% 50%;
+    --border: 20 5% 20%;
+    --input: 20 5% 20%;
+    --ring: 35 70% 50%;
+  }
+
+  /* TEMA FOREST: Bosque Profundo y Verde Táctico */
+  .forest {
+    --background: 145 35% 8%;
+    /* Verde pino muy oscuro */
+    --foreground: 130 20% 85%;
+    /* Blanco verdoso pálido */
+    --card: 145 35% 11%;
+    --card-foreground: 130 20% 85%;
+    --popover: 145 35% 8%;
+    --popover-foreground: 130 20% 85%;
+    --primary: 110 50% 50%;
+    /* Lima táctico de acento */
+    --primary-foreground: 145 35% 8%;
+    --secondary: 145 30% 14%;
+    --secondary-foreground: 130 20% 85%;
+    --muted: 145 30% 16%;
+    --muted-foreground: 130 15% 60%;
+    --accent: 145 30% 16%;
+    --accent-foreground: 110 50% 50%;
+    --border: 145 30% 20%;
+    --input: 145 30% 20%;
+    --ring: 110 50% 50%;
+  }
+
+  /* TEMA SEPIA: Terminal Clásica y Film */
+  .sepia {
+    --background: 30 15% 15%;
+    --foreground: 35 30% 90%;
+    --card: 30 15% 18%;
+    --card-foreground: 35 30% 90%;
+    --popover: 30 15% 15%;
+    --popover-foreground: 35 30% 90%;
+    --primary: 20 50% 55%;
+    --primary-foreground: 30 15% 15%;
+    --secondary: 30 15% 22%;
+    --secondary-foreground: 35 30% 90%;
+    --muted: 30 15% 25%;
+    --muted-foreground: 35 20% 65%;
+    --accent: 30 15% 22%;
+    --accent-foreground: 20 50% 55%;
+    --border: 30 15% 28%;
+    --input: 30 15% 28%;
+    --ring: 20 50% 55%;
   }
 }
 
 @layer base {
-  * { @apply border-border; }
-  html { scroll-behavior: smooth; }
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
-    /* Fondo con gradiente sutil */
-    background-image: radial-gradient(circle at top, hsl(var(--secondary) / 0.5) 0%, transparent 50%);
+  }
+}
+
+@layer utilities {
+  .bg-glass {
+    @apply bg-background border border-border;
+  }
+
+  .bg-glass-heavy {
+    @apply bg-card border border-border;
+  }
+
+  .text-glow {
+    text-shadow: none;
+  }
+
+  .text-glow-primary {
+    text-shadow: none;
   }
 }
 
 ::selection {
-  @apply bg-primary text-primary-foreground;
+  @apply bg-primary/20 text-foreground;
 }
 
-/* Estilos para la barra de desplazamiento */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-background;
+  @apply bg-background border-l border-border;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted rounded-full border-2 border-background;
+  @apply bg-muted rounded-none border-l-2 border-background;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground;
+  @apply bg-foreground;
 }

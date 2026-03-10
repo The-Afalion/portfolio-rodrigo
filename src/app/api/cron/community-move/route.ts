@@ -16,11 +16,11 @@ export async function GET() {
     let moveToPlay: string | null = null;
 
     if (game.votes.length > 0) {
-      const voteCounts = game.votes.reduce((acc, vote) => {
+      const voteCounts = game.votes.reduce((acc: Record<string, number>, vote: any) => {
         acc[vote.move] = (acc[vote.move] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
-      
+
       moveToPlay = Object.keys(voteCounts).reduce((a, b) => voteCounts[a] > voteCounts[b] ? a : b);
     }
 
@@ -29,8 +29,8 @@ export async function GET() {
     } else {
       // Si no hay votos, la IA hace un movimiento por defecto
       const moves = chess.moves();
-      moveToPlay = moves[Math.floor(Math.random() * moves.length)];
-      chess.move(moveToPlay);
+      moveToPlay = moves[Math.floor(Math.random() * moves.length)] as string;
+      if (moveToPlay) chess.move(moveToPlay);
     }
 
     // Actualizar el juego

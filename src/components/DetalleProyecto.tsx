@@ -1,16 +1,18 @@
-import { Github, ExternalLink } from "lucide-react";
+import { Github, ExternalLink, Code } from "lucide-react";
 
 type Proyecto = {
-  titulo: string;
-  descripcionLarga: string[];
-  etiquetas: string[];
-  enlace: string;
-  github: string;
-  icono: React.ElementType;
+  id: string;
+  title: string;
+  description: string;
+  tech: string[];
+  link: string;
+  github?: string;
 };
 
 export default function DetalleProyecto({ proyecto }: { proyecto: Proyecto }) {
-  const { titulo, descripcionLarga, etiquetas, enlace, github, icono: Icono } = proyecto;
+  const { title: titulo, description, tech: etiquetas, link: enlace, github = "#" } = proyecto;
+  const descripcionLarga = [description];
+  const Icono = Code;
 
   return (
     <div className="p-8 md:p-12">

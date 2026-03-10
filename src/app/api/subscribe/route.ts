@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import WelcomeEmail from "@/emails/WelcomeEmail";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID;
 
 // Expresión regular para validar un correo electrónico

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { usarContextoGlobal, TipoEventoRandy } from '@/context/ContextoGlobal';
+import { useContextoGlobal, TipoEventoRandy } from '@/context/ContextoGlobal';
 
 const CODIGO_KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 const TEXTO_RANDY = 'randy';
@@ -18,7 +18,7 @@ export default function GestorDeEventosGlobales() {
     eventoRandyActivo,
     setEstado1984,
     estado1984
-  } = usarContextoGlobal();
+  } = useContextoGlobal();
 
   const gestionarPulsacion = useCallback((evento: KeyboardEvent) => {
     // Ignorar pulsaciones si un modo ya está activo

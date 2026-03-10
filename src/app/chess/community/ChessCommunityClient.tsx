@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { executeMoveAndInjectVotes, submitVote } from './actions';
+import { executeMostVotedMove, submitVote } from './actions';
 import toast from 'react-hot-toast';
 
 export default function ChessCommunityClient({ gameData, votes: initialVotes, player }: { gameData: any, votes: any[], player: any }) {
@@ -24,7 +24,7 @@ export default function ChessCommunityClient({ gameData, votes: initialVotes, pl
     try {
       const move = gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: 'q' });
       if (move) {
-        setSelectedMove(move.san);
+        setSelectedMove((move as any).san);
         return true;
       }
       return false;
@@ -48,7 +48,7 @@ export default function ChessCommunityClient({ gameData, votes: initialVotes, pl
   const handleExecute = async () => {
     setPending(true);
     toast.loading("Ejecutando movimiento e inyectando votos...");
-    const result = await executeMoveAndInjectVotes();
+    const result = await executeMostVotedMove();
     toast.dismiss();
     if (result.error) toast.error(result.error);
     else toast.success(result.success || "Movimiento ejecutado");
@@ -60,12 +60,12 @@ export default function ChessCommunityClient({ gameData, votes: initialVotes, pl
     return acc;
   }, {} as Record<string, number>);
 
-  const sortedVotes = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+  const sortedVotes = Object.entries(voteCounts).sort((a: any, b: any) => b[1] - a[1]) as [string, number][];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2">
-        <Chessboard 
+        <Chessboard
           position={game.fen()}
           onPieceDrop={onDrop}
           boardOrientation={player?.assignedSide === 'b' ? 'black' : 'white'}
@@ -94,7 +94,7 @@ export default function ChessCommunityClient({ gameData, votes: initialVotes, pl
             <p className="text-muted-foreground text-sm font-mono">Esperando votos...</p>
           )}
         </div>
-        
+
         {/* Botón de ejecución para admin */}
         {player?.email === "tu-email-de-admin@ejemplo.com" && (
           <div className="mt-6 border-t border-border pt-4">

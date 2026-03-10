@@ -23,7 +23,7 @@ export default async function AdminChessPage() {
             </tr>
           </thead>
           <tbody>
-            {games.map((game) => (
+            {games.map((game: any) => (
               <tr key={game.id} className="border-b border-border last:border-b-0">
                 <td className="p-4">{game.player}</td>
                 <td className="p-4">{game.levelAI}</td>

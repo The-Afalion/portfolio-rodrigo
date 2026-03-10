@@ -52,7 +52,7 @@ export default async function ArchivePage() {
                   </p>
                   <p className="font-bold text-lg flex items-center gap-2">
                     <Trophy size={16} className="text-amber-400" />
-                    Campeón: {t.winner?.name || 'Desconocido'}
+                    Campeón: {(t.winner as any)?.name || 'Desconocido'}
                   </p>
                 </div>
                 <div className="font-mono text-xs bg-background px-2 py-1 rounded">

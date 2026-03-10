@@ -20,7 +20,7 @@ export default async function AdminSubscribersPage() {
             </tr>
           </thead>
           <tbody>
-            {subscribers.map((subscriber) => (
+            {subscribers.map((subscriber: any) => (
               <tr key={subscriber.id} className="border-b border-border last:border-b-0">
                 <td className="p-4">{subscriber.email}</td>
                 <td className="p-4 text-muted-foreground">

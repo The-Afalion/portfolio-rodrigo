@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { BrainCircuit, Rowing, Languages, Database, Code } from "lucide-react";
+import { BrainCircuit, Activity, Languages, Database, Code } from "lucide-react";
 
 const skills = [
   { name: "Next.js", icon: <Code /> },

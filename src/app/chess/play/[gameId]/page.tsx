@@ -11,23 +11,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, MessageSquare, RefreshCw, Trophy, XCircle, Flag } from 'lucide-react';
 import Link from 'next/link';
 
-// --- Bot Logic ---
-function getBestMove(game: Chess, elo: number) {
-  const moves = game.moves({ verbose: true });
-  if (moves.length === 0) return null;
-  if (elo > 1000) {
-    const captures = moves.filter(m => m.flags.includes('c') || m.flags.includes('e'));
-    if (captures.length > 0 && Math.random() < (elo / 3000)) {
-      return captures[Math.floor(Math.random() * captures.length)].san;
-    }
-  }
-  return moves[Math.floor(Math.random() * moves.length)].san;
-}
+import { obtenerMovimientoIA, evaluarTablero } from '@/utils/chessAI';
 
-const BotGame = ({ botId }) => {
+const BotGame = ({ botId }: { botId: string }) => {
   const router = useRouter();
   const { usuario, registrarVictoria } = useChess();
-  
+
   const [game, setGame] = useState(new Chess());
   const [bot, setBot] = useState(BOTS.find(b => b.id === botId));
   const [dialogo, setDialogo] = useState<string>("");
@@ -47,21 +36,32 @@ const BotGame = ({ botId }) => {
   useEffect(() => {
     if (game.turn() === 'b' && estadoJuego === 'jugando') {
       setPensando(true);
-      const tiempoPensar = Math.max(500, 2000 - (bot?.elo || 0));
+      // El tiempo de pensar es artifical para los bots fáciles, y real (bloqueante) para el Dijkstra
+      const tiempoPensar = Math.max(10, 2000 - (bot?.elo || 0));
+
       setTimeout(() => {
-        const move = getBestMove(game, bot?.elo || 400);
+        if (!bot) return;
+
+        const move = obtenerMovimientoIA(game, bot.elo, bot.estilo);
         if (move) {
           const result = game.move(move);
           setGame(new Chess(game.fen()));
+
           if (game.isCheckmate()) {
             setEstadoJuego('derrota');
-            setDialogo(bot?.dialogos.victoria[Math.floor(Math.random() * bot.dialogos.victoria.length)] || "Jaque mate.");
+            setDialogo(bot.dialogos.victoria[Math.floor(Math.random() * bot.dialogos.victoria.length)] || "Jaque mate.");
           } else if (game.isCheck()) {
-            setDialogo(bot?.dialogos.jaque[Math.floor(Math.random() * bot.dialogos.jaque.length)] || "Jaque.");
-          } else if (result.captured) {
-            setDialogo(bot?.dialogos.captura[Math.floor(Math.random() * bot.dialogos.captura.length)] || "Captura.");
-          } else if (Math.random() < 0.3) {
-            setDialogo(bot?.dialogos.movimiento[Math.floor(Math.random() * bot.dialogos.movimiento.length)] || "Tu turno.");
+            setDialogo(bot.dialogos.jaque[Math.floor(Math.random() * bot.dialogos.jaque.length)] || "Jaque.");
+          } else if (result && (result as any).captured) {
+            setDialogo(bot.dialogos.captura[Math.floor(Math.random() * bot.dialogos.captura.length)] || "Captura.");
+          } else {
+            // Si no pasó nada extraordinario, el bot puede decir una frase normal o burlarse si vas perdiendo
+            const score = evaluarTablero(game);
+            if (score < -5 && Math.random() > 0.5) {
+              setDialogo(bot.dialogos.blunder[Math.floor(Math.random() * bot.dialogos.blunder.length)] || "Tu situación empeora.");
+            } else if (Math.random() < 0.3) {
+              setDialogo(bot.dialogos.movimiento[Math.floor(Math.random() * bot.dialogos.movimiento.length)] || "Tu turno.");
+            }
           }
         }
         setPensando(false);
@@ -112,7 +112,7 @@ const BotGame = ({ botId }) => {
         <div className="flex-grow relative bg-zinc-950 rounded-2xl p-8 border border-zinc-800 shadow-inner mb-8">
           <div className="absolute -top-3 left-8 bg-zinc-800 text-zinc-400 px-3 py-1 text-xs rounded-full uppercase font-bold tracking-wider border border-zinc-700">Chat en vivo</div>
           <AnimatePresence mode="wait">
-            <motion.p key={dialogo} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="text-xl font-serif italic leading-relaxed text-zinc-300">"{dialogo}"</motion.p>
+            <motion.p key={dialogo} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="text-xl font-serif italic leading-relaxed text-zinc-300">&quot;{dialogo}&quot;</motion.p>
           </AnimatePresence>
           {pensando && (
             <div className="mt-6 flex gap-2 opacity-50">
@@ -147,8 +147,8 @@ const BotGame = ({ botId }) => {
 };
 
 // --- Multiplayer Logic ---
-const Chat = ({ gameId, supabase, user }) => {
-  const [messages, setMessages] = useState([]);
+const Chat = ({ gameId, supabase, user }: { gameId: string, supabase: any, user: any }) => {
+  const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
 
   useEffect(() => {
@@ -157,11 +157,11 @@ const Chat = ({ gameId, supabase, user }) => {
       setMessages(data || []);
     };
     fetchMessages();
-    const channel = supabase.channel(`chat:${gameId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `gameId=eq.${gameId}` }, (payload) => { setMessages((prev) => [...prev, payload.new]); }).subscribe();
+    const channel = supabase.channel(`chat:${gameId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `gameId=eq.${gameId}` }, (payload: any) => { setMessages((prev: any) => [...prev, payload.new]); }).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [gameId, supabase]);
 
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = async (e: any) => {
     e.preventDefault();
     if (newMessage.trim() === "") return;
     await supabase.from("messages").insert({ gameId, content: newMessage, senderId: user.id });
@@ -181,13 +181,13 @@ const Chat = ({ gameId, supabase, user }) => {
   );
 };
 
-const MultiplayerGame = ({ gameId }) => {
+const MultiplayerGame = ({ gameId }: { gameId: string }) => {
   const supabase = createClientComponentClient();
   const router = useRouter();
   const [game, setGame] = useState(new Chess());
   const [fen, setFen] = useState("start");
-  const [user, setUser] = useState(null);
-  const [playerColor, setPlayerColor] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [playerColor, setPlayerColor] = useState<any>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -221,13 +221,13 @@ const MultiplayerGame = ({ gameId }) => {
     return () => { supabase.removeChannel(channel); };
   }, [gameId, supabase, router, user]);
 
-  async function onDrop(sourceSquare, targetSquare) {
+  function onDrop(sourceSquare: any, targetSquare: any) {
     if (game.turn() !== playerColor) return false;
     const move = game.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
     if (move === null) return false;
     const newFen = game.fen();
     setFen(newFen);
-    await supabase.from("ChessGame").update({ fen: newFen, moves: game.pgn() }).eq("id", gameId);
+    supabase.from("ChessGame").update({ fen: newFen, moves: game.pgn() }).eq("id", gameId).then();
     return true;
   }
 
@@ -242,11 +242,12 @@ const MultiplayerGame = ({ gameId }) => {
 
 export default function GamePage() {
   const { gameId } = useParams();
-  const isBotGame = BOTS.some(b => b.id === gameId);
+  const id = Array.isArray(gameId) ? gameId[0] : gameId as string;
+  const isBotGame = BOTS.some(b => b.id === id);
 
   if (isBotGame) {
-    return <BotGame botId={gameId} />;
+    return <BotGame botId={id} />;
   }
-  
-  return <MultiplayerGame gameId={gameId} />;
+
+  return <MultiplayerGame gameId={id} />;
 }

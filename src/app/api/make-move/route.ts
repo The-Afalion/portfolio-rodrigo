@@ -7,7 +7,7 @@ import { verifySignature } from "@upstash/qstash/dist/nextjs"; // Ruta de import
 // v2.0 - QStash Real-time Engine
 
 const qstashClient = new Client({
-  token: process.env.QSTASH_TOKEN!,
+  token: process.env.QSTASH_TOKEN || "dummy",
 });
 
 const LICHESS_API_URL = 'https://lichess.org/api/cloud-eval';
@@ -53,7 +53,7 @@ async function advanceTournament(tournamentId: string) {
 
 export async function POST(request: Request) {
   const body = await request.text();
-  const isValid = await verifySignature({
+  const isValid = await (verifySignature as any)({
     body,
     signature: request.headers.get("upstash-signature")!,
     url: process.env.QSTASH_URL!,
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       const { data: activatedMatch } = await supabaseAdmin.from('AITournamentMatch').update({ status: 'ACTIVE' }).eq('id', nextMatch.id).select('*, tournament:tournamentId(status)').single();
       match = activatedMatch;
     }
-    
+
     if (!match) return NextResponse.json({ message: 'Could not activate next match.' });
 
     const game = new Chess();
@@ -89,19 +89,19 @@ export async function POST(request: Request) {
 
     const bestMoveUci = await getLichessBestMove(game.fen());
     if (!bestMoveUci) throw new Error("Lichess did not return a move.");
-    
+
     const moveResult = game.move({ from: bestMoveUci.substring(0, 2), to: bestMoveUci.substring(2, 4), promotion: bestMoveUci.length > 4 ? bestMoveUci.substring(4) : undefined });
 
-    const updatedMoves = [...(match.moves || []), { move: moveResult.san }];
+    const updatedMoves = [...(match.moves || []), { move: (moveResult as any).san }];
     await supabaseAdmin.from('AITournamentMatch').update({ moves: updatedMoves }).eq('id', match.id);
 
     const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
     await qstashClient.publishJSON({
       url: `${baseUrl}/api/make-move`,
-      delay: `${3 + Math.floor(Math.random() * 4)}s`,
+      delay: `${3 + Math.floor(Math.random() * 4)}s` as any,
     });
 
-    return NextResponse.json({ message: `Move ${moveResult.san} made.` });
+    return NextResponse.json({ message: `Move ${(moveResult as any).san} made.` });
 
   } catch (error: any) {
     console.error("Error in make-move API:", error.message);

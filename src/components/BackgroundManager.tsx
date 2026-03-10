@@ -26,14 +26,14 @@ export default function BackgroundManager({ progresoScrollY }: { progresoScrollY
   return (
     <>
       {mode === 'plexo' ? (
-        <FondoPlexo progresoScrollY={progresoScrollY} />
+        <FondoPlexo />
       ) : (
         <NetworkBackground />
       )}
-      
+
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4">
         <ThemeToggle />
-        <button 
+        <button
           onClick={toggleMode}
           className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/50 hover:text-white transition-all backdrop-blur-sm border border-white/5"
           title={mode === 'plexo' ? "Cambiar a Red 2D" : "Cambiar a Plexo 3D"}

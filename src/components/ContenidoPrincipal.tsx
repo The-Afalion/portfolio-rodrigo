@@ -11,10 +11,10 @@ import EfectoMatrix from "@/components/EfectoMatrix";
 import GestorDeEventosRandy from "@/components/GestorDeEventosRandy";
 import OjoVigilante from "@/components/OjoVigilante";
 import Minijuego1984 from "@/components/Minijuego1984";
-import { usarContextoGlobal } from "@/context/ContextoGlobal";
+import { useContextoGlobal } from "@/context/ContextoGlobal";
 
 export default function ContenidoPrincipal({ children }: { children: React.ReactNode }) {
-  const { efectoMatrixVisible, estado1984 } = usarContextoGlobal();
+  const { efectoMatrixVisible, estado1984 } = useContextoGlobal();
   const pathname = usePathname();
 
   return (

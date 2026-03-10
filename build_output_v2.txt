@@ -1,0 +1,120 @@
+
+> portfolio-rodrigo@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to .\node_modules\@prisma\client in 75ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Curious about the SQL queries Prisma ORM generates? Optimize helps you enhance your visibility: https://pris.ly/tip-2-optimize
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 5.22.0 -> 7.4.2                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+  ▲ Next.js 14.2.5
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping validation of types
+   Linting ...
+
+./src/components/ChessProfile.tsx
+44:7  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/Minijuego1984.tsx
+398:6  Warning: React Hook useEffect has missing dependencies: 'setEstado1984' and 'setLogoCambiado1984'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/56) ...
+   Generating static pages (14/56) 
+Error fetching finished tournaments: TypeError: fetch failed
+Error fetching finished tournaments: TypeError: fetch failed
+   Generating static pages (28/56) 
+Error fetching courses: TypeError: fetch failed
+Error fetching courses: TypeError: fetch failed
+   Generating static pages (42/56) 
+ ✓ Generating static pages (56/56)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size     First Load JS
+┌ ○ /                                        8.98 kB         139 kB
+├ ○ /_not-found                              165 B            88 kB
+├ ƒ /(.)proyectos/[slug]                     165 B            88 kB
+├ ƒ /admin                                   189 B          94.8 kB
+├ ƒ /admin/chess                             165 B            88 kB
+├ ƒ /admin/messages                          165 B            88 kB
+├ ƒ /admin/posts                             1.32 kB         101 kB
+├ ƒ /admin/posts/[id]/edit                   2.07 kB          95 kB
+├ ƒ /admin/subscribers                       165 B            88 kB
+├ ○ /algorithms                              1.2 kB         95.8 kB
+├ ƒ /api/auth/callback                       0 B                0 B
+├ ƒ /api/chess/invitations/accept            0 B                0 B
+├ ƒ /api/chess/invitations/decline           0 B                0 B
+├ ƒ /api/chess/invite                        0 B                0 B
+├ ƒ /api/cron/ai-tournament                  0 B                0 B
+├ ƒ /api/cron/community-move                 0 B                0 B
+├ ƒ /api/cron/execute-move                   0 B                0 B
+├ ƒ /api/cron/fake-votes                     0 B                0 B
+├ ○ /api/cron/make-move                      0 B                0 B
+├ ƒ /api/make-move                           0 B                0 B
+├ ƒ /api/subscribe                           0 B                0 B
+├ ƒ /api/suscripcion                         0 B                0 B
+├ ƒ /api/tournament-status                   0 B                0 B
+├ ƒ /blog                                    2.45 kB        97.1 kB
+├ ƒ /blog/[slug]                             1.7 kB          101 kB
+├ ƒ /blog/tags/[tag]                         189 B          94.8 kB
+├ ○ /chess                                   7.51 kB         138 kB
+├ ƒ /chess/ai-battle                         4.19 kB         172 kB
+├ ○ /chess/ai-battle/archive                 488 B          95.1 kB
+├ ƒ /chess/ai-battle/archive/[tournamentId]  2.65 kB         135 kB
+├ ƒ /chess/community                         756 B          88.6 kB
+├ ○ /chess/community/register                165 B            88 kB
+├ ○ /chess/human-vs-ai                       2.66 kB        97.3 kB
+├ ƒ /chess/invitations                       659 B          88.5 kB
+├ ƒ /chess/play/[gameId]                     12.6 kB         233 kB
+├ ○ /chrono-dasher                           2 kB            313 kB
+├ ○ /contact                                 1.22 kB        94.1 kB
+├ ○ /easter-eggs                             2.51 kB        97.2 kB
+├ ○ /engineering                             2.4 kB           97 kB
+├ ○ /login                                   1.32 kB         125 kB
+├ ○ /modelos                                 1.39 kB         367 kB
+├ ○ /models                                  1.73 kB         367 kB
+├ ƒ /nexus                                   5.12 kB         193 kB
+├ ƒ /nexus/game/[gameId]                     2.05 kB         185 kB
+├ ○ /physics                                 28 kB           123 kB
+├ ○ /pi-vault                                3.62 kB        98.3 kB
+├ ● /proyectos/[slug]                        189 B          94.8 kB
+├   ├ /proyectos/nexus
+├   ├ /proyectos/slalom
+├   ├ /proyectos/chess-engine
+├   └ [+5 more paths]
+├ ○ /robots.txt                              0 B                0 B
+├ ○ /signup                                  1.32 kB         125 kB
+├ ○ /sitemap.xml                             0 B                0 B
+├ ○ /slalom                                  189 B          94.8 kB
+├ ○ /slalom/editor                           3.8 kB          103 kB
+├ ○ /sonic                                   3.06 kB        97.7 kB
+└ ○ /urban                                   2.24 kB         318 kB
++ First Load JS shared by all                87.9 kB
+  ├ chunks/7023-6281e8e2e7956b09.js          31.5 kB
+  ├ chunks/fd9d1056-d6b38c9d391f05c4.js      53.6 kB
+  └ other shared chunks (total)              2.69 kB
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses getStaticProps)
+ƒ  (Dynamic)  server-rendered on demand
+

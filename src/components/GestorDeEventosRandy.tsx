@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usarContextoGlobal } from '@/context/ContextoGlobal';
+import { useContextoGlobal } from '@/context/ContextoGlobal';
 
 // --- Utilidad de Audio Sintético ---
 const reproducirZzzzt = () => {
@@ -85,7 +85,7 @@ function CapsulasDeCarga() {
 // --- Gestor Principal ---
 
 export default function GestorDeEventosRandy() {
-  const { eventoRandyActivo, setEventoRandyActivo } = usarContextoGlobal();
+  const { eventoRandyActivo, setEventoRandyActivo } = useContextoGlobal();
 
   useEffect(() => {
     if (eventoRandyActivo) {

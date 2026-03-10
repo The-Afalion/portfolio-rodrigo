@@ -10,7 +10,7 @@ interface ContextoGlobalProps {
   // Huevo de Pascua: Matrix
   efectoMatrixVisible: boolean;
   setEfectoMatrixVisible: (visible: boolean) => void;
-  
+
   // Huevo de Pascua: RimWorld
   eventoRandyActivo: TipoEventoRandy;
   setEventoRandyActivo: (evento: TipoEventoRandy) => void;
@@ -51,10 +51,10 @@ export function ProveedorContextoGlobal({ children }: { children: ReactNode }) {
 }
 
 // --- Hook personalizado para usar el contexto ---
-export function usarContextoGlobal() {
+export function useContextoGlobal() {
   const contexto = useContext(ContextoGlobal);
   if (contexto === undefined) {
-    throw new Error('usarContextoGlobal debe ser usado dentro de un ProveedorContextoGlobal');
+    throw new Error('useContextoGlobal debe ser usado dentro de un ProveedorContextoGlobal');
   }
   return contexto;
 }

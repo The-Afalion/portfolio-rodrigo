@@ -30,7 +30,7 @@ function minimax(game: any, depth: number, alpha: number, beta: number, isMaximi
 
   let bestMove: string | null = null;
   let bestValue = isMaximizingPlayer ? -Infinity : Infinity;
-  const moves = game.moves({ verbose: true });
+  const moves = game.moves({ verbose: true }) as any[];
 
   for (const move of moves) {
     game.move(move);
@@ -62,7 +62,7 @@ function minimax(game: any, depth: number, alpha: number, beta: number, isMaximi
 // Función principal para obtener los mejores movimientos ordenados
 export function getRankedMoves(fen: string, depth: number = 3): { move: string, score: number }[] {
   const game = new Chess(fen);
-  const moves = game.moves({ verbose: true });
+  const moves = game.moves({ verbose: true }) as any[];
   const rankedMoves = [];
 
   for (const move of moves) {

@@ -19,7 +19,7 @@ export async function updatePost(prevState: any, formData: FormData) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+    { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
   );
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { message: 'Error: No autorizado' };
@@ -42,16 +42,16 @@ export async function updatePost(prevState: any, formData: FormData) {
     // Lógica para conectar o crear tags
     const tagOperations = tags
       ? tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tagName => ({
-          where: { name: tagName },
-          create: { name: tagName },
-        }))
+        where: { name: tagName },
+        create: { name: tagName },
+      }))
       : [];
 
     await prisma.post.update({
       where: { id: postId },
-      data: { 
-        title, 
-        slug, 
+      data: {
+        title,
+        slug,
         content,
         tags: {
           set: [], // Desconectar tags antiguos
@@ -68,13 +68,69 @@ export async function updatePost(prevState: any, formData: FormData) {
   }
 }
 
-// ... (el resto de acciones se mantienen igual)
 export async function createPost(prevState: any, formData: FormData) {
-  // ... (implementación existente)
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { message: 'Error: No autorizado' };
+
+  const validatedFields = PostSchema.safeParse({
+    title: formData.get('title'),
+    content: formData.get('content'),
+    tags: formData.get('tags'),
+  });
+
+  if (!validatedFields.success) {
+    return { message: 'Error de validación', errors: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const { title, content, tags } = validatedFields.data;
+  const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+  try {
+    const tagOperations = tags
+      ? tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tagName => ({
+        where: { name: tagName },
+        create: { name: tagName },
+      }))
+      : [];
+
+    await prisma.post.create({
+      data: {
+        title,
+        slug,
+        content,
+        authorId: user.id,
+        tags: { connectOrCreate: tagOperations }
+      },
+    });
+
+    revalidatePath('/admin/posts');
+    return { message: 'Post creado con éxito', errors: {} };
+  } catch (e) {
+    return { message: 'Error en la base de datos', errors: {} };
+  }
 }
+
 export async function togglePublish(id: string, published: boolean) {
-  // ... (implementación existente)
+  try {
+    await prisma.post.update({ where: { id }, data: { published: !published } });
+    revalidatePath('/admin/posts');
+  } catch (e) {
+    console.error(e);
+  }
 }
+
 export async function deletePost(id: string) {
-  // ... (implementación existente)
+  try {
+    await prisma.post.delete({ where: { id } });
+    revalidatePath('/admin/posts');
+  } catch (e) {
+    console.error(e);
+  }
 }
+

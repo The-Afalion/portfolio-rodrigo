@@ -17,6 +17,10 @@ model Post {
   slug      String   @unique
   content   String
   published Boolean  @default(false)
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  authorId  String?
+  author    Profile? @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   tags      Tag[]
@@ -41,6 +45,7 @@ model Profile {
   sentMessages        Message[]        @relation("SentMessages")
   sentInvitations     GameInvitation[] @relation("SentInvitations")
   receivedInvitations GameInvitation[] @relation("ReceivedInvitations")
+  posts               Post[]
 }
 
 model ChessBot {
@@ -135,6 +140,41 @@ model SlalomCourse {
   id          String @id @default(cuid())
   name        String
   description String
-  location    String
   bestTime    Float?
+}
+
+// --- COMMUNICATION AND MAILING ---
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// --- COMMUNITY CHESS ---
+
+model CommunityChessGame {
+  id            String   @id @default("main_game")
+  fen           String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  nextMoveDue   DateTime @default(now())
+  lastMoveAt    DateTime @default(now())
+  votes         CommunityVote[]
+}
+
+model CommunityVote {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      CommunityChessGame @relation(fields: [gameId], references: [id])
+  move      String
+  userId    String?
+  createdAt DateTime @default(now())
 }

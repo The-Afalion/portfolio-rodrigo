@@ -1,6 +1,5 @@
 "use client";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-// CORRECCIÓN FINAL: Usando iconos 100% verificados de lucide-react
 import { Brain, Swords, Shield, Target } from "lucide-react";
 
 const pieces = [
@@ -9,6 +8,20 @@ const pieces = [
   { Icon: Shield, top: "70%", left: "10%", size: 180 },
   { Icon: Target, top: "20%", left: "75%", size: 190 },
 ];
+
+const PieceItem = ({ Icon, top, left, size, index, mouseX, mouseY }: any) => {
+  const x = useTransform(mouseX, (val: number) => (typeof window !== "undefined" ? (val - window.innerWidth / 2) / (20 + index * 5) : 0));
+  const y = useTransform(mouseY, (val: number) => (typeof window !== "undefined" ? (val - window.innerHeight / 2) / (20 + index * 5) : 0));
+
+  return (
+    <motion.div
+      className="absolute text-foreground/5"
+      style={{ top, left, x, y }}
+    >
+      <Icon size={size} strokeWidth={0.5} />
+    </motion.div>
+  );
+};
 
 export default function ChessBackground() {
   const mouseX = useMotionValue(0);
@@ -26,20 +39,9 @@ export default function ChessBackground() {
       onMouseMove={handleMouseMove}
       className="absolute inset-0 z-[-1] overflow-hidden"
     >
-      {pieces.map(({ Icon, top, left, size }, i) => {
-        const x = useTransform(mouseX, (val) => (typeof window !== "undefined" ? (val - window.innerWidth / 2) / (20 + i * 5) : 0));
-        const y = useTransform(mouseY, (val) => (typeof window !== "undefined" ? (val - window.innerHeight / 2) / (20 + i * 5) : 0));
-
-        return (
-          <motion.div
-            key={i}
-            className="absolute text-foreground/5"
-            style={{ top, left, x, y }}
-          >
-            <Icon size={size} strokeWidth={0.5} />
-          </motion.div>
-        );
-      })}
+      {pieces.map((piece, i) => (
+        <PieceItem key={i} index={i} mouseX={mouseX} mouseY={mouseY} {...piece} />
+      ))}
     </div>
   );
 }

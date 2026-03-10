@@ -68,12 +68,12 @@ export class NeuralNetwork {
 
   // Copia la red neuronal (para crear descendencia)
   copy(): NeuralNetwork {
-    return tf.tidy(() => {
-      const newNetwork = new NeuralNetwork(this.inputNodes, this.outputNodes);
+    const newNetwork = new NeuralNetwork(this.inputNodes, this.outputNodes);
+    tf.tidy(() => {
       const weights = this.model.getWeights();
       const weightCopies = weights.map(tensor => tensor.clone());
       newNetwork.model.setWeights(weightCopies);
-      return newNetwork;
     });
+    return newNetwork;
   }
 }

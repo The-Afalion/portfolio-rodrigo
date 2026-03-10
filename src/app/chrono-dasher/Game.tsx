@@ -87,7 +87,7 @@ export default function Game() {
       <color attach="background" args={['#000000']} />
       <ambientLight intensity={0.5} />
       <pointLight position={[0, 0, 0]} color="#f97316" intensity={5} />
-      
+
       <Stars radius={200} depth={50} count={5000} factor={10} saturation={0} fade speed={2} />
 
       {gameState === 'playing' && (
@@ -98,6 +98,7 @@ export default function Game() {
       )}
 
       <Effects>
+        {/* @ts-expect-error extending intrinsic elements in R3F */}
         <unrealBloomPass args={[undefined, 1.5, 1, 0]} />
       </Effects>
     </Canvas>

@@ -18,7 +18,7 @@ function SubmitButton() {
 }
 
 export default function EditPostForm({ post }: { post: { id: string; title: string; content: string; tags: { name: string }[] } }) {
-  const initialState = { message: null, errors: {} };
+  const initialState: any = { message: null, errors: {} };
   const [state, dispatch] = useFormState(updatePost, initialState);
   const [content, setContent] = useState(post.content);
 
@@ -35,7 +35,7 @@ export default function EditPostForm({ post }: { post: { id: string; title: stri
   return (
     <form action={dispatch} className="flex flex-col gap-4">
       <input type="hidden" name="postId" value={post.id} />
-      
+
       <label className="font-bold">Título</label>
       <input
         name="title"
@@ -44,7 +44,7 @@ export default function EditPostForm({ post }: { post: { id: string; title: stri
         className="p-2 bg-background border border-border rounded"
       />
       {state.errors?.title && <p className="text-sm text-red-500">{state.errors.title.join(', ')}</p>}
-      
+
       <label className="font-bold mt-4">Etiquetas (separadas por comas)</label>
       <input
         name="tags"
@@ -58,7 +58,7 @@ export default function EditPostForm({ post }: { post: { id: string; title: stri
       <textarea name="content" value={content} readOnly className="hidden" />
       <MarkdownEditor value={content} onChange={setContent} />
       {state.errors?.content && <p className="text-sm text-red-500">{state.errors.content.join(', ')}</p>}
-      
+
       <div className="mt-4">
         <SubmitButton />
       </div>

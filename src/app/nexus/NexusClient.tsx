@@ -63,7 +63,7 @@ export default function NexusClient({ playerEmail }: { playerEmail: string }) {
     channelRef.current = channel;
 
     channel
-      .on('presence', { event: 'sync' }, () => setOnlineUsers(Object.values(channel.presenceState<Presence>()).map(p => p[0])))
+      .on('presence', { event: 'sync' }, () => setOnlineUsers(Object.values(channel.presenceState()).map((p: any) => p[0])))
       .on('broadcast', { event: 'chat' }, (payload: { payload: Message }) => setMessages(current => [...current, payload.payload]))
       .on('broadcast', { event: 'challenge', filter: { to: playerEmail } }, ({ payload }: { payload: Challenge }) => {
         toast((t) => (
@@ -83,7 +83,7 @@ export default function NexusClient({ playerEmail }: { playerEmail: string }) {
       .on('broadcast', { event: 'challenge_accepted', filter: { from: playerEmail } }, ({ payload }: { payload: Challenge }) => {
         router.push(`/nexus/game/${payload.gameId}`);
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
           setIsConnected(true);
           await channel.track({ user: playerEmail, online_at: new Date().toISOString() });

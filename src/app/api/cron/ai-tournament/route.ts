@@ -4,7 +4,7 @@ import { Client } from '@upstash/qstash';
 
 // v7.1 - Forcing redeploy after regenerating service key
 const qstashClient = new Client({
-  token: process.env.QSTASH_TOKEN!,
+  token: process.env.QSTASH_TOKEN || "dummy",
 });
 
 export async function GET(request: Request) {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     console.log("Iniciando cron job de configuración de torneo...");
 
     await supabaseAdmin.from('AITournament').update({ status: 'FINISHED', endedAt: new Date().toISOString() }).eq('status', 'ACTIVE');
-    
+
     const { data: players } = await supabaseAdmin.from('ChessBot').select('id');
     if (!players || players.length < 8) throw new Error("No hay suficientes IAs.");
 

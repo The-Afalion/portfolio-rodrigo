@@ -1,14 +1,20 @@
 import { PrismaClient } from '@prisma/client';
 import { createClient } from '@supabase/supabase-js';
 
-// --- Cliente de Prisma (Conservado por si se usa en otras partes) ---
+const prismaClientSingleton = () => {
+  return new PrismaClient();
+};
+
 declare global {
-  var prisma: PrismaClient | undefined;
+  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
 }
-const prisma = global.prisma || new PrismaClient();
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+
 if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
+  globalThis.prismaGlobal = prisma;
 }
+
 export default prisma;
 
 

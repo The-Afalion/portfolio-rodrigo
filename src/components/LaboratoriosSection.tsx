@@ -4,25 +4,24 @@ import { Cpu, Gamepad2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TituloSeccion from './TituloSeccion';
 
-const Card = ({ href, icon, title, description, accentColor, children }: any) => (
-  <Link href={href}>
-    <motion.div
-      whileHover={{ y: -5, boxShadow: `0 10px 25px -5px rgba(${accentColor}, 0.1), 0 8px 10px -6px rgba(${accentColor}, 0.1)` }}
-      className="group relative overflow-hidden rounded-xl bg-card border border-border p-8 h-full flex flex-col transition-all"
-    >
+const Card = ({ href, icon, title, description, accentColorText, children }: any) => (
+  <Link href={href} className="group block h-full">
+    <div className="relative overflow-hidden bg-card border-[1px] border-border p-8 h-full flex flex-col transition-colors duration-300 hover:bg-foreground hover:border-foreground">
       <div className="relative z-10">
-        <div className={`mb-6 inline-block p-4 rounded-lg bg-primary/10 text-primary`}>
+        <div className="mb-8 inline-block p-4 border border-border group-hover:border-background group-hover:bg-background text-foreground transition-colors duration-300">
           {icon}
         </div>
-        <h3 className="text-2xl font-bold mb-3 text-foreground">{title}</h3>
-        <p className="text-muted-foreground leading-relaxed mb-6">{description}</p>
+        <h3 className="text-3xl font-display font-bold mb-4 text-foreground group-hover:text-background transition-colors duration-300 uppercase tracking-tight">{title}</h3>
+        <p className="font-sans text-muted-foreground group-hover:text-background/80 leading-relaxed mb-10 transition-colors duration-300">
+          {description}
+        </p>
       </div>
-      <div className="mt-auto relative z-10">
-        <span className="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-wider group-hover:gap-3 transition-all">
+      <div className="mt-auto relative z-10 pt-4 border-t border-border group-hover:border-background/20 transition-colors duration-300">
+        <span className="inline-flex items-center gap-2 text-xs font-mono font-bold text-foreground group-hover:text-background uppercase tracking-widest transition-colors duration-300">
           {children} <ArrowRight size={16} />
         </span>
       </div>
-    </motion.div>
+    </div>
   </Link>
 );
 
@@ -31,7 +30,7 @@ export default function LaboratoriosSection() {
     <section id="laboratorios" className="py-32 px-4">
       <div className="max-w-5xl mx-auto">
         <TituloSeccion>Laboratorios Interactivos</TituloSeccion>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -39,12 +38,11 @@ export default function LaboratoriosSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Card 
+            <Card
               href="/engineering"
-              icon={<Cpu size={32} />}
+              icon={<Cpu size={32} strokeWidth={1} />}
               title="Engineering Core"
-              description="Un espacio para la experimentación técnica. Incluye simulaciones de físicas, algoritmos visuales y herramientas de software."
-              accentColor="59, 130, 246"
+              description="Un espacio para la experimentación técnica severa. Incluye simulaciones de físicas, algoritmos visuales e infraestructura."
             >
               Explorar Core
             </Card>
@@ -56,12 +54,11 @@ export default function LaboratoriosSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card 
+            <Card
               href="/chess"
-              icon={<Gamepad2 size={32} />}
+              icon={<Gamepad2 size={32} strokeWidth={1} />}
               title="Chess Hub"
-              description="Un laboratorio de ajedrez con un motor de IA propio, análisis de partidas y visualizaciones de datos."
-              accentColor="245, 158, 11"
+              description="Laboratorio táctico con motor de IA propio, análisis de partidas y visualizaciones algorítmicas de datos en tiempo real."
             >
               Visitar Hub
             </Card>

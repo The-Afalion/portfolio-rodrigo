@@ -13,14 +13,19 @@ export function Proveedores({ children }: { children: ReactNode }) {
   }, []);
 
   if (!estaMontado) {
-    return null; 
+    return null;
   }
 
   return (
     <ProveedorContextoGlobal>
       <ProveedorContextoChess>
         <ProveedorContextoRealtime>
-          <ThemeProvider attribute="class" defaultTheme="dark">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            themes={['light', 'dark', 'forest', 'sepia']}
+          >
             {children}
           </ThemeProvider>
         </ProveedorContextoRealtime>

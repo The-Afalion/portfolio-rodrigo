@@ -10,9 +10,9 @@ import { Chess } from 'chess.js';
 const SEARCH_DEPTH = 2;
 const PIECE_VALUES: { [key: string]: number } = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
 const AI_PERSONALITIES: { [name: string]: any } = {
-  "ByteBard": { type: "PAWN_MASTER", aggression: 1.0 }, "HexaMind": { type: "AGGRESSIVE", aggression: 1.5 }, "CodeCaster": { type: "ADAPTIVE", aggression: 1.0 }, 
-  "NexoZero": { type: "BALANCED", aggression: 1.0 }, "QuantumLeap": { type: "CHAOTIC", aggression: 1.2 }, "SiliconSoul": { type: "DEFENSIVE", aggression: 0.8 }, 
-  "LogicLoom": { type: "FORTRESS", aggression: 0.5 }, "KernelKing": { type: "OPENING_BOOK", aggression: 1.0 }, "VoidRunner": { type: "BERSERKER", aggression: 2.0 }, 
+  "ByteBard": { type: "PAWN_MASTER", aggression: 1.0 }, "HexaMind": { type: "AGGRESSIVE", aggression: 1.5 }, "CodeCaster": { type: "ADAPTIVE", aggression: 1.0 },
+  "NexoZero": { type: "BALANCED", aggression: 1.0 }, "QuantumLeap": { type: "CHAOTIC", aggression: 1.2 }, "SiliconSoul": { type: "DEFENSIVE", aggression: 0.8 },
+  "LogicLoom": { type: "FORTRESS", aggression: 0.5 }, "KernelKing": { type: "OPENING_BOOK", aggression: 1.0 }, "VoidRunner": { type: "BERSERKER", aggression: 2.0 },
   "FluxAI": { type: "REACTIONARY", aggression: 1.1 }, "CygnusX1": { type: "OPPORTUNIST", aggression: 1.3 }, "ApexBot": { type: "PRESSURER", aggression: 1.2 }
 };
 const OPENING_BOOK: any = { "e4": { "e5": { "Nf3": { "Nc6": {} } } }, "d4": { "d5": { "c4": { "e6": {} } } } };
@@ -21,8 +21,8 @@ const OPENING_BOOK: any = { "e4": { "e5": { "Nf3": { "Nc6": {} } } }, "d4": { "d
 
 function evaluateBoard(game: Chess) {
   let score = 0;
-  game.board().forEach(row => {
-    row.forEach(piece => {
+  game.board().forEach((row: any) => {
+    row.forEach((piece: any) => {
       if (piece) score += PIECE_VALUES[piece.type] * (piece.color === 'w' ? 1 : -1);
     });
   });
@@ -80,10 +80,10 @@ function getBestMove(game: Chess, personality: any, opponentPersonality: any, mo
     game.move(move);
     const boardValue = minimax(game, SEARCH_DEPTH - 1, -Infinity, Infinity, !isMaximizing);
     game.undo();
-    
+
     let finalValue = boardValue;
     const aggression = personality.aggression || 1.0;
-    if (move.flags.includes('c')) finalValue *= aggression;
+    if ((move as any).flags && (move as any).flags.includes('c')) finalValue *= aggression;
 
     if (isMaximizing) {
       if (finalValue > bestValue) {
@@ -109,14 +109,14 @@ function simulateGame(p1: any, p2: any, startTime: Date) {
     const currentPlayer = turn === 'w' ? p1 : p2;
     const opponentPlayer = turn === 'w' ? p2 : p1;
     if (!currentPlayer?.name || !opponentPlayer?.name) continue;
-    
+
     const move = getBestMove(game, AI_PERSONALITIES[currentPlayer.name], AI_PERSONALITIES[opponentPlayer.name], moves.length);
     if (!move) break;
     game.move(move);
 
     const timeIncrement = (5 + Math.random() * 10) * 1000;
     currentTime += timeIncrement;
-    moves.push({ move: move, timestamp: new Date(currentTime).toISOString() });
+    moves.push({ move: (move as any).san || (move as any), timestamp: new Date(currentTime).toISOString() });
   }
   const winnerTurn = game.turn() === 'b' ? 'w' : 'b';
   return { winner: winnerTurn === 'w' ? 'p1' : 'p2', moves };
@@ -152,9 +152,9 @@ export async function startNewTournament() {
     }
     const { data: insertedMatches } = await supabaseAdmin.from('AITournamentMatch').insert(firstRoundMatches).select();
     if (!insertedMatches) throw new Error("No se pudieron crear las partidas.");
-    
+
     await simulateRound(insertedMatches, players);
-    
+
     revalidatePath('/chess/ai-battle');
     return { success: `Nuevo torneo ${newTournament.id} iniciado.` };
 

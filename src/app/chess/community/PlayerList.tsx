@@ -20,12 +20,12 @@ async function handleInvite(opponentId: string, router: any) {
   }
 }
 
-export function PlayerList({ players, currentUser }) {
+export function PlayerList({ players, currentUser }: { players: any[], currentUser: any }) {
   const router = useRouter();
 
   return (
     <div className="space-y-4">
-      {players.map((player) => (
+      {players.map((player: any) => (
         <div
           key={player.id}
           className="p-4 border rounded-lg flex justify-between items-center"

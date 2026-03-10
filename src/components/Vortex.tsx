@@ -60,7 +60,7 @@ declare global {
 // --- Componente de la Escena 3D ---
 function VortexScene() {
   const pointsRef = useRef<any>();
-  const materialRef = useRef<VortexMaterialImpl>(null!);
+  const materialRef = useRef<any>(null!);
 
   const sphere = random.inSphere(new Float32Array(5000), { radius: 1.5 });
 
@@ -78,7 +78,7 @@ function VortexScene() {
 
   return (
     <Points ref={pointsRef} positions={sphere} stride={3} frustumCulled={false}>
-      <vortexMaterial ref={materialRef} attach="material" depthWrite={false} />
+      <vortexMaterial ref={materialRef} attach="material" depthWrite={false} uTime={0} uMouse={new Vector2()} uResolution={new Vector2()} />
     </Points>
   );
 }
