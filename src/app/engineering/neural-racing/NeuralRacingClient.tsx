@@ -34,12 +34,12 @@ export default function NeuralRacingClient() {
 
         const cars = generateCars(CAR_GENERATION_COUNT, track);
 
-        // Generador de tráfico procedural progresivo. En nivel 2 generamos hasta 20km porque el tráfico viene hacia nosotros.
-        const maxTrafficRange = currentLevel === 1 ? 10500 : (currentLevel === 4 ? 15500 : 25500);
+        // Generador de tráfico procedural progresivo
+        const maxTrafficRange = (currentLevel * 5000) + 5500;
         const traffic: Car[] = [];
         let currentY = -100;
 
-        if (currentLevel !== 3) {
+        if (currentLevel !== 3 && currentLevel !== 5 && currentLevel !== 7) {
             while (Math.abs(currentY) < maxTrafficRange) {
                 const dist = Math.abs(currentY);
 
@@ -125,6 +125,30 @@ export default function NeuralRacingClient() {
                 return;
             }
 
+            // CONDICIÓN DE VICTORIA NIVEL 4 -> INICIO NIVEL 5
+            if (dist >= 20000 && currentLevel === 4) {
+                localStorage.setItem("neural_level", "5");
+                localStorage.setItem("bestBrain", JSON.stringify(currentBestCar.brain));
+                window.location.reload();
+                return;
+            }
+
+            // CONDICIÓN DE VICTORIA NIVEL 5 -> INICIO NIVEL 6
+            if (dist >= 25000 && currentLevel === 5) {
+                localStorage.setItem("neural_level", "6");
+                localStorage.setItem("bestBrain", JSON.stringify(currentBestCar.brain));
+                window.location.reload();
+                return;
+            }
+
+            // CONDICIÓN DE VICTORIA NIVEL 6 -> INICIO NIVEL 7
+            if (dist >= 30000 && currentLevel === 6) {
+                localStorage.setItem("neural_level", "7");
+                localStorage.setItem("bestBrain", JSON.stringify(currentBestCar.brain));
+                window.location.reload();
+                return;
+            }
+
             canvas.height = window.innerHeight;
 
             for (let i = 0; i < traffic.length; i++) {
@@ -135,7 +159,11 @@ export default function NeuralRacingClient() {
                 traffic[i].update(track.borders);
             }
 
-            const allBorders = [...track.borders, ...traffic.map(c => c.polygon)];
+            const allBorders = [
+                ...track.borders,
+                ...traffic.map(c => c.polygon),
+                ...traffic.flatMap(c => c.targetPolygon && c.targetPolygon.length > 0 ? [c.targetPolygon] : [])
+            ];
 
             for (let i = 0; i < cars.length; i++) {
                 // Acelerar los coches progresivamente. Comienzan en base 4 y pueden llegar hasta 7 haciendolo insufrible de reaccionar.
@@ -151,7 +179,10 @@ export default function NeuralRacingClient() {
 
             ctx.globalAlpha = 1;
             for (let i = 0; i < traffic.length; i++) {
-                traffic[i].draw(ctx, "#ef4444");
+                // Niebla Neuronal: Tráfico totalmente invisible, solo escaneable por los láseres
+                if (currentLevel !== 6) {
+                    traffic[i].draw(ctx, "#ef4444");
+                }
             }
 
             ctx.globalAlpha = 0.2;
@@ -225,11 +256,26 @@ export default function NeuralRacingClient() {
                             FASE 4 - AUTOPISTA: El tráfico cambiará de carril aleatoriamente (15,000m).
                         </p>
                     )}
+                    {level === 5 && (
+                        <p className="text-yellow-400 text-xs font-bold leading-relaxed mb-6 animate-pulse">
+                            FASE 5 - ZONA SÍSMICA: Salta entre las placas tectónicas desconectadas. ¡Alineación crítica!
+                        </p>
+                    )}
+                    {level === 6 && (
+                        <p className="text-gray-500 text-xs font-bold leading-relaxed mb-6 animate-pulse">
+                            FASE 6 - NIEBLA NEURONAL: Oscuridad absoluta. Confía solo en el radar láser.
+                        </p>
+                    )}
+                    {level === 7 && (
+                        <p className="text-cyan-400 text-xs font-bold leading-relaxed mb-6 animate-pulse">
+                            FASE 7 - CENTRIFUGADORA: La pista gira infinitamente hacia el abismo y se estrecha.
+                        </p>
+                    )}
 
                     <div className="space-y-4 mb-10 border-t border-white/10 pt-6">
                         <div className="flex justify-between items-center bg-white/5 p-3">
                             <span className="text-xs text-secondary-foreground font-bold tracking-widest uppercase leading-none">FASE</span>
-                            <span className="text-primary font-mono text-xl">{level === 1 ? "1 (Ascenso)" : level === 2 ? "2 (Descenso)" : level === 3 ? "3 (Sinusoidal)" : "4 (Autopista)"}</span>
+                            <span className="text-primary font-mono text-xl">{level === 1 ? "1 (Ascenso)" : level === 2 ? "2 (Descenso)" : level === 3 ? "3 (Sinusoidal)" : level === 4 ? "4 (Autopista)" : level === 5 ? "5 (Sísmica)" : level === 6 ? "6 (Niebla)" : "7 (Centrífuga)"}</span>
                         </div>
                         <div className="flex justify-between items-center bg-white/5 p-3">
                             <span className="text-xs text-secondary-foreground font-bold tracking-widest uppercase leading-none">Generación</span>
@@ -241,7 +287,7 @@ export default function NeuralRacingClient() {
                         </div>
                         <div className="flex justify-between items-center bg-white/5 p-3">
                             <span className="text-xs text-secondary-foreground font-bold tracking-widest uppercase leading-none">Tráfico</span>
-                            <span className="text-red-400 font-mono text-xl">{level === 3 ? "N/A" : "Masivo"}</span>
+                            <span className="text-red-400 font-mono text-xl">{level === 3 || level === 5 || level === 7 ? "N/A" : "Masivo"}</span>
                         </div>
                     </div>
                 </div>

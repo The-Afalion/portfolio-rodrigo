@@ -22,8 +22,10 @@ export class Car {
     brain?: NeuralNetwork;
     useBrain: boolean;
     targetX?: number;
+    laneChangeTimer: number;
 
     polygon: { x: number, y: number }[];
+    targetPolygon: { x: number, y: number }[]; // Holograma del futuro
 
     constructor(x: number, y: number, width: number, height: number, controlType: 'KEYS' | 'DUMMY' | 'AI', maxSpeed: number = 3) {
         this.x = x;
@@ -40,6 +42,8 @@ export class Car {
 
         this.useBrain = controlType === "AI";
         this.polygon = [];
+        this.targetPolygon = [];
+        this.laneChangeTimer = 0;
 
         if (controlType !== "DUMMY") {
             this.sensor = new Sensor(this);
@@ -56,17 +60,26 @@ export class Car {
             // Lógica lateral directa para DUMMYs simulando cambios de carril sin rotar (diagonal)
             if (!this.useBrain && this.targetX !== undefined) {
                 this.angle = 0; // Sin giro, bloqueamos el ángulo
-                const diffX = this.targetX - this.x;
-                if (Math.abs(diffX) > 2) {
-                    this.x += Math.sign(diffX) * 2; // Deslizamiento diagonal sumado a la Y de move()
-                    this.controls.forward = true;
+
+                // Proyecta el holograma físico en el carril destino
+                this.targetPolygon = this.#createPolygonAt(this.targetX, this.y, this.angle);
+
+                if (this.laneChangeTimer > 0) {
+                    this.laneChangeTimer--;
                 } else {
-                    this.x = this.targetX;
-                    this.targetX = undefined;
+                    const diffX = this.targetX - this.x;
+                    if (Math.abs(diffX) > 2) {
+                        this.x += Math.sign(diffX) * 2; // Deslizamiento diagonal sumado a la Y de move()
+                        this.controls.forward = true;
+                    } else {
+                        this.x = this.targetX;
+                        this.targetX = undefined;
+                        this.targetPolygon = []; // Destruye el holograma una vez llegado
+                    }
                 }
             }
 
-            this.polygon = this.#createPolygon();
+            this.polygon = this.#createPolygonAt(this.x, this.y, this.angle);
             this.damaged = this.#assessDamage(roadBorders);
         }
 
@@ -115,26 +128,26 @@ export class Car {
     }
 
     // Define las esquinas del coche (geometría para calcular choques exactos)
-    #createPolygon() {
+    #createPolygonAt(x: number, y: number, angle: number) {
         const points = [];
         const rad = Math.hypot(this.width, this.height) / 2;
         const alpha = Math.atan2(this.width, this.height);
 
         points.push({
-            x: this.x - Math.sin(this.angle - alpha) * rad,
-            y: this.y - Math.cos(this.angle - alpha) * rad
+            x: x - Math.sin(angle - alpha) * rad,
+            y: y - Math.cos(angle - alpha) * rad
         });
         points.push({
-            x: this.x - Math.sin(this.angle + alpha) * rad,
-            y: this.y - Math.cos(this.angle + alpha) * rad
+            x: x - Math.sin(angle + alpha) * rad,
+            y: y - Math.cos(angle + alpha) * rad
         });
         points.push({
-            x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
-            y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad
+            x: x - Math.sin(Math.PI + angle - alpha) * rad,
+            y: y - Math.cos(Math.PI + angle - alpha) * rad
         });
         points.push({
-            x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
-            y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad
+            x: x - Math.sin(Math.PI + angle + alpha) * rad,
+            y: y - Math.cos(Math.PI + angle + alpha) * rad
         });
         return points;
     }
@@ -177,6 +190,26 @@ export class Car {
                 ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
             }
             ctx.fill();
+        }
+
+        // Renderizar Holograma Predictivo si existe
+        if (this.targetPolygon.length > 0) {
+            ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+            ctx.beginPath();
+            ctx.moveTo(this.targetPolygon[0].x, this.targetPolygon[0].y);
+            for (let i = 1; i < this.targetPolygon.length; i++) {
+                ctx.lineTo(this.targetPolygon[i].x, this.targetPolygon[i].y);
+            }
+            ctx.fill();
+
+            // Efecto visual: Linea punteada conectando coche real con holograma
+            ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.targetX || this.x, this.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
         }
 
         // Solo dibujamos los radares láser para el coche líder para no ensuciar la pantalla
