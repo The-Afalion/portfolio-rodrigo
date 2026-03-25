@@ -12,6 +12,7 @@ export let globalFuel = 100;
 export let globalPlasma = 100;
 export let globalMinerals = 0;
 export let globalWantedLevel = 0;
+const POLICE_MAX = 5;
 let isPlayerDead = false;
 
 function updateHUD() {
