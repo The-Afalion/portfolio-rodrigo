@@ -106,5 +106,14 @@ export const PROYECTOS_CORE = [
     color: '#0ea5e9', // Ocean Blue
     position: [-8, 2, 2] as [number, number, number],
     link: '/engineering/lumina'
+  },
+  {
+    id: 'space-sandbox',
+    title: 'Deep Space Sandbox',
+    description: 'Vuelo 6DOF, comercio, recolección de plasma y combate espacial.',
+    tech: ['R3F', 'Physics', 'RPG'],
+    color: '#ec4899', // Pink
+    position: [0, -5, 12] as [number, number, number],
+    link: '/engineering/sandbox'
   }
 ];
