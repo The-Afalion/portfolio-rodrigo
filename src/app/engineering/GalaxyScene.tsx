@@ -102,15 +102,59 @@ function Spaceship({ onCollide, isActive, isWarping }: { onCollide: (id: string,
 
   return (
     <group ref={meshRef} position={[0, 0, 20]}>
+      {/* Fuselaje Principal */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <coneGeometry args={[0.4, 1.2, 4]} />
-        <meshStandardMaterial color="#3b82f6" emissive="#1d4ed8" emissiveIntensity={2} />
+        <cylinderGeometry args={[0.05, 0.3, 1.5, 6]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.2} />
       </mesh>
-      <mesh position={[0, -0.2, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-        <boxGeometry args={[1.2, 0.1, 0.4]} />
-        <meshStandardMaterial color="#60a5fa" />
+      
+      {/* Cockpit / Cabina */}
+      <mesh position={[0, 0.1, -0.2]} rotation={[Math.PI / 2, 0, 0]}>
+        <sphereGeometry args={[0.2, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#38bdf8" transparent opacity={0.6} emissive="#38bdf8" emissiveIntensity={0.5} />
       </mesh>
-      <pointLight position={[0, 0, 0.8]} color="#0ea5e9" intensity={1} distance={3} />
+
+      {/* Ala Izquierda (Estilo V-Shape) */}
+      <group position={[-0.4, 0, 0.2]} rotation={[0, 0.2, -0.2]}>
+        <mesh>
+          <boxGeometry args={[0.8, 0.05, 0.6]} />
+          <meshStandardMaterial color="#334155" />
+        </mesh>
+        {/* Motor Izquierdo */}
+        <mesh position={[-0.2, -0.05, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.1, 0.1, 0.4, 8]} />
+          <meshStandardMaterial color="#0f172a" />
+        </mesh>
+      </group>
+
+      {/* Ala Derecha (Estilo V-Shape) */}
+      <group position={[0.4, 0, 0.2]} rotation={[0, -0.2, 0.2]}>
+        <mesh>
+          <boxGeometry args={[0.8, 0.05, 0.6]} />
+          <meshStandardMaterial color="#334155" />
+        </mesh>
+        {/* Motor Derecho */}
+        <mesh position={[0.2, -0.05, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.1, 0.1, 0.4, 8]} />
+          <meshStandardMaterial color="#0f172a" />
+        </mesh>
+      </group>
+
+      {/* Alerón Posterior */}
+      <mesh position={[0, 0.3, 0.4]} rotation={[0.4, 0, 0]}>
+        <boxGeometry args={[0.05, 0.6, 0.3]} />
+        <meshStandardMaterial color="#475569" />
+      </mesh>
+
+      {/* Luces de Posición y Motores (Glow) */}
+      <pointLight position={[-0.6, -0.1, 0.6]} color="#0ea5e9" intensity={1} distance={2} />
+      <pointLight position={[0.6, -0.1, 0.6]} color="#0ea5e9" intensity={1} distance={2} />
+      
+      {/* Reactor Principal */}
+      <mesh position={[0, 0, 0.7]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
+        <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={5} />
+      </mesh>
     </group>
   );
 }
