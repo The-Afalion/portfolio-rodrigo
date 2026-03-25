@@ -115,5 +115,14 @@ export const PROYECTOS_CORE = [
     color: '#ec4899', // Pink
     position: [0, -5, 12] as [number, number, number],
     link: '/engineering/sandbox'
+  },
+  {
+    id: 'aetheria',
+    title: 'Aetheria Tactics',
+    description: 'Elegante juego de cartas 4x4. Domina batallas posicionales contra rivales y la IA.',
+    tech: ['React', 'Framer Motion', 'Minimax AI'],
+    color: '#d97706', // Wood/Gold
+    position: [6, 4, 10] as [number, number, number],
+    link: '/engineering/aetheria'
   }
 ];

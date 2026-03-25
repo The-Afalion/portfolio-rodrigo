@@ -260,7 +260,7 @@ export default function GalaxyScene() {
     if (isWarping) return;
     setIsWarping(true);
     setWarpTarget(pos);
-    setWarpType(id === 'space-sandbox' ? 'wormhole' : 'hyperspace');
+    setWarpType((id === 'space-sandbox' || id === 'aetheria') ? 'wormhole' : 'hyperspace');
     setTimeout(() => {
       router.push(link);
     }, 1200);
