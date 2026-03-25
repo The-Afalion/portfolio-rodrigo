@@ -1,77 +1,58 @@
-export type Ability = 'RANGED' | 'HEAL' | 'PIERCE' | 'NONE';
-export type CardType = 'HERO' | 'GENERAL' | 'TROOP';
-export type ClassType = 'PALADIN' | 'WARLOCK' | 'RANGER';
+export type SideType = 'ATTACK' | 'SHIELD' | 'HEAL' | 'RANGED' | 'NONE';
 
 export type CardSide = {
-  damage: number;
-  shield: number;
-  ability: Ability;
+  type: SideType;
+  value: number;
 };
+
+export type CardRarity = 'NORMAL' | 'RARE' | 'PALADIN';
 
 export interface CardDef {
   id: string;
   name: string;
-  type: CardType;
-  classType?: ClassType; // Solo para Heroes y Troops
-  health: number;
+  rarity: CardRarity;
+  health: number; // Max 10
   top: CardSide;
   right: CardSide;
   bottom: CardSide;
   left: CardSide;
 }
 
-const S = (damage: number, shield: number, ability: Ability = 'NONE'): CardSide => ({ damage, shield, ability });
+// Helpers para legibilidad
+const A = (value: number): CardSide => ({ type: 'ATTACK', value });
+const D = (value: number): CardSide => ({ type: 'SHIELD', value });
+const H = (value: number): CardSide => ({ type: 'HEAL', value });
+const R = (value: number): CardSide => ({ type: 'RANGED', value });
+const N = (): CardSide => ({ type: 'NONE', value: 0 });
 
-// --- HEROES ---
-// Los héroes no se juegan en tablero. Otorgan las 6 tropas base.
-export const HEROES: CardDef[] = [
-  {
-    id: 'h_paladin', name: 'Comandante de Luz (Paladín)', type: 'HERO', classType: 'PALADIN', health: 40,
-    top: S(0,0), right: S(0,0), bottom: S(0,0), left: S(0,0) // Buff pasivo: +2 Vida a todas sus cartas
-  },
-  {
-    id: 'h_warlock', name: 'Señora Sombría (Bruja)', type: 'HERO', classType: 'WARLOCK', health: 40,
-    top: S(0,0), right: S(0,0), bottom: S(0,0), left: S(0,0) // Buff pasivo: Todos los ataques causan +1 Daño
-  },
-  {
-    id: 'h_ranger', name: 'Arquero Mayor (Ranger)', type: 'HERO', classType: 'RANGER', health: 40,
-    top: S(0,0), right: S(0,0), bottom: S(0,0), left: S(0,0) // Buff pasivo: +2 Escudo en caras superiores
-  }
+// --- NORMALES (MAX 6 PUNTOS COMBINADOS) ---
+export const NORMALS: CardDef[] = [
+  // Puro Tanque
+  { id: 'n1', name: 'Muro', rarity: 'NORMAL', health: 6, top: N(), right: N(), bottom: N(), left: N() },
+  { id: 'n2', name: 'Escudero', rarity: 'NORMAL', health: 2, top: D(1), right: D(1), bottom: D(1), left: D(1) },
+  // Agresivos (Cañon de Cristal)
+  { id: 'n3', name: 'Milicia', rarity: 'NORMAL', health: 3, top: A(2), right: N(), bottom: N(), left: A(1) },
+  { id: 'n4', name: 'Lanza Corta', rarity: 'NORMAL', health: 2, top: A(3), right: N(), bottom: N(), left: N() },
+  { id: 'n5', name: 'Guarda', rarity: 'NORMAL', health: 4, top: D(2), right: N(), bottom: N(), left: N() },
+  { id: 'n6', name: 'Médico', rarity: 'NORMAL', health: 4, top: H(2), right: N(), bottom: N(), left: N() },
+  { id: 'n7', name: 'Rastreador', rarity: 'NORMAL', health: 3, top: R(3), right: N(), bottom: N(), left: N() },
+  { id: 'n8', name: 'Campesino', rarity: 'NORMAL', health: 5, top: A(1), right: N(), bottom: N(), left: N() }
 ];
 
-// --- TROOPS --- (6 por clase, más débiles pero sinérgicas)
-export const TROOPS: CardDef[] = [
-  // PALADIN (Altísima Vida y Escudo, Bajo Daño)
-  { id: 't_pal1', name: 'Escudero', type: 'TROOP', classType: 'PALADIN', health: 12, top: S(1,4), right: S(1,4), bottom: S(1,4), left: S(1,4) },
-  { id: 't_pal2', name: 'Sacerdote', type: 'TROOP', classType: 'PALADIN', health: 8, top: S(0,1,'HEAL'), right: S(0,1,'HEAL'), bottom: S(0,1), left: S(0,1) },
-  { id: 't_pal3', name: 'Caballero', type: 'TROOP', classType: 'PALADIN', health: 15, top: S(4,2), right: S(2,2), bottom: S(1,1), left: S(2,2) },
-  { id: 't_pal4', name: 'Infantería Pesada', type: 'TROOP', classType: 'PALADIN', health: 18, top: S(2,5), right: S(1,5), bottom: S(0,2), left: S(1,5) },
-  { id: 't_pal5', name: 'Alabardero', type: 'TROOP', classType: 'PALADIN', health: 10, top: S(5,1,'PIERCE'), right: S(2,1), bottom: S(1,1), left: S(2,1) },
-  { id: 't_pal6', name: 'Guardián del Umbral', type: 'TROOP', classType: 'PALADIN', health: 20, top: S(1,6), right: S(1,6), bottom: S(1,6), left: S(1,6) },
-
-  // WARLOCK (Altísimo Daño y Pierce, Baja Vida)
-  { id: 't_war1', name: 'Imp Menor', type: 'TROOP', classType: 'WARLOCK', health: 6, top: S(2,0), right: S(4,0), bottom: S(0,0), left: S(4,0) },
-  { id: 't_war2', name: 'Acólito Oscuro', type: 'TROOP', classType: 'WARLOCK', health: 8, top: S(5,0,'PIERCE'), right: S(1,0), bottom: S(1,0), left: S(1,0) },
-  { id: 't_war3', name: 'Sabueso de Fuego', type: 'TROOP', classType: 'WARLOCK', health: 10, top: S(6,1), right: S(3,1), bottom: S(1,1), left: S(3,1) },
-  { id: 't_war4', name: 'Señor del Terror', type: 'TROOP', classType: 'WARLOCK', health: 12, top: S(7,2), right: S(5,2), bottom: S(2,2), left: S(5,2) },
-  { id: 't_war5', name: 'Ojo Abisal', type: 'TROOP', classType: 'WARLOCK', health: 8, top: S(4,0,'RANGED'), right: S(0,0), bottom: S(0,0), left: S(0,0) },
-  { id: 't_war6', name: 'Demonio Mayor', type: 'TROOP', classType: 'WARLOCK', health: 14, top: S(8,1), right: S(6,1), bottom: S(1,1), left: S(6,1) },
-
-  // RANGER (Equilibrado, Ataques a Mediana Distancia, Agilidad)
-  { id: 't_ran1', name: 'Explorador', type: 'TROOP', classType: 'RANGER', health: 10, top: S(3,2), right: S(3,2), bottom: S(1,1), left: S(3,2) },
-  { id: 't_ran2', name: 'Arquero Silvano', type: 'TROOP', classType: 'RANGER', health: 8, top: S(5,1,'RANGED'), right: S(2,1), bottom: S(1,1), left: S(2,1) },
-  { id: 't_ran3', name: 'Domabestias', type: 'TROOP', classType: 'RANGER', health: 14, top: S(4,3), right: S(3,2), bottom: S(2,2), left: S(3,2) },
-  { id: 't_ran4', name: 'Asesino Veloz', type: 'TROOP', classType: 'RANGER', health: 9, top: S(6,1,'PIERCE'), right: S(1,0), bottom: S(1,0), left: S(6,1) },
-  { id: 't_ran5', name: 'Francotirador', type: 'TROOP', classType: 'RANGER', health: 7, top: S(8,0,'RANGED'), right: S(1,0), bottom: S(1,0), left: S(1,0) },
-  { id: 't_ran6', name: 'Montaraz', type: 'TROOP', classType: 'RANGER', health: 12, top: S(5,4), right: S(4,3), bottom: S(2,2), left: S(4,3) }
+// --- RARAS (MAX 10 PUNTOS COMBINADOS) ---
+export const RARES: CardDef[] = [
+  { id: 'r1', name: 'Caballero', rarity: 'RARE', health: 5, top: A(2), right: D(1), bottom: N(), left: D(2) },
+  { id: 'r2', name: 'Asesino', rarity: 'RARE', health: 3, top: A(4), right: A(3), bottom: N(), left: N() },
+  { id: 'r3', name: 'Francotirador', rarity: 'RARE', health: 4, top: R(4), right: N(), bottom: N(), left: A(2) },
+  { id: 'r4', name: 'Clérigo', rarity: 'RARE', health: 6, top: H(2), right: H(2), bottom: N(), left: N() },
+  { id: 'r5', name: 'Golem', rarity: 'RARE', health: 6, top: D(2), right: D(2), bottom: N(), left: N() },
+  { id: 'r6', name: 'Berserker', rarity: 'RARE', health: 5, top: A(3), right: A(1), bottom: N(), left: A(1) }
 ];
 
-// --- GENERALS --- (Brutales stat-wise. Neutrales.)
-export const GENERALS: CardDef[] = [
-  { id: 'g_dragon', name: 'Dragón Ancestral', type: 'GENERAL', health: 25, top: S(9,4), right: S(7,3), bottom: S(4,3), left: S(7,3) },
-  { id: 'g_golem', name: 'Constructo Primitivo', type: 'GENERAL', health: 35, top: S(4,8), right: S(4,8), bottom: S(2,9), left: S(4,8) },
-  { id: 'g_angel', name: 'Seraph Protector', type: 'GENERAL', health: 22, top: S(6,6), right: S(3,5,'HEAL'), bottom: S(1,5), left: S(3,5,'HEAL') },
-  { id: 'g_kraken', name: 'Kraken de Éter', type: 'GENERAL', health: 28, top: S(5,4,'PIERCE'), right: S(5,4,'PIERCE'), bottom: S(1,2), left: S(5,4,'PIERCE') },
-  { id: 'g_phoenix', name: 'Fénix Renacido', type: 'GENERAL', health: 20, top: S(8,1,'RANGED'), right: S(7,1), bottom: S(3,1), left: S(7,1) },
-  { id: 'g_titan', name: 'Titán Acorazado', type: 'GENERAL', health: 30, top: S(7,7), right: S(2,9), bottom: S(1,5), left: S(2,9) }
+// --- PALADINES (MAX 15 PUNTOS COMBINADOS) ---
+export const PALADINS: CardDef[] = [
+  { id: 'p1', name: 'Dragón', rarity: 'PALADIN', health: 7, top: A(4), right: A(2), bottom: N(), left: A(2) },
+  { id: 'p2', name: 'Arcángel', rarity: 'PALADIN', health: 8, top: H(3), right: D(2), bottom: N(), left: D(2) },
+  { id: 'p3', name: 'Titán', rarity: 'PALADIN', health: 10, top: D(2), right: D(2), bottom: N(), left: A(1) },
+  { id: 'p4', name: 'Señor Oscuro', rarity: 'PALADIN', health: 6, top: A(5), right: R(2), bottom: N(), left: R(2) }
 ];

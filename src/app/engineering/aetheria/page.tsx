@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Shield, Sword, Heart, Sparkles } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CardDef, HEROES, TROOPS, GENERALS } from '@/lib/aetheria/classes';
+import { CardDef, NORMALS, RARES, PALADINS, CardSide, SideType } from '@/lib/aetheria/classes';
 
 type Player = 'P1' | 'P2';
 type GameMode = 'LOCAL' | 'AI' | null;
-type Phase = 'MENU' | 'DRAFT_HERO' | 'DRAFT_GENERALS' | 'PLAYING' | 'GAMEOVER';
+type Phase = 'MENU' | 'DRAFT_P1' | 'DRAFT_P2' | 'PLAYING' | 'GAMEOVER';
 
-// Extendemos CardDef para instanciar su vida actual sin mutar la base de datos
 interface InGameCard extends CardDef {
   currentHealth: number;
+  instanceId: string; // Para distinguir 2 cartas iguales en la mesa
 }
 
 interface BoardSlot {
@@ -23,19 +23,22 @@ interface BoardSlot {
 export default function AetheriaPage() {
   const [phase, setPhase] = useState<Phase>('MENU');
   const [mode, setMode] = useState<GameMode>(null);
-  const [turn, setTurn] = useState<Player>('P1');
-  const [draftingPlayer, setDraftingPlayer] = useState<Player>('P1');
-  const [winner, setWinner] = useState<Player | 'DRAW' | null>(null);
+  
+  // Rondas
+  const [roundWinner, setRoundWinner] = useState<Player | 'DRAW' | null>(null);
+  const [p1Moves, setP1Moves] = useState<{ r: number, c: number } | null>(null);
+  const [p2Moves, setP2Moves] = useState<{ r: number, c: number } | null>(null);
+  const [roundTurn, setRoundTurn] = useState<Player>('P1'); // Quien pone primero en la ronda
+  const [currentTurn, setCurrentTurn] = useState<Player>('P1'); // Quien está picando ahora
+  const [roundNumber, setRoundNumber] = useState(1);
 
   // Deck State
-  const [heroP1, setHeroP1] = useState<InGameCard | null>(null);
-  const [heroP2, setHeroP2] = useState<InGameCard | null>(null);
-  
   const [handP1, setHandP1] = useState<InGameCard[]>([]);
   const [handP2, setHandP2] = useState<InGameCard[]>([]);
 
   // Draft Temp State
-  const [selectedGenerals, setSelectedGenerals] = useState<InGameCard[]>([]);
+  const [draftStep, setDraftStep] = useState<number>(0); // 0=Paladines, 1=Raras, 2=Normales
+  const [selectedDraft, setSelectedDraft] = useState<InGameCard[]>([]);
 
   // Board State
   const [board, setBoard] = useState<(BoardSlot | null)[][]>(Array.from({ length: 4 }, () => Array(4).fill(null)));
@@ -44,297 +47,335 @@ export default function AetheriaPage() {
   // --- INITIALIZATION ---
   const startGame = (selectedMode: GameMode) => {
     setMode(selectedMode);
-    setPhase('DRAFT_HERO');
-    setDraftingPlayer('P1');
-    setHeroP1(null); setHeroP2(null);
-    setHandP1([]);   setHandP2([]);
+    setPhase('DRAFT_P1');
+    setDraftStep(0);
+    setHandP1([]); setHandP2([]); setSelectedDraft([]);
     setBoard(Array.from({ length: 4 }, () => Array(4).fill(null)));
-    setSelectedGenerals([]);
+    setP1Moves(null); setP2Moves(null); setRoundNumber(1);
+    setRoundTurn('P1'); setCurrentTurn('P1');
   };
 
   // --- DRAFTING PHASE ---
-  const selectHero = (heroDef: CardDef) => {
-    const hero: InGameCard = { ...heroDef, currentHealth: heroDef.health };
-    const troops = TROOPS.filter(t => t.classType === hero.classType).map(t => ({ ...t, currentHealth: t.health }));
-    
-    // Aplicar Buffs del Héroe
-    if (hero.classType === 'PALADIN') {
-       troops.forEach(t => t.currentHealth += 2);
-    } else if (hero.classType === 'RANGER') {
-       troops.forEach(t => t.top.shield += 2);
-    } // Warlock tiene +1 Daño que aplicaremos dinámicamente en el combate
-
-    if (draftingPlayer === 'P1') {
-      setHeroP1(hero);
-      setHandP1(troops);
-      setPhase('DRAFT_GENERALS');
+  const toggleDraftSelection = (cardDef: CardDef, maxAllowed: number) => {
+    // Check if we can add
+    const currentCount = selectedDraft.filter(c => c.id === cardDef.id).length;
+    // Permitir duplicados si no excedemos maxTotal
+    if (selectedDraft.length < maxAllowed) {
+       setSelectedDraft([...selectedDraft, { ...cardDef, currentHealth: cardDef.health, instanceId: Math.random().toString() }]);
     } else {
-      setHeroP2(hero);
-      setHandP2(troops);
-      if (mode === 'LOCAL') {
-         setPhase('DRAFT_GENERALS');
-      }
+       // Eliminar el último
+       const newDraft = [...selectedDraft];
+       newDraft.pop();
+       setSelectedDraft([...newDraft, { ...cardDef, currentHealth: cardDef.health, instanceId: Math.random().toString() }]);
     }
   };
 
-  const toggleGeneralSelection = (genDef: CardDef) => {
-    const exists = selectedGenerals.find(g => g.id === genDef.id);
-    if (exists) {
-      setSelectedGenerals(selectedGenerals.filter(g => g.id !== genDef.id));
-    } else {
-      if (selectedGenerals.length < 3) setSelectedGenerals([...selectedGenerals, { ...genDef, currentHealth: genDef.health }]);
-    }
-  };
+  const confirmDraftStep = () => {
+    let nextStep = draftStep + 1;
+    let nextPhase = phase;
+    let currentPool = phase === 'DRAFT_P1' ? handP1 : handP2;
+    const setter = phase === 'DRAFT_P1' ? setHandP1 : setHandP2;
 
-  const confirmGenerals = () => {
-    if (selectedGenerals.length !== 3) return;
-    
-    if (draftingPlayer === 'P1') {
-      setHandP1(prev => [...prev, ...selectedGenerals]);
-      setSelectedGenerals([]);
-      
-      if (mode === 'LOCAL') {
-        setDraftingPlayer('P2');
-        setPhase('DRAFT_HERO');
-      } else {
-        // Generar Draft de la IA
-        setTimeout(() => {
-           const aiHeroDef = HEROES[Math.floor(Math.random() * HEROES.length)];
-           const aiHero: InGameCard = { ...aiHeroDef, currentHealth: aiHeroDef.health };
-           const aiTroops = TROOPS.filter(t => t.classType === aiHero.classType).map(t => ({ ...t, currentHealth: t.health }));
-           
-           if (aiHero.classType === 'PALADIN') aiTroops.forEach(t => t.currentHealth += 2);
-           if (aiHero.classType === 'RANGER') aiTroops.forEach(t => t.top.shield += 2);
+    setter([...currentPool, ...selectedDraft]);
+    setSelectedDraft([]);
 
-           const shuffledGenerals = [...GENERALS].sort(() => 0.5 - Math.random());
-           const aiGenerals = shuffledGenerals.slice(0, 3).map(g => ({ ...g, currentHealth: g.health }));
-           
-           setHeroP2(aiHero);
-           setHandP2([...aiTroops, ...aiGenerals]);
-           
-           setDraftingPlayer('P1');
-           setTurn('P1');
-           setPhase('PLAYING');
-        }, 800);
-      }
-    } else {
-      setHandP2(prev => [...prev, ...selectedGenerals]);
-      setSelectedGenerals([]);
-      setDraftingPlayer('P1');
-      setTurn('P1');
-      setPhase('PLAYING');
-    }
-  };
-
-  // --- COMBAT LOGIC (HEALTH & SURVIVAL) ---
-  const resolveCombat = (currentBoard: (BoardSlot | null)[][], row: number, col: number, attacker: Player, heroAtt: InGameCard | null): (BoardSlot | null)[][] => {
-    const newBoard = currentBoard.map(r => [...r]);
-    const slot = newBoard[row][col];
-    if (!slot) return newBoard;
-
-    const executeAttack = (r: number, c: number, attackerSide: typeof slot.card.top, defenderSide: typeof slot.card.bottom, isRanged = false) => {
-      const defSlot = newBoard[r][c];
-      if (!defSlot) return; // Vacío
-
-      if (attackerSide.ability === 'HEAL') {
-         if (defSlot.owner === attacker) {
-            defSlot.card.currentHealth += 5; // Cura a la tropa aliada
+    if (nextStep > 2) {
+      if (phase === 'DRAFT_P1') {
+         nextPhase = 'DRAFT_P2';
+         nextStep = 0;
+         if (mode === 'AI') {
+            // Generar Draft IA automático (2P, 3R, 5N)
+            const aiDeck: InGameCard[] = [];
+            for(let i=0; i<2; i++) aiDeck.push({ ...PALADINS[Math.floor(Math.random()*PALADINS.length)], currentHealth: 15, instanceId: Math.random().toString() });
+            for(let i=0; i<3; i++) aiDeck.push({ ...RARES[Math.floor(Math.random()*RARES.length)], currentHealth: 10, instanceId: Math.random().toString() });
+            for(let i=0; i<5; i++) aiDeck.push({ ...NORMALS[Math.floor(Math.random()*NORMALS.length)], currentHealth: 6, instanceId: Math.random().toString() });
+            
+            // Reparar currentHealth con su base real
+            const fixedAiDeck = aiDeck.map(c => ({...c, currentHealth: c.health}));
+            setHandP2(fixedAiDeck);
+            setPhase('PLAYING');
+            return;
          }
-         return;
+      } else {
+         nextPhase = 'PLAYING';
       }
+    }
+    
+    setDraftStep(nextStep);
+    setPhase(nextPhase);
+  };
 
-      if (defSlot.owner === attacker) return; // No ataca a aliados
+  // --- COMBAT RESOLUTION ---
+  const resolveRound = () => {
+    const newBoard = board.map(r => r.map(c => c ? { card: { ...c.card }, owner: c.owner } : null));
 
-      let attDmg = attackerSide.damage;
-      // Warlock Buff: +1 Daño
-      if (heroAtt?.classType === 'WARLOCK') attDmg += 1;
+    // Array 2D para almacenar los cambios netos de Vida per Slot
+    const healthDeltas = Array.from({ length: 4 }, () => Array(4).fill(0));
 
-      let defShield = defenderSide.shield;
-      if (attackerSide.ability === 'PIERCE') defShield = 0;
+    // Función pura para calcular daño/curación de A hacia B
+    const evaluateFaceOff = (attackerR: number, attackerC: number, defenderR: number, defenderC: number, attSide: CardSide, defSide: CardSide, isRanged=false) => {
+       const attSlot = newBoard[attackerR]?.[attackerC];
+       const defSlot = newBoard[defenderR]?.[defenderC];
+       
+       if (!attSlot || !defSlot) return;
 
-      const damageDealt = Math.max(0, attDmg - defShield);
-      
-      defSlot.card.currentHealth -= damageDealt;
-      
-      // Destrucción física
-      if (defSlot.card.currentHealth <= 0) {
-         newBoard[r][c] = null;
-      }
+       if (attSide.type === 'HEAL' && attSlot.owner === defSlot.owner) {
+          healthDeltas[defenderR][defenderC] += attSide.value; // Cura!
+          return;
+       }
+
+       if (attSlot.owner !== defSlot.owner && (attSide.type === 'ATTACK' || (attSide.type === 'RANGED' && isRanged))) {
+          // Si el atacante ataca, el defensor defiende SOLO con el lado que encara el ataque.
+          const defValue = defSide.type === 'SHIELD' ? defSide.value : 0;
+          const damage = Math.max(0, attSide.value - defValue);
+          healthDeltas[defenderR][defenderC] -= damage;
+       }
     };
 
-    // TOP
-    if (row > 0) executeAttack(row - 1, col, slot.card.top, newBoard[row - 1][col]?.card.bottom || {damage:0, shield:0, ability:'NONE'});
-    // BOTTOM
-    if (row < 3) executeAttack(row + 1, col, slot.card.bottom, newBoard[row + 1][col]?.card.top || {damage:0, shield:0, ability:'NONE'});
-    // LEFT
-    if (col > 0) executeAttack(row, col - 1, slot.card.left, newBoard[row][col - 1]?.card.right || {damage:0, shield:0, ability:'NONE'});
-    // RIGHT
-    if (col < 3) executeAttack(row, col + 1, slot.card.right, newBoard[row][col + 1]?.card.left || {damage:0, shield:0, ability:'NONE'});
+    // Evaluar direcciones para cada celda
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        const slot = newBoard[r][c];
+        if (!slot) continue;
 
-    // RANGED Extra
-    if (slot.card.top.ability === 'RANGED' && row > 1) {
-      executeAttack(row - 2, col, slot.card.top, newBoard[row - 2][col]?.card.bottom || {damage:0, shield:0, ability:'NONE'}, true);
-    }
-    if (slot.card.bottom.ability === 'RANGED' && row < 2) {
-      executeAttack(row + 2, col, slot.card.bottom, newBoard[row + 2][col]?.card.top || {damage:0, shield:0, ability:'NONE'}, true);
-    }
-    if (slot.card.left.ability === 'RANGED' && col > 1) {
-      executeAttack(row, col - 2, slot.card.left, newBoard[row][col - 2]?.card.right || {damage:0, shield:0, ability:'NONE'}, true);
-    }
-    if (slot.card.right.ability === 'RANGED' && col < 2) {
-      executeAttack(row, col + 2, slot.card.right, newBoard[row][col + 2]?.card.left || {damage:0, shield:0, ability:'NONE'}, true);
-    }
+        // TOP ataca al BOTTOM del slot de arriba
+        if (r > 0) evaluateFaceOff(r, c, r-1, c, slot.card.top, newBoard[r-1][c]?.card.bottom || {type:'NONE', value:0});
+        // BOTTOM ataca al TOP del slot de abajo
+        if (r < 3) evaluateFaceOff(r, c, r+1, c, slot.card.bottom, newBoard[r+1][c]?.card.top || {type:'NONE', value:0});
+        // LEFT ataca al RIGHT
+        if (c > 0) evaluateFaceOff(r, c, r, c-1, slot.card.left, newBoard[r][c-1]?.card.right || {type:'NONE', value:0});
+        // RIGHT ataca al LEFT
+        if (c < 3) evaluateFaceOff(r, c, r, c+1, slot.card.right, newBoard[r][c+1]?.card.left || {type:'NONE', value:0});
 
-    return newBoard;
-  };
-
-  // --- PLAY TURN ---
-  const handleCellClick = (row: number, col: number) => {
-    if (phase !== 'PLAYING' || selectedHandIndex === null) return;
-    if (board[row][col] !== null) return;
-    if (mode === 'AI' && turn === 'P2') return;
-
-    const isP1 = turn === 'P1';
-    const activeHand = isP1 ? handP1 : handP2;
-    const cardToPlay = activeHand[selectedHandIndex];
-    const heroAtt = isP1 ? heroP1 : heroP2;
-
-    if (isP1) setHandP1(handP1.filter((_, i) => i !== selectedHandIndex));
-    else setHandP2(handP2.filter((_, i) => i !== selectedHandIndex));
-    setSelectedHandIndex(null);
-
-    const newBoard = board.map(r => [...r]);
-    newBoard[row][col] = { card: { ...cardToPlay }, owner: turn };
-    
-    const finalBoard = resolveCombat(newBoard, row, col, turn, heroAtt);
-    setBoard(finalBoard);
-    setTurn(turn === 'P1' ? 'P2' : 'P1');
-  };
-
-  // --- AI LOGIC (MINIMAX GREEDY HP-BASED) ---
-  useEffect(() => {
-    if (phase === 'PLAYING' && mode === 'AI' && turn === 'P2' && handP2.length > 0 && !winner) {
-      const t = setTimeout(executeAITurn, 1200);
-      return () => clearTimeout(t);
-    }
-  }, [turn, phase, winner, handP2]);
-
-  const executeAITurn = () => {
-    let bestScore = -Infinity;
-    let bestMove = { cardIndex: 0, r: 0, c: 0 };
-
-    for (let i = 0; i < handP2.length; i++) {
-      const testCard = handP2[i];
-      for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-          if (board[r][c] === null) {
-            const simBoard = board.map(row => row.map(cell => cell ? { ...cell, card: { ...cell.card } } : null));
-            simBoard[r][c] = { card: { ...testCard }, owner: 'P2' };
-            const finalSimBoard = resolveCombat(simBoard, r, c, 'P2', heroP2);
-            
-            // Score = (Vida Total IA Sobreviviente * 1) - (Vida Total Jugador Sobreviviente * 2)
-            let aiHp = 0; let p1Hp = 0;
-            for (let tr = 0; tr < 4; tr++) {
-              for (let tc = 0; tc < 4; tc++) {
-                 const slot = finalSimBoard[tr][tc];
-                 if (slot?.owner === 'P2') aiHp += slot.card.currentHealth;
-                 if (slot?.owner === 'P1') p1Hp += slot.card.currentHealth;
-              }
-            }
-            // Preferir esquinas
-            const isCorner = (r===0||r===3) && (c===0||c===3) ? 2 : 0;
-            const score = aiHp - (p1Hp * 2) + isCorner;
-
-            if (score > bestScore) {
-              bestScore = score;
-              bestMove = { cardIndex: i, r, c };
-            }
-          }
-        }
+        // Habilidades Especiales (RANGED ataca a 2 casillas)
+        if (slot.card.top.type === 'RANGED' && r > 1) evaluateFaceOff(r, c, r-2, c, slot.card.top, newBoard[r-2][c]?.card.bottom || {type:'NONE', value:0}, true);
+        if (slot.card.bottom.type === 'RANGED' && r < 2) evaluateFaceOff(r, c, r+2, c, slot.card.bottom, newBoard[r+2][c]?.card.top || {type:'NONE', value:0}, true);
+        if (slot.card.left.type === 'RANGED' && c > 1) evaluateFaceOff(r, c, r, c-2, slot.card.left, newBoard[r][c-2]?.card.right || {type:'NONE', value:0}, true);
+        if (slot.card.right.type === 'RANGED' && c < 2) evaluateFaceOff(r, c, r, c+2, slot.card.right, newBoard[r][c+2]?.card.left || {type:'NONE', value:0}, true);
       }
     }
 
-    const cardToPlay = handP2[bestMove.cardIndex];
-    setHandP2(handP2.filter((_, idx) => idx !== bestMove.cardIndex));
+    // Aplicar los deltas
+    let anyDestroyed = false;
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+         if (newBoard[r][c]) {
+            const currentHp = newBoard[r][c]!.card.currentHealth;
+            // Cap health a su maximo inicial si se cura
+            newBoard[r][c]!.card.currentHealth = Math.min(newBoard[r][c]!.card.health, currentHp + healthDeltas[r][c]);
+            
+            if (newBoard[r][c]!.card.currentHealth <= 0) {
+              newBoard[r][c] = null; // Destruida!
+              anyDestroyed = true;
+            }
+         }
+      }
+    }
+
+    setBoard(newBoard);
     
-    const newBoard = board.map(r => r.map(c => c ? { ...c, card: { ...c.card } } : null));
-    newBoard[bestMove.r][bestMove.c] = { card: { ...cardToPlay }, owner: 'P2' };
-    const finalBoard = resolveCombat(newBoard, bestMove.r, bestMove.c, 'P2', heroP2);
-    
-    setBoard(finalBoard);
-    setTurn('P1');
+    // Preparar Siguiente Ronda
+    setP1Moves(null);
+    setP2Moves(null);
+    setRoundNumber(roundNumber + 1);
+    setRoundTurn(roundTurn === 'P1' ? 'P2' : 'P1');
+    setCurrentTurn(roundTurn === 'P1' ? 'P2' : 'P1'); // Si en la ronda n empezó P1, en n+1 empieza P2
   };
+
+  // --- GAMEPLAY PHASE ---
+  const handleCellClick = (row: number, col: number) => {
+    if (phase !== 'PLAYING' || selectedHandIndex === null) return;
+    if (board[row][col] !== null) return; // Celda ocupada
+    
+    // Si la celda ya fue reservada para jugar esta ronda por el otro jugador!
+    if (p1Moves && p1Moves.r === row && p1Moves.c === col) return;
+    if (p2Moves && p2Moves.r === row && p2Moves.c === col) return;
+
+    if (mode === 'AI' && currentTurn === 'P2') return;
+
+    const isP1 = currentTurn === 'P1';
+    const activeHand = isP1 ? handP1 : handP2;
+    const cardToPlay = activeHand[selectedHandIndex];
+
+    if (isP1) {
+       setHandP1(handP1.filter((_, i) => i !== selectedHandIndex));
+       setP1Moves({ r: row, c: col });
+       
+       const tempBoard = board.map(r => [...r]);
+       tempBoard[row][col] = { card: cardToPlay, owner: 'P1' };
+       setBoard(tempBoard);
+
+       if (p2Moves) {
+          setTimeout(resolveRound, 1000);
+       } else {
+          setCurrentTurn('P2');
+       }
+    } else {
+       setHandP2(handP2.filter((_, i) => i !== selectedHandIndex));
+       setP2Moves({ r: row, c: col });
+       
+       const tempBoard = board.map(r => [...r]);
+       tempBoard[row][col] = { card: cardToPlay, owner: 'P2' };
+       setBoard(tempBoard);
+
+       if (p1Moves) {
+          setTimeout(resolveRound, 1000);
+       } else {
+          setCurrentTurn('P1');
+       }
+    }
+
+    setSelectedHandIndex(null);
+  };
+
+  // --- AI LOGIC ---
+  useEffect(() => {
+    if (phase === 'PLAYING' && mode === 'AI' && currentTurn === 'P2' && handP2.length > 0) {
+      const runAI = setTimeout(() => {
+         // Encuentra la celda con más enemigos alrededor (Greedy)
+         let bestScore = -Infinity;
+         let bestMove = { handIdx: 0, r: 0, c: 0 };
+
+         for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+               if (board[r][c] === null && (!p1Moves || p1Moves.r !== r || p1Moves.c !== c)) {
+                  // Contar adyacencias enemigas
+                  let score = 0;
+                  if (r>0 && board[r-1][c]?.owner === 'P1') score++;
+                  if (r<3 && board[r+1][c]?.owner === 'P1') score++;
+                  if (c>0 && board[r][c-1]?.owner === 'P1') score++;
+                  if (c<3 && board[r][c+1]?.owner === 'P1') score++;
+                  
+                  // Rompe empates con esquinas
+                  const cornerBonus = (r===0||r===3) && (c===0||c===3) ? 0.5 : 0;
+                  score += cornerBonus;
+
+                  if (score > bestScore) {
+                     bestScore = score;
+                     bestMove = { handIdx: Math.floor(Math.random()*handP2.length), r, c };
+                  }
+               }
+            }
+         }
+
+         // Jugar la carta
+         const cardToPlay = handP2[bestMove.handIdx];
+         setHandP2(handP2.filter((_, i) => i !== bestMove.handIdx));
+         setP2Moves({ r: bestMove.r, c: bestMove.c });
+
+         const tempBoard = board.map(row => [...row]);
+         tempBoard[bestMove.r][bestMove.c] = { card: cardToPlay, owner: 'P2' };
+         setBoard(tempBoard);
+
+         if (p1Moves) {
+            setTimeout(resolveRound, 1000);
+         } else {
+            setCurrentTurn('P1');
+         }
+
+      }, 1000);
+      return () => clearTimeout(runAI);
+    }
+  }, [currentTurn, phase, board]);
 
   // --- WIN CONDITION ---
   useEffect(() => {
-    if (phase === 'PLAYING' && handP1.length === 0 && handP2.length === 0) {
-      let hp1 = 0; let hp2 = 0;
-      board.flat().forEach(s => {
-        if (s?.owner === 'P1') hp1 += s.card.currentHealth;
-        if (s?.owner === 'P2') hp2 += s.card.currentHealth;
-      });
-      if (hp1 > hp2) setWinner('P1');
-      else if (hp2 > hp1) setWinner('P2');
-      else setWinner('DRAW');
-      setPhase('GAMEOVER');
+    if (phase === 'PLAYING') {
+      // Comprobar si ambos mazos están vacíos.
+      if (handP1.length === 0 && handP2.length === 0 && !p1Moves && !p2Moves) {
+         let hp1 = board.flat().reduce((acc, s) => acc + (s?.owner === 'P1' ? s.card.currentHealth : 0), 0);
+         let hp2 = board.flat().reduce((acc, s) => acc + (s?.owner === 'P2' ? s.card.currentHealth : 0), 0);
+         
+         if (hp1 > hp2) setRoundWinner('P1');
+         else if (hp2 > hp1) setRoundWinner('P2');
+         else setRoundWinner('DRAW');
+         setPhase('GAMEOVER');
+      }
     }
-  }, [board, handP1.length, handP2.length, phase]);
+  }, [board, handP1.length, handP2.length, phase, p1Moves, p2Moves]);
 
   // --- UI RENDERERS ---
-  const renderCard = (card: InGameCard | CardDef, owner: Player | null, isSelected: boolean = false, onClick?: () => void) => {
-    const isP1 = owner === 'P1';
-    const isElite = card.type === 'HERO' || card.type === 'GENERAL';
-    const border = isSelected ? 'border-yellow-400 border-4 scale-105 shadow-[0_0_20px_#facc15]' : (isElite ? 'border-[#d4af37] border border-b-2' : 'border-zinc-700 border');
-    const bgBase = isP1 ? 'bg-red-950/40' : (owner === 'P2' ? 'bg-blue-950/40' : 'bg-zinc-900/40');
-    
-    const renderStat = (side: typeof card.top, dirClass: string) => {
-      if (side.damage === 0 && side.shield === 0 && side.ability === 'NONE') return null;
-      return (
-        <div className={`absolute ${dirClass} flex items-center justify-center gap-1.5 opacity-90 text-[10px]`}>
-          <div className="flex items-center text-zinc-300"><Sword size={10} className="mr-0.5 text-zinc-500"/>{side.damage}</div>
-          <div className="flex items-center text-zinc-300"><Shield size={10} className="mr-0.5 text-zinc-500"/>{side.shield}</div>
-          {side.ability !== 'NONE' && <div className="text-yellow-400 font-bold ml-0.5"><Sparkles size={10} /></div>}
-        </div>
-      );
-    };
+  const renderDots = (side: CardSide, isHorizontal: boolean) => {
+     if (side.type === 'NONE' || side.value === 0) return null;
+     const dots = Array.from({length: side.value}, (_,i) => i);
+     
+     let dotColor = "bg-white";
+     switch(side.type) {
+        case 'ATTACK': dotColor = "bg-red-500 shadow-[0_0_8px_#ef4444]"; break;
+        case 'SHIELD': dotColor = "bg-blue-400 shadow-[0_0_8px_#60a5fa]"; break;
+        case 'RANGED': dotColor = "bg-green-400 shadow-[0_0_8px_#4ade80]"; break;
+        case 'HEAL': dotColor = "bg-yellow-400 shadow-[0_0_8px_#facc15]"; break;
+     }
 
-    const hp = (card as InGameCard).currentHealth !== undefined ? (card as InGameCard).currentHealth : card.health;
+     return (
+        <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} items-center justify-center gap-1 w-full h-full p-0.5`}>
+           {dots.map(d => (
+              <div key={d} className={`w-2 h-2 rounded-full ${dotColor}`} />
+           ))}
+        </div>
+     );
+  };
+
+  const renderSideBorder = (side: CardSide, positionClass: string, isHorizontal: boolean) => {
+     if (side.type === 'NONE') return null;
+     
+     let borderColor = "";
+     switch(side.type) {
+        case 'ATTACK': borderColor = "bg-red-950/40 border-red-500/50"; break;
+        case 'SHIELD': borderColor = "bg-blue-950/40 border-blue-500/50"; break;
+        case 'RANGED': borderColor = "bg-green-950/40 border-green-500/50"; break;
+        case 'HEAL': borderColor = "bg-yellow-950/40 border-yellow-500/50"; break;
+     }
+
+     return (
+        <div className={`absolute ${positionClass} flex items-center justify-center ${borderColor} border`}>
+           {renderDots(side, isHorizontal)}
+        </div>
+     );
+  };
+
+  const renderCard = (card: InGameCard, owner: Player | null, isSelected = false, onClick?: () => void) => {
+    const isP1 = owner === 'P1';
+    let rarityColor = 'border-zinc-700';
+    if (card.rarity === 'RARE') rarityColor = 'border-purple-500';
+    if (card.rarity === 'PALADIN') rarityColor = 'border-yellow-400';
+
+    const bgBase = isP1 ? 'bg-red-950/20' : (owner === 'P2' ? 'bg-blue-950/20' : 'bg-black/60');
+    const outline = isSelected ? 'shadow-[0_0_20px_rgba(255,255,255,0.8)] scale-105 z-20' : '';
 
     return (
       <motion.div 
-        layoutId={card.id + Math.random()} 
+        layoutId={card.instanceId} 
         onClick={onClick}
-        whileHover={{ y: onClick ? -5 : 0 }}
-        className={`w-[120px] h-[160px] rounded-lg cursor-pointer select-none relative overflow-hidden backdrop-blur-md flex flex-col transition-all ${bgBase} ${border}`}
-        style={{ backgroundImage: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.8) 100%)' }}
+        className={`w-28 h-40 rounded cursor-pointer relative flex flex-col items-center justify-center transition-all ${bgBase} ${outline}`}
       >
-        {/* Name and Type */}
-        <div className="w-full text-center py-1 bg-black/50 border-b border-white/10 px-1">
-           <p className={`text-[9px] font-bold truncate tracking-widest uppercase ${isElite ? 'text-[#d4af37]' : 'text-zinc-400'}`}>{card.name}</p>
-        </div>
+         {/* BORDES (DOTS API) */}
+         <div className={`absolute inset-0 rounded border-2 ${rarityColor} pointer-events-none`} />
+         
+         {renderSideBorder(card.top, "top-0 left-1 right-1 h-3 rounded-b-md", true)}
+         {renderSideBorder(card.bottom, "bottom-0 left-1 right-1 h-3 rounded-t-md", true)}
+         {renderSideBorder(card.left, "left-0 top-1 bottom-1 w-3 rounded-r-md", false)}
+         {renderSideBorder(card.right, "right-0 top-1 bottom-1 w-3 rounded-l-md", false)}
 
-        {/* Stats */}
-        <div className="flex-1 relative w-full">
-           {renderStat(card.top, "top-1 left-1/2 -translate-x-1/2 flex-col")}
-           {renderStat(card.bottom, "bottom-1 left-1/2 -translate-x-1/2 flex-col-reverse")}
-           {renderStat(card.left, "left-1 top-1/2 -translate-y-1/2 flex-row")}
-           {renderStat(card.right, "right-1 top-1/2 -translate-y-1/2 flex-row-reverse")}
-
-           {/* Health Center */}
-           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center rounded-full w-12 h-12 shadow-[0_0_15px_rgba(239,68,68,0.2)] bg-black/60 border ${isElite ? 'border-[#d4af37]/30' : 'border-white/10'}`}>
-              <Heart size={14} className="text-red-500/50 absolute top-2" />
-              <span className={`text-xl font-black mt-2 tracking-tighter ${hp <= 0 ? 'text-zinc-600' : 'text-white'}`}>{hp}</span>
-           </div>
-        </div>
+         {/* CENTRO: VIDA */}
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center">
+             <span className="text-3xl font-black text-white drop-shadow-md">{card.currentHealth}</span>
+         </div>
+         
+         {/* NOMBRE & TIPO */}
+         <div className="absolute top-4 w-full text-center">
+            <p className={`text-[8px] font-bold uppercase tracking-widest ${card.rarity === 'PALADIN' ? 'text-yellow-400' : (card.rarity === 'RARE' ? 'text-purple-400' : 'text-zinc-400')}`}>{card.name}</p>
+         </div>
+         {owner && (
+            <div className={`absolute bottom-4 w-3 h-3 rounded-full ${owner === 'P1' ? 'bg-red-500' : 'bg-blue-500'}`} />
+         )}
       </motion.div>
     );
   };
 
   return (
-    <main className="min-h-screen w-screen bg-[#09090b] text-zinc-200 flex flex-col relative overflow-hidden font-sans">
-      {/* Background Graphic */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-[#09090b] to-[#09090b] pointer-events-none"></div>
-
+    <main className="min-h-screen w-screen bg-[#111] text-zinc-200 flex flex-col relative font-sans">
+      
       {/* Header */}
       <div className="absolute top-6 left-6 z-50">
         <Link href="/engineering" className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-xs uppercase tracking-widest font-bold">
@@ -342,184 +383,134 @@ export default function AetheriaPage() {
         </Link>
       </div>
 
-      <div className="w-full flex-1 flex flex-col items-center justify-center relative z-10 px-6 py-12">
+      <div className="w-full h-full flex flex-col items-center justify-center relative p-12 flex-1">
+        
         {phase === 'MENU' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center max-w-xl text-center">
-             <Heart className="text-[#d4af37] w-12 h-12 mb-6" />
-             <h1 className="text-5xl font-black tracking-tight mb-4 uppercase text-white">Aetheria Tactics</h1>
-             <p className="text-zinc-400 mb-12 text-sm leading-relaxed max-w-md">Una simulación de guerra estratégica. Posiciona tus tropas en el tablero 4x4. Reduce la vida de las cartas enemigas a 0 para aniquilarlas. Sobrevive.</p>
+          <div className="flex flex-col items-center text-center">
+             <h1 className="text-5xl font-black tracking-tight mb-2 uppercase text-white">Aetheria Tactics</h1>
+             <p className="text-zinc-500 mb-8 uppercase tracking-widest text-xs">Simulación Táctica V3 - Dots System</p>
              <div className="flex gap-4">
-                <button onClick={() => startGame('LOCAL')} className="px-8 py-4 bg-zinc-100 text-black rounded font-bold uppercase tracking-widest text-xs hover:bg-white transition-colors cursor-pointer">Local PvP</button>
-                <button onClick={() => startGame('AI')} className="px-8 py-4 bg-transparent text-white border border-zinc-700 rounded font-bold uppercase tracking-widest text-xs hover:border-zinc-500 transition-colors cursor-pointer">Vs Autómata</button>
+                <button onClick={() => startGame('LOCAL')} className="px-8 py-3 bg-white text-black rounded font-bold uppercase tracking-widest text-xs">PVP MESA</button>
+                <button onClick={() => startGame('AI')} className="px-8 py-3 border border-zinc-700 rounded font-bold uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all">VS AUTÓMATA</button>
              </div>
-          </motion.div>
-        )}
-
-        {phase === 'DRAFT_HERO' && (
-          <div className="flex flex-col items-center w-full max-w-5xl">
-            <h2 className="text-2xl text-white font-black mb-2 uppercase tracking-wide">Despliegue de Comando</h2>
-            <p className="text-zinc-500 mb-12 uppercase tracking-widest text-xs font-bold">
-               SELECCIONA TU HÉROE - <span className={draftingPlayer === 'P1' ? 'text-red-400' : 'text-blue-400'}>{draftingPlayer}</span>
-            </p>
-            <div className="flex gap-8 justify-center">
-               {HEROES.map(h => (
-                  <div key={h.id} className="flex flex-col items-center">
-                     {renderCard(h, null, false, () => selectHero(h))}
-                     <p className="text-xs text-zinc-500 mt-4 max-w-[120px] text-center leading-tight">
-                        Añade 6 tropas clase {h.classType} a tu mazo.
-                     </p>
-                  </div>
-               ))}
-            </div>
           </div>
         )}
 
-        {phase === 'DRAFT_GENERALS' && (
-          <div className="flex flex-col items-center w-full max-w-5xl">
-            <h2 className="text-2xl text-white font-black mb-2 uppercase tracking-wide">Reclutamiento de Élite</h2>
-            <p className="text-zinc-500 mb-12 uppercase tracking-widest text-xs font-bold">
-               ELIGE 3 GENERALES - <span className={draftingPlayer === 'P1' ? 'text-red-400' : 'text-blue-400'}>{draftingPlayer}</span>
-               <span className="text-white ml-4">({selectedGenerals.length}/3)</span>
-            </p>
-            <div className="grid grid-cols-6 gap-4 mb-12">
-               {GENERALS.map(g => (
-                  <div key={g.id}>
-                     {renderCard(g, null, !!selectedGenerals.find(sg => sg.id === g.id), () => toggleGeneralSelection(g))}
-                  </div>
-               ))}
-            </div>
-            <button 
-               onClick={confirmGenerals}
-               disabled={selectedGenerals.length !== 3}
-               className={`px-12 py-4 rounded font-bold uppercase tracking-widest text-xs transition-all ${selectedGenerals.length === 3 ? 'bg-[#d4af37] text-black hover:bg-yellow-400 cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.4)]' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'}`}
-            >
-               Confirmar Élite
-            </button>
-          </div>
-        )}
+        {(phase === 'DRAFT_P1' || phase === 'DRAFT_P2') && (
+           <div className="flex flex-col items-center w-full max-w-5xl">
+              <h2 className="text-3xl font-black uppercase text-white mb-2">Construcción de Mazo</h2>
+              <p className="text-zinc-500 uppercase tracking-widest text-sm font-bold mb-8">
+                TURNO DE <span className={phase === 'DRAFT_P1' ? 'text-red-400' : 'text-blue-400'}>{phase === 'DRAFT_P1' ? 'JUGADOR 1' : mode === 'AI' ? 'AUTÓMATA' : 'JUGADOR 2'}</span>
+              </p>
 
-        {(phase === 'PLAYING' || phase === 'GAMEOVER') && (
-          <div className="flex w-full h-[750px] justify-between items-center max-w-[1400px] relative mx-auto gap-8">
-            
-            {/* P1 HAND */}
-            <div className="w-1/4 flex flex-col items-center bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800 shadow-2xl h-full relative">
-               <div className="absolute -top-6 bg-zinc-900 px-4 py-1 border border-zinc-700 rounded-full">
-                  <span className="text-red-400 font-black uppercase text-xs tracking-widest">JUGADOR 1</span>
+              <div className="mb-4 text-center">
+                 {draftStep === 0 && <p className="text-yellow-400 font-bold uppercase">SELECCIONA 2 PALADINES (ÉLITE)</p>}
+                 {draftStep === 1 && <p className="text-purple-400 font-bold uppercase">SELECCIONA 3 TROPAS RARAS</p>}
+                 {draftStep === 2 && <p className="text-zinc-400 font-bold uppercase">SELECCIONA 5 TROPAS NORMALES</p>}
+              </div>
+
+              <div className="grid grid-cols-6 gap-6 mb-12 min-h-[160px]">
+                 {(draftStep === 0 ? PALADINS : draftStep === 1 ? RARES : NORMALS).map(c => (
+                    <div key={c.id}>
+                       {renderCard({ ...c, currentHealth: c.health, instanceId: '' }, null, false, () => {
+                          const limit = draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5;
+                          toggleDraftSelection(c, limit);
+                       })}
+                    </div>
+                 ))}
                </div>
                
-               {/* Hero Display */}
-               <div className="mb-6 w-full flex flex-col items-center border-b border-zinc-800 pb-6 pointer-events-none opacity-80 scale-90">
-                  {heroP1 && renderCard(heroP1, 'P1')}
-               </div>
+               <button 
+                  onClick={confirmDraftStep}
+                  disabled={selectedDraft.length !== (draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5)}
+                  className={`px-12 py-4 rounded font-bold uppercase tracking-widest transition-all ${(selectedDraft.length === (draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5)) ? 'bg-white text-black' : 'bg-zinc-800 text-zinc-600'}`}
+               >
+                  CONFIRMAR ({selectedDraft.length} / {draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5})
+               </button>
+           </div>
+        )}
 
-               <div className="flex flex-wrap gap-2 justify-center content-start flex-1 overflow-y-auto w-full custom-scrollbar pr-2">
-                  <AnimatePresence>
-                     {handP1.map((c, i) => (
-                       <motion.div key={c.id + i} layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 0.8 }} exit={{ opacity: 0, scale: 0 }}>
-                         {renderCard(c, 'P1', turn === 'P1' && selectedHandIndex === i && phase === 'PLAYING', () => {
-                            if (phase === 'PLAYING' && turn === 'P1') setSelectedHandIndex(i);
-                         })}
+        {phase === 'PLAYING' && (
+           <div className="flex w-full h-[700px] justify-between max-w-[1200px] gap-8">
+              {/* HAND P1 */}
+              <div className="w-1/4 flex flex-wrap gap-4 content-start overflow-y-auto custom-scrollbar p-6 bg-zinc-900/50 rounded-lg">
+                 <h3 className="w-full text-center text-red-500 font-black uppercase mb-4 tracking-widest">J1 ({handP1.length})</h3>
+                 <AnimatePresence>
+                    {handP1.map((c, i) => (
+                       <motion.div key={c.instanceId} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                          {renderCard(c, 'P1', currentTurn === 'P1' && selectedHandIndex === i, () => {
+                             if (currentTurn === 'P1' && !p1Moves) setSelectedHandIndex(i);
+                          })}
                        </motion.div>
-                     ))}
-                  </AnimatePresence>
-               </div>
-            </div>
+                    ))}
+                 </AnimatePresence>
+              </div>
 
-            {/* BOARD */}
-            <div className="flex-shrink-0 w-[600px] h-[600px] bg-zinc-950/80 rounded-2xl p-4 shadow-[0_0_50px_rgba(0,0,0,1)] border border-zinc-800 relative flex flex-col">
-               <div className="absolute top-0 right-0 p-4 opacity-10 flex gap-4">
-                  <Sword size={400} />
-               </div>
-               <div className="grid grid-cols-4 grid-rows-4 h-full w-full gap-2 relative z-10">
-                  {board.map((row, rIdx) => 
-                     row.map((slot, cIdx) => (
-                        <div 
-                           key={`${rIdx}-${cIdx}`} 
-                           onClick={() => handleCellClick(rIdx, cIdx)}
-                           className={`w-full h-full bg-zinc-900/80 rounded border border-zinc-800/50 flex items-center justify-center transition-all ${selectedHandIndex !== null && slot === null ? 'bg-zinc-800 hover:bg-zinc-700 cursor-crosshair border-zinc-600' : ''}`}
-                        >
-                           <AnimatePresence>
-                              {slot && (
-                                 <motion.div initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0, rotate: 10 }} transition={{ type: 'spring' }} className="w-full h-full flex items-center justify-center scale-90">
-                                    {renderCard(slot.card, slot.owner)}
-                                 </motion.div>
-                              )}
-                           </AnimatePresence>
-                        </div>
-                     ))
-                  )}
-               </div>
-            </div>
+              {/* TABLERO */}
+              <div className="flex-1 flex flex-col items-center">
+                 <div className="mb-4 text-center">
+                    <p className="text-zinc-600 uppercase font-black tracking-widest">Ronda {roundNumber}</p>
+                    <p className="text-xl text-white font-bold uppercase">
+                       {currentTurn === 'P1' ? <span className="text-red-400">JUGADOR 1 ELIGE...</span> : <span className="text-blue-400">JUGADOR 2 ELIGE...</span>}
+                    </p>
+                 </div>
 
-            {/* P2 HAND */}
-            <div className="w-1/4 flex flex-col items-center bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800 shadow-2xl h-full relative">
-               <div className="absolute -top-6 bg-zinc-900 px-4 py-1 border border-zinc-700 rounded-full">
-                  <span className="text-blue-400 font-black uppercase text-xs tracking-widest">{mode === 'AI' ? 'AUTÓMATA' : 'JUGADOR 2'}</span>
-               </div>
-               
-               {/* Hero Display */}
-               <div className="mb-6 w-full flex flex-col items-center border-b border-zinc-800 pb-6 pointer-events-none opacity-80 scale-90">
-                  {heroP2 && renderCard(heroP2, 'P2')}
-               </div>
+                 <div className="w-[500px] h-[500px] bg-zinc-950 rounded-xl p-4 grid grid-cols-4 grid-rows-4 gap-2 border border-zinc-800">
+                    {board.map((row, rIdx) => 
+                       row.map((slot, cIdx) => (
+                          <div 
+                             key={`${rIdx}-${cIdx}`} 
+                             onClick={() => handleCellClick(rIdx, cIdx)}
+                             className={`w-full h-full rounded border border-zinc-800/50 flex items-center justify-center transition-all bg-zinc-900 ${(selectedHandIndex !== null && currentTurn === 'P1' && (!p1Moves)) || (selectedHandIndex !== null && currentTurn === 'P2' && (!p2Moves)) ? 'hover:bg-zinc-800 cursor-crosshair' : ''}`}
+                          >
+                             {slot && renderCard(slot.card, slot.owner)}
+                             {p1Moves?.r === rIdx && p1Moves?.c === cIdx && !slot && <div className="w-full h-full bg-red-900/40 rounded animate-pulse border border-red-500"></div>}
+                             {p2Moves?.r === rIdx && p2Moves?.c === cIdx && !slot && <div className="w-full h-full bg-blue-900/40 rounded animate-pulse border border-blue-500"></div>}
+                          </div>
+                       ))
+                    )}
+                 </div>
+              </div>
 
-               {mode === 'AI' && turn === 'P2' && phase === 'PLAYING' && (
-                  <div className="text-cyan-400 text-xs tracking-widest uppercase font-bold text-center mb-4 animate-pulse">Computando Estrategia...</div>
-               )}
-
-               <div className="flex flex-wrap gap-2 justify-center content-start flex-1 overflow-y-auto w-full custom-scrollbar pr-2">
-                  <AnimatePresence>
-                     {handP2.map((c, i) => (
-                       <motion.div key={c.id + i} layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 0.8 }} exit={{ opacity: 0, scale: 0 }}>
+              {/* HAND P2 */}
+              <div className="w-1/4 flex flex-wrap gap-4 content-start overflow-y-auto custom-scrollbar p-6 bg-zinc-900/50 rounded-lg">
+                 <h3 className="w-full text-center text-blue-500 font-black uppercase mb-4 tracking-widest">{mode === 'AI' ? 'AUTÓMATA' : 'J2'} ({handP2.length})</h3>
+                 <AnimatePresence>
+                    {handP2.map((c, i) => (
+                       <motion.div key={c.instanceId} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                           {mode === 'AI' ? (
-                             <div className="w-[120px] h-[160px] bg-zinc-950 border border-blue-900/30 rounded-lg flex items-center justify-center">
-                                <div className="w-8 h-8 rounded-full border border-blue-500/20 text-blue-500 flex items-center justify-center text-[10px] font-black">AI</div>
-                             </div>
+                             <div className="w-28 h-40 bg-zinc-950 border border-blue-900/30 rounded flex items-center justify-center text-blue-900 font-bold">CARGA</div>
                           ) : (
-                             renderCard(c, 'P2', turn === 'P2' && selectedHandIndex === i && phase === 'PLAYING', () => {
-                                if (phase === 'PLAYING' && turn === 'P2') setSelectedHandIndex(i);
+                             renderCard(c, 'P2', currentTurn === 'P2' && selectedHandIndex === i, () => {
+                                if (currentTurn === 'P2' && !p2Moves) setSelectedHandIndex(i);
                              })
                           )}
                        </motion.div>
-                     ))}
-                  </AnimatePresence>
-               </div>
-            </div>
-
-          </div>
+                    ))}
+                 </AnimatePresence>
+              </div>
+           </div>
         )}
 
+        {phase === 'GAMEOVER' && (
+           <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center">
+              <h2 className={`text-6xl font-black uppercase mb-4 ${roundWinner === 'P1' ? 'text-red-500' : roundWinner === 'P2' ? 'text-blue-500' : 'text-zinc-500'}`}>
+                 {roundWinner === 'DRAW' ? 'EMPATE' : `VICTORIA DEL ${roundWinner === 'P1' ? 'JUGADOR 1' : 'JUGADOR 2'}`}
+              </h2>
+              <div className="flex gap-16 text-3xl font-black text-white/50 mb-12">
+                 <span className="text-red-400 text-center">P1<br/>{board.flat().reduce((acc, s) => acc + (s?.owner === 'P1' ? s.card.currentHealth : 0), 0)} HP</span>
+                 <span className="w-px bg-zinc-700 h-full block"></span>
+                 <span className="text-blue-400 text-center">P2<br/>{board.flat().reduce((acc, s) => acc + (s?.owner === 'P2' ? s.card.currentHealth : 0), 0)} HP</span>
+              </div>
+              <button onClick={() => setPhase('MENU')} className="px-10 py-4 bg-white text-black font-black uppercase tracking-widest text-sm rounded">SALIR AL NÚCLEO</button>
+           </div>
+        )}
       </div>
-
-      {phase === 'GAMEOVER' && (
-         <div className="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
-            <h2 className={`text-6xl font-black uppercase tracking-widest mb-4 ${winner === 'P1' ? 'text-red-500' : winner === 'P2' ? 'text-blue-500' : 'text-zinc-400'}`}>
-               {winner === 'DRAW' ? 'EMPATE TOTAL' : `VICTORIA DEL ${winner === 'P1' ? 'JUGADOR 1' : mode === 'AI' ? 'AUTÓMATA' : 'JUGADOR 2'}`}
-            </h2>
-            <p className="text-zinc-500 uppercase tracking-widest text-sm mb-12">Todas las fuerzas hostiles eliminadas</p>
-            
-            <div className="flex gap-16 text-center text-4xl font-black text-white/80 mb-16">
-               <div className="flex flex-col items-center gap-2 text-red-400">
-                  <Heart size={32} />
-                  <span>{board.flat().reduce((acc, s) => acc + (s?.owner === 'P1' ? s.card.currentHealth : 0), 0)} HP</span>
-               </div>
-               <div className="w-px h-full bg-zinc-800"></div>
-               <div className="flex flex-col items-center gap-2 text-blue-400">
-                  <Heart size={32} />
-                  <span>{board.flat().reduce((acc, s) => acc + (s?.owner === 'P2' ? s.card.currentHealth : 0), 0)} HP</span>
-               </div>
-            </div>
-
-            <button onClick={() => setPhase('MENU')} className="px-10 py-5 bg-white text-black font-black text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors rounded-full shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-               RETORNAR A BASE
-            </button>
-         </div>
-      )}
-
+      
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
       `}</style>
     </main>
   );
