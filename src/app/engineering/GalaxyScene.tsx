@@ -7,6 +7,7 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { PROYECTOS_CORE } from '@/datos/proyectos';
 import * as THREE from 'three';
 import { useRouter } from 'next/navigation';
+import { Spaceship } from '@/components/3d/Spaceship';
 
 // --- CONTROLADOR DE CÁMARA WARP ---
 function WarpCamera({ target, isActive, type }: { target: THREE.Vector3 | null, isActive: boolean, type: 'hyperspace' | 'wormhole' }) {
@@ -111,143 +112,39 @@ function AsteroidField({ asteroids }: { asteroids: Asteroid[] }) {
   );
 }
 
-// --- COMPONENTE NAVE ESPACIAL ---
-function Spaceship({ onCollide, isActive, isWarping, asteroids }: { onCollide: (id: string, link: string, pos: THREE.Vector3) => void, isActive: boolean, isWarping: boolean, asteroids: Asteroid[] }) {
-  const meshRef = useRef<THREE.Group>(null);
-  const [keys, setKeys] = useState<Record<string, boolean>>({});
-  const velocity = useRef(new THREE.Vector3());
-  const rotationVelocity = useRef(0);
-  const { camera } = useThree();
-
-  useEffect(() => {
-    if (!isActive) return;
-    const handleKeyDown = (e: KeyboardEvent) => setKeys(prev => ({ ...prev, [e.key.toLowerCase()]: true }));
-    const handleKeyUp = (e: KeyboardEvent) => setKeys(prev => ({ ...prev, [e.key.toLowerCase()]: false }));
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [isActive]);
-
+// --- CONTROLADOR DE COLISIONES DE LA GALAXIA ---
+function GalaxyCollisionManager({ shipRef, onCollide, isActive, isWarping, asteroids }: { shipRef: React.RefObject<THREE.Group>, onCollide: (id: string, link: string, pos: THREE.Vector3) => void, isActive: boolean, isWarping: boolean, asteroids: Asteroid[] }) {
   useFrame((state, delta) => {
-    if (!meshRef.current || !isActive) return;
-
-    if (!isWarping) {
-      // Rotación (A / D)
-      if (keys['a']) rotationVelocity.current += delta * 2;
-      if (keys['d']) rotationVelocity.current -= delta * 2;
-      rotationVelocity.current *= 0.95; 
-      meshRef.current.rotation.y += rotationVelocity.current * delta;
-
-      // Aceleración (W / S)
-      const direction = new THREE.Vector3(0, 0, -1);
-      direction.applyQuaternion(meshRef.current.quaternion);
-
-      if (keys['w']) velocity.current.add(direction.multiplyScalar(delta * 25));
-      if (keys['s']) velocity.current.add(direction.multiplyScalar(-delta * 10));
+    if (!isActive || isWarping || !shipRef.current) return;
+    
+    // Colisiones con Proyectos
+    PROYECTOS_CORE.forEach((p, idx) => {
+      const orbitRadius = 4 + idx * 1.5;
+      const initialAngle = (idx / PROYECTOS_CORE.length) * Math.PI * 2 * 3;
+      const orbitSpeed = 0.5 + (PROYECTOS_CORE.length - idx) * 0.1;
+      const time = state.clock.getElapsedTime();
+      const currentAngle = initialAngle + time * orbitSpeed * 0.1;
       
-      velocity.current.multiplyScalar(0.98); 
-      meshRef.current.position.add(velocity.current.clone().multiplyScalar(delta));
+      const planetPos = new THREE.Vector3(
+        Math.cos(currentAngle) * orbitRadius,
+        Math.sin(time * 0.5 + idx) * 1.5,
+        Math.sin(currentAngle) * orbitRadius
+      );
 
-      // Seguimiento de cámara suave (Casi 1ra persona, por encima del hombro)
-      const idealOffset = new THREE.Vector3(0, 1.2, 3.5);
-      idealOffset.applyQuaternion(meshRef.current.quaternion);
-      idealOffset.add(meshRef.current.position);
-      camera.position.lerp(idealOffset, 0.1);
-      camera.lookAt(meshRef.current.position);
+      if (shipRef.current!.position.distanceTo(planetPos) < 1.8) {
+        onCollide(p.id, p.link, planetPos);
+      }
+    });
 
-      // Colisiones con Proyectos
-      PROYECTOS_CORE.forEach((p, idx) => {
-        const orbitRadius = 4 + idx * 1.5;
-        const initialAngle = (idx / PROYECTOS_CORE.length) * Math.PI * 2 * 3;
-        const orbitSpeed = 0.5 + (PROYECTOS_CORE.length - idx) * 0.1;
-        const time = state.clock.getElapsedTime();
-        const currentAngle = initialAngle + time * orbitSpeed * 0.1;
-        
-        const planetPos = new THREE.Vector3(
-          Math.cos(currentAngle) * orbitRadius,
-          Math.sin(time * 0.5 + idx) * 1.5,
-          Math.sin(currentAngle) * orbitRadius
-        );
-
-        if (meshRef.current!.position.distanceTo(planetPos) < 1.8) {
-          onCollide(p.id, p.link, planetPos);
-        }
-      });
-
-      // Colisiones con Asteroides (Rebote manual)
-      asteroids.forEach(ast => {
-        if (meshRef.current!.position.distanceTo(ast.pos) < ast.scale + 0.4) {
-          // Rebote contundente
-          velocity.current.multiplyScalar(-0.6); 
-          const pushDir = meshRef.current!.position.clone().sub(ast.pos).normalize();
-          meshRef.current!.position.add(pushDir.multiplyScalar(0.5));
-        }
-      });
-
-    } else {
-      meshRef.current.visible = false;
-    }
+    // Colisiones con Asteroides (Rebote manual pasivo)
+    asteroids.forEach(ast => {
+      if (shipRef.current!.position.distanceTo(ast.pos) < ast.scale + 0.4) {
+        const pushDir = shipRef.current!.position.clone().sub(ast.pos).normalize();
+        shipRef.current!.position.add(pushDir.multiplyScalar(0.5));
+      }
+    });
   });
-
-  if (!isActive) return null;
-
-  return (
-    <group ref={meshRef} position={[0, 0, 25]}>
-      {/* Fuselaje */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.05, 0.3, 1.5, 6]} />
-        <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.2} />
-      </mesh>
-      
-      {/* Cockpit */}
-      <mesh position={[0, 0.1, -0.2]} rotation={[Math.PI / 2, 0, 0]}>
-        <sphereGeometry args={[0.2, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#38bdf8" transparent opacity={0.6} toneMapped={false} emissive="#38bdf8" emissiveIntensity={2} />
-      </mesh>
-
-      {/* Ala Izquierda */}
-      <group position={[-0.4, 0, 0.2]} rotation={[0, 0.2, -0.2]}>
-        <mesh>
-          <boxGeometry args={[0.8, 0.05, 0.6]} />
-          <meshStandardMaterial color="#334155" />
-        </mesh>
-        <mesh position={[-0.2, -0.05, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.1, 0.1, 0.4, 8]} />
-          <meshStandardMaterial color="#0f172a" />
-        </mesh>
-      </group>
-
-      {/* Ala Derecha */}
-      <group position={[0.4, 0, 0.2]} rotation={[0, -0.2, 0.2]}>
-        <mesh>
-          <boxGeometry args={[0.8, 0.05, 0.6]} />
-          <meshStandardMaterial color="#334155" />
-        </mesh>
-        <mesh position={[0.2, -0.05, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.1, 0.1, 0.4, 8]} />
-          <meshStandardMaterial color="#0f172a" />
-        </mesh>
-      </group>
-
-      {/* Alerón Posterior */}
-      <mesh position={[0, 0.3, 0.4]} rotation={[0.4, 0, 0]}>
-        <boxGeometry args={[0.05, 0.6, 0.3]} />
-        <meshStandardMaterial color="#475569" />
-      </mesh>
-      
-      {/* Reactor con Bloom inmenso (toneMapped={false} + emissiveIntensity>2) */}
-      <mesh position={[0, 0, 0.7]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
-        <meshStandardMaterial color="#ef4444" toneMapped={false} emissive="#ef4444" emissiveIntensity={5} />
-      </mesh>
-      
-      {/* Luz Ambiental de los propulsores */}
-      <pointLight position={[0, 0, 1]} color="#ef4444" intensity={2} distance={5} />
-    </group>
-  );
+  return null;
 }
 
 // --- NÚCLEO CENTRAL ---
@@ -341,6 +238,7 @@ export default function GalaxyScene() {
   const [isWarping, setIsWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState<THREE.Vector3 | null>(null);
   const [warpType, setWarpType] = useState<'hyperspace' | 'wormhole'>('hyperspace');
+  const shipRef = useRef<THREE.Group>(null);
 
   // Memorizar la posición de los asteroides para consistencia
   const asteroidData = useMemo(() => {
@@ -402,7 +300,14 @@ export default function GalaxyScene() {
 
         {isShipMode && <AsteroidField asteroids={asteroidData} />}
 
-        <Spaceship onCollide={handleCollision} isActive={isShipMode} isWarping={isWarping} asteroids={asteroidData} />
+        {isShipMode && !isWarping && (
+          <Spaceship 
+            ref={shipRef} 
+             isSandbox={false} 
+          />
+        )}
+        
+        <GalaxyCollisionManager shipRef={shipRef} onCollide={handleCollision} isActive={isShipMode} isWarping={isWarping} asteroids={asteroidData} />
 
         <WarpCamera isActive={isWarping} target={warpTarget} type={warpType} />
 
@@ -425,8 +330,8 @@ export default function GalaxyScene() {
           <p className="font-bold text-white/80 mb-1">INTERFAZ DE VUELO ACTIVA</p>
           <p>[W] ACELERAR   |   [S] FRENAR</p>
           <p>[A] Babor     |   [D] Estribor</p>
-          <p className="mt-1 text-red-400">¡CUIDADO CON EL CINTURÓN DE ASTEROIDES!</p>
-          <p className="mt-2 text-white/70">INTERSECTAR CON OBJETIVO PARA ENTRAR</p>
+          <p className="mt-1 text-red-500 font-bold">ESTADO DE VUELO EXPERIMENTAL (6-DOF)</p>
+          <p className="mt-2 text-white/50">INTERSECTAR CON LA ÓRBITA DEL PROYECTO PARA ENTRAR</p>
         </div>
       )}
 
