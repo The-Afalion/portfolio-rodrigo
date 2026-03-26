@@ -236,9 +236,14 @@ export default function GalaxyScene() {
   const router = useRouter();
   const [isShipMode, setIsShipMode] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const [warpTarget, setWarpTarget] = useState<THREE.Vector3 | null>(null);
   const [warpType, setWarpType] = useState<'hyperspace' | 'wormhole'>('hyperspace');
   const shipRef = useRef<THREE.Group>(null);
+
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
 
   // Memorizar la posición de los asteroides para consistencia
   const asteroidData = useMemo(() => {
@@ -265,6 +270,8 @@ export default function GalaxyScene() {
       router.push(link);
     }, 1200);
   };
+
+  if (!isReady) return null;
 
   return (
     <>
