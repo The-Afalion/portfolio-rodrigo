@@ -182,7 +182,7 @@ const Chat = ({ gameId, supabase, user }: { gameId: string, supabase: any, user:
 };
 
 const MultiplayerGame = ({ gameId }: { gameId: string }) => {
-  const supabase = createClientComponentClient();
+  const supabase = useRef(createClientComponentClient()).current;
   const router = useRouter();
   const [game, setGame] = useState(new Chess());
   const [fen, setFen] = useState("start");

@@ -53,7 +53,17 @@ export default function NewPostPage() {
     }
   };
 
-  if (!editor) return null;
+  // Prevent SSR hydration mismatch by rendering the skeleton while editor initializes
+  if (!editor) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] pt-24 pb-16 px-4 font-sans text-slate-800 flex justify-center items-start">
+        <div className="max-w-4xl mx-auto w-full mt-8 animate-pulse">
+          <div className="h-10 bg-slate-200 rounded w-1/3 mb-8"></div>
+          <div className="h-96 bg-white border border-slate-200 rounded-2xl"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pt-24 pb-16 px-4 font-sans text-slate-800">
