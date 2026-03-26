@@ -92,6 +92,7 @@ export default async function PaginaBlog({
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
+                        timeZone: 'UTC'
                       })}
                     </time>
                   </div>
