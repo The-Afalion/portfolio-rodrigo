@@ -30,7 +30,11 @@ export default async function AdminLayout({
     redirect('/login');
   }
 
-  if (session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+  const isSuperAdmin = session.user.email?.endsWith('@rodocodes.dev');
+  // Or check old env variable for fallback compatibility
+  const isEnvAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
+  if (!isSuperAdmin && !isEnvAdmin) {
     return (
       <div className="flex min-h-screen bg-background font-mono items-center justify-center text-center">
         <div>

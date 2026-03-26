@@ -24,8 +24,12 @@ export default function LoginPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      // Redirigir al club de ajedrez en caso de éxito
-      router.push('/chess');
+      // Redirigir al panel de administrador si es el superadmin, o al club de ajedrez
+      if (email.endsWith('@rodocodes.dev') || email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        router.push('/admin');
+      } else {
+        router.push('/chess');
+      }
     }
   };
 
