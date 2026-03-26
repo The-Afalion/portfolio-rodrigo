@@ -57,17 +57,16 @@ export default async function PostPage({ params }: Props) {
   const rawHtml = await marked.parse(post.content);
   const sanitizedHtml = DOMPurify.sanitize(rawHtml);
 
-  // Here we would typically check if the post uses a specific typography
-  // For now, we apply the default elegant Serif font
+  const fontClass = post.typography || 'font-serif';
 
   return (
     <main className="bg-[#f8fafc] text-slate-800 min-h-screen font-sans">
       {/* Elegante cabecera */}
-      <header className="bg-white border-b border-slate-200 pt-32 pb-16 px-4 sm:px-6 lg:px-8">
+      <header className="bg-white border-b border-slate-100 pt-32 pb-16 px-4 sm:px-6 lg:px-8 shadow-sm">
         <div className="max-w-3xl mx-auto">
-          <Link href="/blog" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors text-sm font-semibold tracking-wide uppercase mb-8">
+          <Link href="/blog" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors text-xs font-bold tracking-widest uppercase mb-10">
             <ArrowLeft size={16} />
-            Volver al blog
+            Todos los artículos
           </Link>
 
           <div className="mb-6 flex flex-wrap gap-2">
@@ -93,15 +92,21 @@ export default async function PostPage({ params }: Props) {
       </header>
 
       {/* Contenido del Post */}
-      <article className="max-w-3xl mx-auto px-4 py-16 sm:py-24">
+      <article className="max-w-3xl mx-auto px-4 py-16 sm:py-24 bg-white/50 my-8 rounded-3xl border border-slate-100 shadow-sm">
+        {post.coverImage && (
+          <div className="mb-12 rounded-2xl overflow-hidden shadow-lg border border-slate-100">
+            <img src={post.coverImage} alt={post.title} className="w-full h-auto object-cover max-h-[500px]" />
+          </div>
+        )}
+
         {/* Usamos prose para estilos de texto, adaptado para fondo claro y colores suaves */}
-        <div className="prose prose-slate prose-lg max-w-none
-                        prose-headings:font-serif prose-headings:text-slate-900 prose-headings:font-bold
-                        prose-p:text-slate-700 prose-p:leading-relaxed prose-p:font-serif
+        <div className={`prose prose-slate prose-lg max-w-none
+                        prose-headings:${fontClass} prose-headings:text-slate-900 prose-headings:font-bold
+                        prose-p:text-slate-700 prose-p:leading-relaxed prose-p:${fontClass}
                         prose-a:text-blue-600 hover:prose-a:text-blue-800
                         prose-strong:text-slate-900 prose-strong:font-semibold
-                        prose-blockquote:border-l-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-slate-700 prose-blockquote:font-serif prose-blockquote:italic
-                        prose-img:rounded-xl prose-img:shadow-lg"
+                        prose-blockquote:border-l-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-slate-700 prose-blockquote:${fontClass} prose-blockquote:italic
+                        prose-img:rounded-2xl prose-img:shadow-md border-slate-100`}
              dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
         
         <div className="mt-16 pt-8 border-t border-slate-200 flex justify-center">
