@@ -40,6 +40,7 @@ model Tag {
 model Profile {
   id                  String           @id // Coincide con el ID de `auth.users`
   elo                 Int              @default(1000)
+  role                String           @default("USER") // "USER" | "ADMIN"
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   gamesAsWhite        ChessGame[]      @relation("GamesAsWhite")

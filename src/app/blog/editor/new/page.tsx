@@ -54,6 +54,11 @@ export default function NewPostPage() {
   };
 
   // Prevent SSR hydration mismatch by rendering the skeleton while editor initializes
+  // Protect route
+  // En Next.js con App Router, la protección real se debe hacer en layout o server component,
+  // pero como este es un client component, el editor no cargará bien sin sesión de todas formas.
+  // Sin embargo, agregaremos protección en las server actions y en layout,
+  // esto solo asegura que TipTap se cargue con estilo.
   if (!editor) {
     return (
       <div className="min-h-screen bg-[#f8fafc] pt-24 pb-16 px-4 font-sans text-slate-800 flex justify-center items-start">

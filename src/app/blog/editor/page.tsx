@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import InviteAdminForm from './InviteAdminForm';
 
 export default async function EditorDashboard() {
   const cookieStore = cookies();
@@ -22,14 +23,10 @@ export default async function EditorDashboard() {
   } = await supabase.auth.getSession();
 
   if (!session) {
-    redirect('/login?redirect=/blog/editor');
+    redirect('/blog/login');
   }
 
-  // Si necesitamos validar un rol específico (ej. ADMIN o EDITOR), podríamos hacerlo aquí.
-  // Por ahora, asumimos que cualquier usuario logueado que llegue aquí es un editor o el admin.
-  // if (session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-  //   redirect('/');
-  // }
+  const isSuperAdmin = session.user.email?.endsWith('@rodocodes.dev');
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pt-24 pb-16 px-4 font-sans">
@@ -66,6 +63,12 @@ export default async function EditorDashboard() {
             Comenzar a escribir
           </Link>
         </div>
+
+        {isSuperAdmin && (
+           <div className="mt-8">
+             <InviteAdminForm />
+           </div>
+        )}
       </div>
     </div>
   );
