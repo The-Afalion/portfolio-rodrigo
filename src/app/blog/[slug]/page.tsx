@@ -81,7 +81,7 @@ export default async function PostPage({ params }: Props) {
 
           <div className="flex items-center gap-6 text-sm text-slate-500 font-medium">
             <time dateTime={post.createdAt.toISOString()}>
-              {new Date(post.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {new Date(post.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}
             </time>
             <span className="flex items-center gap-2">
               <Eye size={16} />
