@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { Proveedores } from "@/components/Proveedores";
 import ContenidoPrincipal from "@/components/ContenidoPrincipal";
@@ -103,6 +104,7 @@ export default function DisposicionRaiz({
           <ContenidoPrincipal>{children}</ContenidoPrincipal>
           {modal} {/* Renderizamos el modal aquí */}
         </Proveedores>
+        <SpeedInsights />
       </body>
     </html>
   );
