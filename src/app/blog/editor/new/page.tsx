@@ -8,6 +8,7 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import Typography from '@tiptap/extension-typography';
 import TextAlign from '@tiptap/extension-text-align';
+import { savePost } from '../actions';
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -34,14 +35,22 @@ export default function NewPostPage() {
   });
 
   const handlePublish = async () => {
-    if (!editor || !title) return;
+    if (!editor || !title.trim()) {
+      alert("El título es obligatorio");
+      return;
+    }
     setIsPublishing(true);
 
-    // Aquí implementaremos la lógica de guardado
-    // await fetch('/api/blog/posts', ...)
+    const content = editor.getHTML();
 
-    alert('Función de guardado en construcción');
-    setIsPublishing(false);
+    const result = await savePost({ title, content, fontFamily });
+
+    if (result.error) {
+      alert(result.error);
+      setIsPublishing(false);
+    } else {
+      router.push(`/blog/${result.slug}`);
+    }
   };
 
   if (!editor) return null;
