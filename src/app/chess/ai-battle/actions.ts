@@ -124,14 +124,34 @@ function simulateGame(p1: any, p2: any, startTime: Date) {
 
 async function simulateRound(matches: any[], players: any[]) {
   const startTime = new Date();
+  const playerMap = new Map(players.map(p => [p.id, p]));
+  const updates: any[] = [];
+
   for (const match of matches) {
     if (!match || !match.player1Id || !match.player2Id) continue;
-    const player1 = players.find(p => p.id === match.player1Id);
-    const player2 = players.find(p => p.id === match.player2Id);
+    const player1 = playerMap.get(match.player1Id);
+    const player2 = playerMap.get(match.player2Id);
     if (!player1 || !player2) continue;
+
     const { winner, moves } = simulateGame(player1, player2, startTime);
     const winnerId = winner === 'p1' ? match.player1Id : match.player2Id;
-    await supabaseAdmin.from('AITournamentMatch').update({ status: 'ACTIVE', winnerId, moves }).eq('id', match.id);
+
+    updates.push({
+      id: match.id,
+      status: 'ACTIVE',
+      winnerId,
+      moves
+    });
+  }
+
+  if (updates.length > 0) {
+    const { error } = await supabaseAdmin
+      .from('AITournamentMatch')
+      .upsert(updates);
+
+    if (error) {
+      console.error("Error batch updating matches:", error.message);
+    }
   }
 }
 
