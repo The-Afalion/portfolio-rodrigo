@@ -2,7 +2,12 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { Chess } from 'chess.js';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   try {
     const game = await prisma.communityChessGame.findUnique({ where: { id: 'main_game' }, include: { votes: true } });
     if (!game) throw new Error("Game not found");
