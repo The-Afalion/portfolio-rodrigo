@@ -17,17 +17,23 @@ export default async function PaginaBlog({
 }) {
   const query = searchParams?.q || '';
 
-  const posts = await prisma.post.findMany({
-    where: {
-      published: true,
-      OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { content: { contains: query, mode: 'insensitive' } },
-      ],
-    },
-    orderBy: { createdAt: 'desc' },
-    include: { tags: true },
-  });
+  let posts: any[] = [];
+  try {
+    posts = await prisma.post.findMany({
+      where: {
+        published: true,
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { content: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      include: { tags: true },
+    });
+  } catch (error) {
+    console.error("Error fetching posts from database:", error);
+    // Return empty array or fallback data if DB is unavailable
+  }
 
   return (
     <main className="bg-[#f8fafc] text-slate-800 min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8 font-sans">

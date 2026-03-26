@@ -14,27 +14,41 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props) {
-  const post = await prisma.post.findUnique({
-    where: { slug: params.slug, published: true },
-  });
+  try {
+    const post = await prisma.post.findUnique({
+      where: { slug: params.slug, published: true },
+    });
 
-  if (!post) {
-    return { title: 'Post no encontrado' };
+    if (!post) {
+      return { title: 'Post no encontrado' };
+    }
+
+    return {
+      title: post.title,
+      description: post.content.substring(0, 150),
+    };
+  } catch (error) {
+    console.error("Error generating metadata from DB:", error);
+    return { title: 'Blog Post' };
   }
-
-  return {
-    title: post.title,
-    description: post.content.substring(0, 150),
-  };
 }
 
 export default async function PostPage({ params }: Props) {
-  await incrementViews(params.slug);
+  try {
+    await incrementViews(params.slug);
+  } catch (e) {
+    console.error("Failed to increment views:", e);
+  }
 
-  const post = await prisma.post.findUnique({
-    where: { slug: params.slug, published: true },
-    include: { tags: true },
-  });
+  let post = null;
+  try {
+    post = await prisma.post.findUnique({
+      where: { slug: params.slug, published: true },
+      include: { tags: true },
+    });
+  } catch (error) {
+    console.error("Error fetching post from DB:", error);
+  }
 
   if (!post) {
     notFound();
