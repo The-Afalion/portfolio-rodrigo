@@ -15,7 +15,7 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.12.1",
+    "@prisma/client": "^5.22.0",
     "@react-three/drei": "^9.109.2",
     "@react-three/fiber": "^8.16.8",
     "@react-three/postprocessing": "^2.16.2",
@@ -67,7 +67,7 @@
     "install": "^0.13.0",
     "npm": "^11.10.0",
     "postcss": "^8.5.6",
-    "prisma": "^5.12.1",
+    "prisma": "^5.22.0",
     "react-email": "^2.1.6",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",

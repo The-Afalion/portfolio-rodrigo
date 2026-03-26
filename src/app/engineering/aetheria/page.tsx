@@ -192,7 +192,7 @@ export default function AetheriaPage() {
          const chosenIndex = availableCards[Math.floor(Math.random() * availableCards.length)].i;
          const cardToPlay = handP2[chosenIndex];
 
-         setHandP2(handP2.filter((_, i) => i !== chosenIndex));
+         setHandP2(prev => prev.filter((_, i) => i !== chosenIndex));
          setP2Moves({ r: bestR, c: bestC });
          const tempBoard = board.map(row => [...row]);
          tempBoard[bestR][bestC] = { card: cardToPlay, owner: 'P2' };
@@ -207,7 +207,8 @@ export default function AetheriaPage() {
       }, 1000);
       return () => clearTimeout(runAI);
     }
-  }, [currentTurn, phase, board, pendingMove]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTurn, phase, board, pendingMove, handP2.length, mode, p1Moves]);
 
   // --- COMBAT ANIMATION & RESOLUTION ---
   const triggerCombatResolution = () => {
@@ -355,16 +356,16 @@ export default function AetheriaPage() {
      
      let gemColor = "";
      switch(side.type) {
-        case 'ATTACK': gemColor = "from-red-600 to-red-400 shadow-[0_0_8px_#ef4444] border-red-950"; break;
-        case 'SHIELD': gemColor = "from-blue-500 to-blue-300 shadow-[0_0_8px_#3b82f6] border-blue-900"; break;
-        case 'RANGED': gemColor = "from-emerald-500 to-emerald-300 shadow-[0_0_8px_#10b981] border-emerald-900"; break;
-        case 'HEAL': gemColor = "from-yellow-500 to-yellow-200 shadow-[0_0_8px_#eab308] border-yellow-900"; break;
+        case 'ATTACK': gemColor = "bg-red-800 border-red-950"; break;
+        case 'SHIELD': gemColor = "bg-blue-800 border-blue-950"; break;
+        case 'RANGED': gemColor = "bg-emerald-800 border-emerald-950"; break;
+        case 'HEAL': gemColor = "bg-amber-700 border-amber-950"; break;
      }
 
      return (
-        <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} items-center justify-center gap-1.5 w-full h-full p-0.5 bg-black/60 rounded-full border border-white/5`}>
+        <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} items-center justify-center gap-1 w-full h-full p-0.5`}>
            {dots.map(d => (
-              <div key={d} className={`w-2.5 h-2.5 rounded-full bg-gradient-to-tr border ${gemColor}`} />
+              <div key={d} className={`w-2.5 h-2.5 rounded-sm bg-gradient-to-tr border ${gemColor} shadow-inner opacity-90`} />
            ))}
         </div>
      );
@@ -372,54 +373,74 @@ export default function AetheriaPage() {
 
   const renderSideBorder = (side: CardSide, positionClass: string, isHorizontal: boolean) => {
      if (side.type === 'NONE') return null;
+
+     // Subtle background color for the side region depending on type
+     let bgTone = "";
+     switch(side.type) {
+        case 'ATTACK': bgTone = "bg-red-900/20"; break;
+        case 'SHIELD': bgTone = "bg-blue-900/20"; break;
+        case 'RANGED': bgTone = "bg-emerald-900/20"; break;
+        case 'HEAL': bgTone = "bg-amber-900/20"; break;
+     }
+
      return (
-        <div className={`absolute ${positionClass} flex items-center justify-center`}>
+        <div className={`absolute ${positionClass} flex items-center justify-center ${bgTone} border border-white/5`}>
            {renderGems(side, isHorizontal)}
         </div>
      );
   };
 
   const renderCard = (card: InGameCard, owner: Player | null, isSelected = false, onClick?: () => void, isPending = false) => {
-    let rarityGlow = 'border-zinc-700';
-    if (card.rarity === 'RARE') rarityGlow = 'border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)]';
-    if (card.rarity === 'PALADIN') rarityGlow = 'border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.3)]';
+    let rarityBorder = 'border-zinc-600';
+    if (card.rarity === 'RARE') rarityBorder = 'border-purple-800';
+    if (card.rarity === 'PALADIN') rarityBorder = 'border-amber-600';
 
-    const bgBase = owner === 'P1' ? 'bg-[#2a1315]' : (owner === 'P2' ? 'bg-[#131d2a]' : 'bg-[#18181b]');
-    const outline = isSelected ? 'shadow-[0_0_30px_rgba(255,255,255,1)] scale-110 z-20' : '';
-    const pendingClass = isPending ? 'opacity-50 border-dashed' : 'border-solid border-2';
+    const bgBase = owner === 'P1' ? 'bg-[#3b2824]' : (owner === 'P2' ? 'bg-[#242c3b]' : 'bg-[#2a2a2a]');
+    const outline = isSelected ? 'ring-2 ring-white scale-110 z-20' : '';
+    const pendingClass = isPending ? 'opacity-60 border-dashed' : 'border-solid border-2';
 
     return (
       <motion.div 
         layoutId={card.instanceId} 
         onClick={onClick}
         whileHover={{ y: onClick ? -5 : 0 }}
-        className={`w-[100px] h-[140px] rounded-lg cursor-pointer relative flex flex-col items-center justify-center transition-all ${bgBase} ${outline} ${pendingClass} ${rarityGlow}`}
+        className={`w-[100px] h-[140px] rounded-md cursor-pointer relative flex flex-col items-center justify-center transition-all ${bgBase} ${outline} ${pendingClass} ${rarityBorder} shadow-lg`}
+        style={{
+           backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.15' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E")`
+        }}
       >
-         {renderSideBorder(card.top, "top-1 left-3 right-3 h-4", true)}
-         {renderSideBorder(card.bottom, "bottom-1 left-3 right-3 h-4", true)}
-         {renderSideBorder(card.left, "left-1 top-3 bottom-3 w-4", false)}
-         {renderSideBorder(card.right, "right-1 top-3 bottom-3 w-4", false)}
+         {/* Elegante marco interior */}
+         <div className="absolute inset-1 border border-white/10 rounded-sm pointer-events-none"></div>
 
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 border border-zinc-700 bg-black/80 rounded rotate-45">
-             <span className="text-2xl font-black text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] -rotate-45">{card.currentHealth}</span>
+         {renderSideBorder(card.top, "top-1 left-4 right-4 h-5 rounded-t-sm", true)}
+         {renderSideBorder(card.bottom, "bottom-1 left-4 right-4 h-5 rounded-b-sm", true)}
+         {renderSideBorder(card.left, "left-1 top-4 bottom-4 w-5 rounded-l-sm", false)}
+         {renderSideBorder(card.right, "right-1 top-4 bottom-4 w-5 rounded-r-sm", false)}
+
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 bg-zinc-900 border border-zinc-500 rounded-full shadow-inner">
+             <span className="text-xl font-bold text-zinc-100">{card.currentHealth}</span>
          </div>
          
-         <div className="absolute top-4 w-full text-center px-1">
-            <p className="text-[7px] font-bold uppercase tracking-widest text-zinc-300 drop-shadow-md truncate">{card.name}</p>
+         <div className="absolute top-6 w-full text-center px-1">
+            <p className="text-[8px] font-semibold uppercase tracking-wider text-zinc-300 truncate bg-black/40 py-0.5 rounded-sm">{card.name}</p>
          </div>
          {owner && (
-            <div className={`absolute bottom-5 w-2 h-2 rounded-full ${owner === 'P1' ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 'bg-blue-500 shadow-[0_0_10px_#3b82f6]'}`} />
+            <div className={`absolute bottom-6 w-3 h-3 rounded-sm rotate-45 border border-white/20 ${owner === 'P1' ? 'bg-red-700' : 'bg-blue-700'}`} />
          )}
       </motion.div>
     );
   };
 
   return (
-    <main className={`min-h-screen w-screen text-zinc-200 flex flex-col relative font-sans transition-colors duration-1000 ${phase === 'SUDDEN_DEATH' ? 'bg-[#2a0808]' : 'bg-[#0f0f11]'}`}>
+    <main className={`min-h-screen w-screen text-zinc-300 flex flex-col relative font-serif transition-colors duration-1000 ${phase === 'SUDDEN_DEATH' ? 'bg-[#2a1b1b]' : 'bg-[#1e1c1a]'}`}
+          style={{
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}
+    >
       
       {phase === 'SUDDEN_DEATH' && (
          <div className="absolute inset-0 pointer-events-none z-0">
-            <motion.div animate={{ opacity: [0, 0.4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-full h-full bg-red-900/40 mix-blend-overlay"></motion.div>
+            <motion.div animate={{ opacity: [0, 0.2, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="w-full h-full bg-red-900/20 mix-blend-overlay"></motion.div>
          </div>
       )}
 
@@ -433,32 +454,34 @@ export default function AetheriaPage() {
       <div className="w-full h-full flex flex-col items-center justify-center relative p-8 flex-1 z-10">
         
         {phase === 'MENU' && (
-           <div className="flex flex-col items-center text-center">
-             <Swords className="w-16 h-16 text-yellow-500 mb-6 drop-shadow-[0_0_20px_#eab308]" />
-             <h1 className="text-6xl font-black tracking-tighter mb-4 text-white">Aetheria Tactics</h1>
-             <p className="text-zinc-500 mb-12 uppercase tracking-widest text-sm font-bold">Gemas, Estrategia y Vida Limitada</p>
-             <button onClick={() => startGame('LOCAL')} className="px-10 py-4 border-2 border-white/20 bg-white/5 hover:bg-white hover:text-black rounded font-black uppercase tracking-widest text-sm transition-all mb-4">PvP Mesa</button>
-             <button onClick={() => startGame('AI')} className="px-10 py-4 border-2 border-zinc-800 bg-transparent text-zinc-400 hover:border-zinc-500 rounded font-black uppercase tracking-widest text-sm transition-all">Vs Autómata</button>
+           <div className="flex flex-col items-center text-center bg-zinc-900/60 p-12 rounded-xl border border-white/10 shadow-2xl backdrop-blur-sm">
+             <Swords className="w-16 h-16 text-amber-600 mb-6" />
+             <h1 className="text-6xl font-bold tracking-tight mb-2 text-zinc-100 font-serif">Aetheria Tactics</h1>
+             <div className="h-px w-32 bg-amber-600/50 mb-4 mx-auto"></div>
+             <p className="text-zinc-400 mb-12 uppercase tracking-widest text-xs font-semibold">Táctica, Posicionamiento y Combate</p>
+             <button onClick={() => startGame('LOCAL')} className="px-12 py-4 border border-zinc-600 bg-zinc-800 hover:bg-zinc-700 hover:border-zinc-400 text-zinc-100 rounded shadow-md font-semibold uppercase tracking-widest text-sm transition-all mb-4">Duelo de Mesa (PvP)</button>
+             <button onClick={() => startGame('AI')} className="px-12 py-4 border border-zinc-800 bg-transparent text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 rounded font-semibold uppercase tracking-widest text-sm transition-all">Contra Autómata (PvE)</button>
           </div>
         )}
 
         {(phase === 'DRAFT_P1' || phase === 'DRAFT_P2') && (
-           <div className="flex flex-col items-center w-full max-w-5xl">
-              <h2 className="text-3xl font-black uppercase text-white mb-2">CONSTRUYE TU MAZO</h2>
-              <p className="text-zinc-500 uppercase tracking-widest text-sm font-bold mb-10">
-                Turno de: <span className={phase === 'DRAFT_P1' ? 'text-red-400' : 'text-blue-400'}>{phase === 'DRAFT_P1' ? 'JUGADOR 1' : mode === 'AI' ? 'AUTÓMATA' : 'JUGADOR 2'}</span>
+           <div className="flex flex-col items-center w-full max-w-5xl bg-zinc-900/40 p-10 rounded-xl border border-white/5 backdrop-blur-sm shadow-xl">
+              <h2 className="text-3xl font-bold uppercase text-zinc-100 mb-2 font-serif tracking-wide">Construye tu Mazo</h2>
+              <div className="h-px w-24 bg-zinc-700 mb-4 mx-auto"></div>
+              <p className="text-zinc-400 uppercase tracking-widest text-xs font-semibold mb-10">
+                Turno de: <span className={phase === 'DRAFT_P1' ? 'text-red-400 font-bold' : 'text-blue-400 font-bold'}>{phase === 'DRAFT_P1' ? 'JUGADOR 1' : mode === 'AI' ? 'AUTÓMATA' : 'JUGADOR 2'}</span>
               </p>
 
-              <div className="mb-4 text-center">
-                 {draftStep === 0 && <p className="text-yellow-400 font-bold uppercase tracking-widest">Elige 2 Paladines</p>}
-                 {draftStep === 1 && <p className="text-purple-400 font-bold uppercase tracking-widest">Elige 3 Tropas Raras</p>}
-                 {draftStep === 2 && <p className="text-zinc-400 font-bold uppercase tracking-widest">Elige 5 Tropas Normales</p>}
+              <div className="mb-6 text-center px-8 py-3 bg-black/30 border border-white/5 rounded-md">
+                 {draftStep === 0 && <p className="text-amber-500 font-semibold uppercase tracking-widest text-sm">Elige 2 Paladines</p>}
+                 {draftStep === 1 && <p className="text-purple-400 font-semibold uppercase tracking-widest text-sm">Elige 3 Tropas Raras</p>}
+                 {draftStep === 2 && <p className="text-zinc-300 font-semibold uppercase tracking-widest text-sm">Elige 5 Tropas Normales</p>}
               </div>
 
               <div className="grid grid-cols-6 gap-6 mb-12 min-h-[160px]">
                  {(draftStep === 0 ? PALADINS : draftStep === 1 ? RARES : NORMALS).map(c => (
                     <div key={c.id}>
-                       {renderCard({ ...c, currentHealth: c.health, instanceId: '' }, null, false, () => {
+                       {renderCard({ ...c, currentHealth: c.health, instanceId: '' }, null, selectedDraft.some(sc => sc.id === c.id), () => {
                           const limit = draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5;
                           toggleDraftSelection(c, limit);
                        })}
@@ -469,9 +492,9 @@ export default function AetheriaPage() {
                <button 
                   onClick={confirmDraftStep}
                   disabled={selectedDraft.length !== (draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5)}
-                  className={`px-12 py-4 rounded font-black uppercase tracking-widest transition-all ${selectedDraft.length === (draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5) ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:bg-zinc-200' : 'bg-zinc-900 border border-zinc-800 text-zinc-600'}`}
+                  className={`px-12 py-4 rounded font-bold uppercase tracking-widest text-sm transition-all ${selectedDraft.length === (draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5) ? 'bg-zinc-200 text-zinc-900 hover:bg-white shadow-lg' : 'bg-zinc-800/50 border border-zinc-700/50 text-zinc-600 cursor-not-allowed'}`}
                >
-                  CONFIRMAR ({selectedDraft.length} / {draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5})
+                  Confirmar Selección ({selectedDraft.length} / {draftStep === 0 ? 2 : draftStep === 1 ? 3 : 5})
                </button>
            </div>
         )}
@@ -481,21 +504,21 @@ export default function AetheriaPage() {
               
               {phase === 'RESOLVING' && (
                  <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-                    <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1.2, opacity: 1 }} exit={{ scale: 1.5, opacity: 0 }} className="bg-black/80 px-12 py-6 border-y-2 border-red-500 backdrop-blur-md">
-                       <h2 className="text-6xl font-black text-red-500 tracking-widest uppercase italic">¡Combate!</h2>
+                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 1.1, opacity: 0 }} className="bg-zinc-900/90 px-16 py-8 border-y border-amber-700/50 backdrop-blur-md shadow-2xl">
+                       <h2 className="text-5xl font-bold text-amber-500 tracking-widest uppercase font-serif">Resolución</h2>
                     </motion.div>
                  </div>
               )}
 
               {phase === 'SUDDEN_DEATH' && sdWarning && (
-                 <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none opacity-20">
-                    <AlertTriangle size={400} className="text-red-600 drop-shadow-[0_0_100px_#ef4444]" />
+                 <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none opacity-10">
+                    <AlertTriangle size={400} className="text-red-900" />
                  </div>
               )}
 
               {/* HAND P1 */}
-              <div className="w-[280px] flex flex-wrap gap-4 content-start overflow-y-auto custom-scrollbar p-6 bg-zinc-900/30 rounded-2xl border border-zinc-800 backdrop-blur-sm relative">
-                 <h3 className="w-full text-center text-red-500 font-black uppercase mb-4 tracking-widest">J1 ({handP1.length})</h3>
+              <div className="w-[280px] flex flex-wrap gap-4 content-start overflow-y-auto custom-scrollbar p-6 bg-black/40 rounded-xl border border-white/5 backdrop-blur-sm relative shadow-xl">
+                 <h3 className="w-full text-center text-red-400 font-bold uppercase mb-4 tracking-widest text-sm border-b border-white/5 pb-2">J1 - Cartas: {handP1.length}</h3>
                  <AnimatePresence>
                     {handP1.map((c, i) => (
                        <motion.div key={c.instanceId} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0 }}>
@@ -505,41 +528,43 @@ export default function AetheriaPage() {
                        </motion.div>
                     ))}
                  </AnimatePresence>
-                 {currentTurn === 'P1' && phase === 'PLAYING' && !pendingMove && <div className="absolute inset-0 border-2 border-red-500/30 rounded-2xl pointer-events-none animate-pulse"></div>}
+                 {currentTurn === 'P1' && phase === 'PLAYING' && !pendingMove && <div className="absolute inset-0 border border-red-900/50 rounded-xl pointer-events-none"></div>}
               </div>
 
               {/* TABLERO */}
               <div className="flex-1 flex flex-col items-center justify-center">
-                 <div className="mb-6 text-center h-[60px]">
+                 <div className="mb-6 text-center h-[60px] flex flex-col items-center justify-center">
                     {phase === 'SUDDEN_DEATH' ? (
-                       <h2 className="text-3xl font-black text-red-500 tracking-widest uppercase animate-pulse">Muerte Súbita</h2>
+                       <h2 className="text-2xl font-bold text-red-500 tracking-widest uppercase font-serif">Muerte Súbita</h2>
                     ) : (
                        <>
-                          <p className="text-zinc-600 uppercase font-black tracking-widest text-sm">Ronda {roundNumber}</p>
-                          <p className="text-2xl text-white font-black uppercase tracking-wide">
-                             {currentTurn === 'P1' ? <span className="text-red-400">JUGADOR 1</span> : <span className="text-blue-400">JUGADOR 2</span>}
-                          </p>
+                          <p className="text-zinc-500 uppercase font-semibold tracking-widest text-xs mb-1">Ronda {roundNumber}</p>
+                          <div className="px-6 py-2 bg-black/50 border border-white/5 rounded">
+                             <p className="text-lg text-zinc-100 font-bold uppercase tracking-wider font-serif">
+                                {currentTurn === 'P1' ? <span className="text-red-400">Turno de Jugador 1</span> : <span className="text-blue-400">Turno de Jugador 2</span>}
+                             </p>
+                          </div>
                        </>
                     )}
                  </div>
 
-                 <div className="w-[500px] h-[500px] bg-[#1a1a1f] rounded-2xl p-4 grid grid-cols-4 grid-rows-4 gap-2 border-2 border-zinc-800 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
+                 <div className="w-[500px] h-[500px] bg-[#151312] rounded-xl p-4 grid grid-cols-4 grid-rows-4 gap-2 border border-zinc-800 shadow-2xl relative">
                     
                     {/* Liners for aesthetics */}
-                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '71px 71px' }}></div>
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '117px 117px', backgroundPosition: 'center' }}></div>
 
                     {board.map((row, rIdx) => 
                        row.map((slot, cIdx) => (
                           <div 
                              key={`${rIdx}-${cIdx}`} 
                              onClick={() => handleCellClick(rIdx, cIdx)}
-                             className={`w-full h-full rounded border border-white/5 flex items-center justify-center relative bg-black/40 z-10 transition-colors ${(selectedHandIndex !== null && currentTurn === 'P1' && !p1Moves && !pendingMove) || (selectedHandIndex !== null && currentTurn === 'P2' && !p2Moves && !pendingMove) ? 'hover:bg-zinc-800/80 cursor-crosshair border-white/20' : ''}`}
+                             className={`w-full h-full rounded border border-white/5 flex items-center justify-center relative bg-zinc-900/40 z-10 transition-colors ${(selectedHandIndex !== null && currentTurn === 'P1' && !p1Moves && !pendingMove) || (selectedHandIndex !== null && currentTurn === 'P2' && !p2Moves && !pendingMove) ? 'hover:bg-zinc-800/60 cursor-crosshair border-white/10' : ''}`}
                           >
                              {slot && renderCard(slot.card, slot.owner)}
                              
                              {/* Pending Move Indicator */}
                              {pendingMove?.r === rIdx && pendingMove?.c === cIdx && (
-                                <div className="absolute inset-0 z-20 flex items-center justify-center scale-90">
+                                <div className="absolute inset-0 z-20 flex items-center justify-center opacity-80 scale-95">
                                    {renderCard(pendingMove.card, currentTurn, false, undefined, true)}
                                 </div>
                              )}
@@ -547,7 +572,7 @@ export default function AetheriaPage() {
                              {/* Float Damage Indicator */}
                              <AnimatePresence>
                                 {damageIndicators.filter(d => d.r === rIdx && d.c === cIdx).map(d => (
-                                   <motion.div key={d.id} initial={{ y: 20, opacity: 0 }} animate={{ y: -40, opacity: 1 }} exit={{ opacity: 0 }} className={`absolute z-50 text-4xl font-black drop-shadow-[0_0_5px_rgba(0,0,0,1)] ${d.type === 'HEAL' ? 'text-green-400' : 'text-red-500'}`}>
+                                   <motion.div key={d.id} initial={{ y: 10, opacity: 0 }} animate={{ y: -30, opacity: 1 }} exit={{ opacity: 0 }} className={`absolute z-50 text-3xl font-bold bg-black/50 px-2 py-1 rounded-md border border-white/10 shadow-lg ${d.type === 'HEAL' ? 'text-emerald-400' : 'text-red-400'}`}>
                                       {d.type === 'HEAL' ? '+' : '-'}{d.val}
                                    </motion.div>
                                 ))}
@@ -559,14 +584,16 @@ export default function AetheriaPage() {
               </div>
 
               {/* HAND P2 */}
-              <div className="w-[280px] flex flex-wrap gap-4 content-start overflow-y-auto custom-scrollbar p-6 bg-zinc-900/30 rounded-2xl border border-zinc-800 backdrop-blur-sm relative">
-                 <h3 className="w-full text-center text-blue-500 font-black uppercase mb-4 tracking-widest">{mode === 'AI' ? 'AUTÓMATA' : 'J2'} ({handP2.length})</h3>
+              <div className="w-[280px] flex flex-wrap gap-4 content-start overflow-y-auto custom-scrollbar p-6 bg-black/40 rounded-xl border border-white/5 backdrop-blur-sm relative shadow-xl">
+                 <h3 className="w-full text-center text-blue-400 font-bold uppercase mb-4 tracking-widest text-sm border-b border-white/5 pb-2">{mode === 'AI' ? 'Autómata' : 'J2'} - Cartas: {handP2.length}</h3>
                  <AnimatePresence>
                     {handP2.map((c, i) => (
                        <motion.div key={c.instanceId} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0 }}>
                           {mode === 'AI' ? (
-                             <div className="w-[100px] h-[140px] bg-black border border-blue-900/30 rounded flex items-center justify-center font-bold text-blue-900 shadow-inner">
-                                <span className="rotate-90 tracking-widest text-[10px]">INCOGNITO</span>
+                             <div className="w-[100px] h-[140px] bg-zinc-900 border border-zinc-800 rounded-md flex items-center justify-center shadow-inner">
+                                <div className="w-8 h-8 rounded-full border border-zinc-700/50 flex items-center justify-center opacity-30">
+                                   <span className="text-zinc-500 font-serif font-bold text-xl">?</span>
+                                </div>
                              </div>
                           ) : (
                              renderCard(c, 'P2', phase === 'PLAYING' && currentTurn === 'P2' && selectedHandIndex === i && !pendingMove, () => {
@@ -576,16 +603,16 @@ export default function AetheriaPage() {
                        </motion.div>
                     ))}
                  </AnimatePresence>
-                 {currentTurn === 'P2' && phase === 'PLAYING' && !pendingMove && <div className="absolute inset-0 border-2 border-blue-500/30 rounded-2xl pointer-events-none animate-pulse"></div>}
+                 {currentTurn === 'P2' && phase === 'PLAYING' && !pendingMove && <div className="absolute inset-0 border border-blue-900/50 rounded-xl pointer-events-none"></div>}
               </div>
 
               {/* BOTONERA CONFIRMACION */}
               {pendingMove && (
-                 <div className="absolute w-full bottom-[-80px] flex justify-center z-50">
-                    <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex gap-4 p-4 bg-zinc-900 border border-zinc-700 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-xl">
-                       <button onClick={cancelMove} className="px-8 py-3 bg-transparent text-zinc-400 font-bold uppercase tracking-widest border border-zinc-700 rounded hover:text-white transition-colors">Cancelar</button>
-                       <button onClick={confirmMove} className="px-12 py-3 bg-white text-black font-black uppercase tracking-widest rounded shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:bg-zinc-200 flex items-center gap-2">
-                          <SkipForward size={18} /> Confirmar Turno
+                 <div className="absolute w-full bottom-[-70px] flex justify-center z-50">
+                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex gap-4 p-4 bg-zinc-900/90 border border-white/10 shadow-2xl rounded-lg backdrop-blur-sm">
+                       <button onClick={cancelMove} className="px-8 py-3 bg-transparent text-zinc-400 font-semibold uppercase tracking-widest text-xs border border-zinc-700 rounded hover:text-white hover:border-zinc-500 transition-colors">Cancelar</button>
+                       <button onClick={confirmMove} className="px-12 py-3 bg-zinc-200 text-zinc-900 font-bold uppercase tracking-widest text-xs rounded hover:bg-white flex items-center gap-2 shadow-md">
+                          <SkipForward size={16} /> Confirmar Turno
                        </button>
                     </motion.div>
                  </div>
@@ -594,15 +621,24 @@ export default function AetheriaPage() {
         )}
 
         {phase === 'GAMEOVER' && (
-           <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center backdrop-blur-md">
-              <h2 className={`text-7xl font-black uppercase mb-6 tracking-tighter ${winner === 'P1' ? 'text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.5)]' : winner === 'P2' ? 'text-blue-500 drop-shadow-[0_0_30px_rgba(59,130,246,0.5)]' : 'text-zinc-500'}`}>
-                 {winner === 'DRAW' ? 'EMPATE TOTAL' : `${winner === 'P1' ? 'JUGADOR 1' : mode === 'AI' ? 'AUTÓMATA' : 'JUGADOR 2'} VENCE`}
-              </h2>
-              <div className="flex gap-20 text-4xl font-black text-white/50 mb-16">
-                 <span className="text-red-400 text-center flex flex-col gap-2"><span className="text-sm tracking-widest">SUPERVIVIENTES P1</span>{board.flat().reduce((acc, s) => acc + (s?.owner === 'P1' ? s.card.currentHealth : 0), 0)} HP</span>
-                 <span className="text-blue-400 text-center flex flex-col gap-2"><span className="text-sm tracking-widest">SUPERVIVIENTES P2</span>{board.flat().reduce((acc, s) => acc + (s?.owner === 'P2' ? s.card.currentHealth : 0), 0)} HP</span>
+           <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center backdrop-blur-sm">
+              <div className="bg-zinc-900/80 p-16 rounded-2xl border border-white/5 shadow-2xl flex flex-col items-center">
+                 <h2 className={`text-6xl font-bold uppercase mb-2 tracking-wide font-serif ${winner === 'P1' ? 'text-red-500' : winner === 'P2' ? 'text-blue-500' : 'text-zinc-400'}`}>
+                    {winner === 'DRAW' ? 'Tablas' : `${winner === 'P1' ? 'Jugador 1' : mode === 'AI' ? 'Autómata' : 'Jugador 2'} Triunfa`}
+                 </h2>
+                 <div className="h-px w-32 bg-zinc-700 mb-10"></div>
+                 <div className="flex gap-20 text-3xl font-bold text-zinc-300 mb-12">
+                    <span className="text-red-400/80 text-center flex flex-col gap-2 items-center">
+                       <span className="text-xs uppercase tracking-widest text-zinc-500 font-sans">Supervivientes J1</span>
+                       {board.flat().reduce((acc, s) => acc + (s?.owner === 'P1' ? s.card.currentHealth : 0), 0)} HP
+                    </span>
+                    <span className="text-blue-400/80 text-center flex flex-col gap-2 items-center">
+                       <span className="text-xs uppercase tracking-widest text-zinc-500 font-sans">Supervivientes J2</span>
+                       {board.flat().reduce((acc, s) => acc + (s?.owner === 'P2' ? s.card.currentHealth : 0), 0)} HP
+                    </span>
+                 </div>
+                 <button onClick={() => setPhase('MENU')} className="px-10 py-4 border border-zinc-600 bg-zinc-800 text-zinc-200 font-semibold uppercase tracking-widest rounded hover:bg-zinc-700 transition-colors text-xs">Volver al Menú Principal</button>
               </div>
-              <button onClick={() => setPhase('MENU')} className="px-12 py-5 bg-white text-black font-black uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-[0_0_30px_rgba(255,255,255,0.3)] text-sm">NUEVO DESPLIEGUE</button>
            </div>
         )}
       </div>

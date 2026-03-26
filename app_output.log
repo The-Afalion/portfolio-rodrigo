@@ -1,0 +1,13 @@
+
+> portfolio-rodrigo@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1918ms
+ ○ Compiling /engineering/aetheria ...
+ ✓ Compiled /engineering/aetheria in 9.5s (1502 modules)
+ GET /engineering/aetheria 200 in 10445ms
+ ✓ Compiled in 1051ms (734 modules)
