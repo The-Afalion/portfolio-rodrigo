@@ -21,8 +21,8 @@ const OPENING_BOOK: any = { "e4": { "e5": { "Nf3": { "Nc6": {} } } }, "d4": { "d
 
 function evaluateBoard(game: Chess) {
   let score = 0;
-  game.board().forEach((row: any) => {
-    row.forEach((piece: any) => {
+  game.board().forEach((row) => {
+    row.forEach((piece) => {
       if (piece) score += PIECE_VALUES[piece.type] * (piece.color === 'w' ? 1 : -1);
     });
   });
@@ -76,14 +76,14 @@ function getBestMove(game: Chess, personality: any, opponentPersonality: any, mo
     else if (opponentType === 'DEFENSIVE' || opponentType === 'FORTRESS') currentPersonalityType = 'AGGRESSIVE';
   }
 
-  for (const move of game.moves()) {
+  for (const move of game.moves({ verbose: true })) {
     game.move(move);
     const boardValue = minimax(game, SEARCH_DEPTH - 1, -Infinity, Infinity, !isMaximizing);
     game.undo();
 
     let finalValue = boardValue;
     const aggression = personality.aggression || 1.0;
-    if ((move as any).flags && (move as any).flags.includes('c')) finalValue *= aggression;
+    if (move.flags && move.flags.includes('c')) finalValue *= aggression;
 
     if (isMaximizing) {
       if (finalValue > bestValue) {
@@ -97,7 +97,7 @@ function getBestMove(game: Chess, personality: any, opponentPersonality: any, mo
       }
     }
   }
-  return bestMove || game.moves()[0];
+  return bestMove || game.moves({ verbose: true })[0];
 }
 
 function simulateGame(p1: any, p2: any, startTime: Date) {
@@ -116,7 +116,7 @@ function simulateGame(p1: any, p2: any, startTime: Date) {
 
     const timeIncrement = (5 + Math.random() * 10) * 1000;
     currentTime += timeIncrement;
-    moves.push({ move: (move as any).san || (move as any), timestamp: new Date(currentTime).toISOString() });
+    moves.push({ move: move.san, timestamp: new Date(currentTime).toISOString() });
   }
   const winnerTurn = game.turn() === 'b' ? 'w' : 'b';
   return { winner: winnerTurn === 'w' ? 'p1' : 'p2', moves };
