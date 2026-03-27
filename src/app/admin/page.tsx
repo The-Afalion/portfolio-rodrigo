@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma';
-import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { BookOpen, Users, Swords, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
@@ -14,11 +14,8 @@ async function getStats() {
 
 export default async function AdminDashboardPage() {
   const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createClient(cookieStore);
+
   const { data: { user } } = await supabase.auth.getUser();
   const stats = await getStats();
 

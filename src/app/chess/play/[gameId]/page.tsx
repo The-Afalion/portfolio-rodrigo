@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { useChess } from '@/context/ContextoChess';
 import { BOTS } from '@/datos/bots';
 import { motion, AnimatePresence } from 'framer-motion';

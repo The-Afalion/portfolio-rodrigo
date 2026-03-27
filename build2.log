@@ -1,0 +1,44 @@
+
+> portfolio-rodrigo@0.1.0 build
+> prisma generate && next build
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 444ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 5.22.0 -> 7.5.0                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+  ▲ Next.js 14.2.5
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (215kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+Failed to compile.
+
+./src/app/chess/play/[gameId]/page.tsx
+Module not found: Can't resolve '@supabase/auth-helpers-nextjs'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./src/lib/supabase-client.ts
+Module not found: Can't resolve '@supabase/auth-helpers-nextjs'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/context/ContextoChess.tsx
+./src/app/chess/page.tsx
+
+
+> Build failed because of webpack errors
