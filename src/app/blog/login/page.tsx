@@ -23,12 +23,12 @@ export default function BlogLoginPage() {
       password,
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       setError("Credenciales incorrectas o usuario no autorizado.");
     } else {
-      router.push('/blog/editor');
+      router.refresh();
+      router.push("/admin");
     }
   };
 
