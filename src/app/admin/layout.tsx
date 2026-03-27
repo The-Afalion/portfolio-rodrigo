@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen, Users, Swords, Home, AlertTriangle, Inbox } from 'lucide-react';
+import prisma from '@/lib/prisma';
 
 export default async function AdminLayout({
   children,
@@ -27,14 +28,28 @@ export default async function AdminLayout({
   } = await supabase.auth.getSession();
 
   if (!session) {
-    redirect('/login');
+    redirect('/blog/login');
   }
 
-  const isSuperAdmin = session.user.email?.endsWith('@rodocodes.dev');
-  // Or check old env variable for fallback compatibility
-  const isEnvAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const email = session.user.email || '';
+  const isSuperAdmin = email.endsWith('@rodocodes.dev');
 
-  if (!isSuperAdmin && !isEnvAdmin) {
+  // Si no es superadmin, verificar si es editor en la BD
+  let isEditor = false;
+  if (!isSuperAdmin) {
+    try {
+      const profile = await prisma.profile.findUnique({
+        where: { id: session.user.id }
+      });
+      if (profile && profile.role === 'ADMIN') {
+        isEditor = true;
+      }
+    } catch (e) {
+      console.error("Error fetching user profile:", e);
+    }
+  }
+
+  if (!isSuperAdmin && !isEditor) {
     return (
       <div className="flex min-h-screen bg-background font-mono items-center justify-center text-center">
         <div>
@@ -64,18 +79,22 @@ export default async function AdminLayout({
             <BookOpen size={20} />
             <span>Posts</span>
           </Link>
-          <Link href="/admin/messages" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
-            <Inbox size={20} />
-            <span>Mensajes</span>
-          </Link>
-          <Link href="/admin/subscribers" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
-            <Users size={20} />
-            <span>Suscriptores</span>
-          </Link>
-          <Link href="/admin/chess" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
-            <Swords size={20} />
-            <span>Partidas Ajedrez</span>
-          </Link>
+          {isSuperAdmin && (
+            <>
+              <Link href="/admin/messages" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
+                <Inbox size={20} />
+                <span>Mensajes</span>
+              </Link>
+              <Link href="/admin/subscribers" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
+                <Users size={20} />
+                <span>Suscriptores</span>
+              </Link>
+              <Link href="/admin/chess" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
+                <Swords size={20} />
+                <span>Partidas Ajedrez</span>
+              </Link>
+            </>
+          )}
         </nav>
         <div className="mt-auto">
           <Link href="/" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors text-sm text-muted-foreground">

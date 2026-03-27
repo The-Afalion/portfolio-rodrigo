@@ -22,6 +22,8 @@ export default async function AdminDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const stats = await getStats();
 
+  const isSuperAdmin = user?.email?.endsWith('@rodocodes.dev');
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-4">Bienvenido, {user?.email?.split('@')[0]}</h1>
@@ -37,24 +39,30 @@ export default async function AdminDashboardPage() {
           <p className="text-4xl font-bold">{stats.postCount}</p>
           <p className="text-sm text-muted-foreground">{stats.publishedPostCount} publicados</p>
         </div>
-        {/* Card de Suscriptores */}
-        <div className="bg-secondary p-6 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold text-lg">Suscriptores</h3>
-            <Users className="text-muted-foreground" />
-          </div>
-          <p className="text-4xl font-bold">{stats.subscriberCount}</p>
-          <Link href="/admin/subscribers" className="text-sm text-blue-500 hover:underline">Ver lista</Link>
-        </div>
-        {/* Card de Partidas */}
-        <div className="bg-secondary p-6 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold text-lg">Partidas Jugadas</h3>
-            <Swords className="text-muted-foreground" />
-          </div>
-          <p className="text-4xl font-bold">{stats.chessGameCount}</p>
-          <Link href="/admin/chess" className="text-sm text-blue-500 hover:underline">Ver historial</Link>
-        </div>
+
+        {isSuperAdmin && (
+          <>
+            {/* Card de Suscriptores */}
+            <div className="bg-secondary p-6 rounded-lg border border-border">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-lg">Suscriptores</h3>
+                <Users className="text-muted-foreground" />
+              </div>
+              <p className="text-4xl font-bold">{stats.subscriberCount}</p>
+              <Link href="/admin/subscribers" className="text-sm text-blue-500 hover:underline">Ver lista</Link>
+            </div>
+            {/* Card de Partidas */}
+            <div className="bg-secondary p-6 rounded-lg border border-border">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-lg">Partidas Jugadas</h3>
+                <Swords className="text-muted-foreground" />
+              </div>
+              <p className="text-4xl font-bold">{stats.chessGameCount}</p>
+              <Link href="/admin/chess" className="text-sm text-blue-500 hover:underline">Ver historial</Link>
+            </div>
+          </>
+        )}
+
         {/* Card de Analíticas (Placeholder) */}
         <div className="bg-secondary p-6 rounded-lg border border-border">
           <div className="flex items-center justify-between mb-2">

@@ -1,0 +1,113 @@
+
+> portfolio-rodrigo@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1877ms
+ ○ Compiling /blog/login ...
+ ✓ Compiled /blog/login in 9.5s (1661 modules)
+ ⨯ Error: either NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env variables or supabaseUrl and supabaseKey are required!
+    at eval (./src/lib/supabase-client.ts:8:108)
+    at (ssr)/./src/lib/supabase-client.ts (/app/.next/server/app/blog/login/page.js:402:1)
+    at __webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at eval (./src/context/ContextoChess.tsx:11:78)
+    at (ssr)/./src/context/ContextoChess.tsx (/app/.next/server/app/blog/login/page.js:369:1)
+    at __webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at eval (./src/components/Proveedores.tsx:11:80)
+    at (ssr)/./src/components/Proveedores.tsx (/app/.next/server/app/blog/login/page.js:336:1)
+    at Object.__webpack_require__ [as require] (/app/.next/server/webpack-runtime.js:33:42)
+digest: "1556964818"
+ GET /blog/login 500 in 10567ms
+ ✓ Compiled in 1041ms (807 modules)
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 1205ms (1704 modules)
+ ⨯ PrismaClientConstructorValidationError: Invalid value undefined for datasource "db" provided to PrismaClient constructor.
+It should have this form: { url: "CONNECTION_STRING" }
+Read more at https://pris.ly/d/client-constructor
+    at prismaClientSingleton (./src/lib/prisma.ts:9:12)
+    at eval (./src/lib/prisma.ts:17:43)
+    at (rsc)/./src/lib/prisma.ts (/app/.next/server/app/admin/page.js:593:1)
+    at __webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at eval (./src/app/admin/layout.tsx:17:69)
+    at (rsc)/./src/app/admin/layout.tsx (/app/.next/server/app/admin/page.js:446:1)
+    at Function.__webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at async Promise.all (index 0)
+digest: "3446445869"
+ ⨯ PrismaClientConstructorValidationError: Invalid value undefined for datasource "db" provided to PrismaClient constructor.
+It should have this form: { url: "CONNECTION_STRING" }
+Read more at https://pris.ly/d/client-constructor
+    at prismaClientSingleton (./src/lib/prisma.ts:9:12)
+    at eval (./src/lib/prisma.ts:17:43)
+    at (rsc)/./src/lib/prisma.ts (/app/.next/server/app/admin/page.js:593:1)
+    at __webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at eval (./src/app/admin/layout.tsx:17:69)
+    at (rsc)/./src/app/admin/layout.tsx (/app/.next/server/app/admin/page.js:446:1)
+    at Function.__webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at async Promise.all (index 0)
+digest: "3446445869"
+PrismaClientConstructorValidationError: Invalid value undefined for datasource "db" provided to PrismaClient constructor.
+It should have this form: { url: "CONNECTION_STRING" }
+Read more at https://pris.ly/d/client-constructor
+    at Object.datasources (/app/node_modules/@prisma/client/runtime/library.js:124:86)
+    at Gl (/app/node_modules/@prisma/client/runtime/library.js:126:2527)
+    at new t (/app/node_modules/@prisma/client/runtime/library.js:130:748)
+    at prismaClientSingleton (webpack-internal:///(rsc)/./src/lib/prisma.ts:9:12)
+    at eval (webpack-internal:///(rsc)/./src/lib/prisma.ts:17:43)
+    at (rsc)/./src/lib/prisma.ts (/app/.next/server/app/admin/page.js:593:1)
+    at __webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./src/app/admin/layout.tsx:17:69)
+    at (rsc)/./src/app/admin/layout.tsx (/app/.next/server/app/admin/page.js:446:1)
+    at Function.__webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at async e7 (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:396747)
+    at async tS (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:400444)
+    at async tw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:401005)
+    at async tw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:401136)
+    at async tO (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:36:2130)
+    at async /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:36:2722 {
+  digest: '65117939'
+}
+ ⨯ PrismaClientConstructorValidationError: Invalid value undefined for datasource "db" provided to PrismaClient constructor.
+It should have this form: { url: "CONNECTION_STRING" }
+Read more at https://pris.ly/d/client-constructor
+    at prismaClientSingleton (./src/lib/prisma.ts:9:12)
+    at eval (./src/lib/prisma.ts:17:43)
+    at (rsc)/./src/lib/prisma.ts (/app/.next/server/app/admin/page.js:593:1)
+    at __webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at eval (./src/app/admin/layout.tsx:17:69)
+    at (rsc)/./src/app/admin/layout.tsx (/app/.next/server/app/admin/page.js:446:1)
+    at Function.__webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+digest: "65117939"
+ ⨯ PrismaClientConstructorValidationError: Invalid value undefined for datasource "db" provided to PrismaClient constructor.
+It should have this form: { url: "CONNECTION_STRING" }
+Read more at https://pris.ly/d/client-constructor
+    at Object.datasources (/app/node_modules/@prisma/client/runtime/library.js:124:86)
+    at Gl (/app/node_modules/@prisma/client/runtime/library.js:126:2527)
+    at new t (/app/node_modules/@prisma/client/runtime/library.js:130:748)
+    at prismaClientSingleton (webpack-internal:///(rsc)/./src/lib/prisma.ts:9:12)
+    at eval (webpack-internal:///(rsc)/./src/lib/prisma.ts:17:43)
+    at (rsc)/./src/lib/prisma.ts (/app/.next/server/app/admin/page.js:593:1)
+    at __webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./src/app/admin/layout.tsx:17:69)
+    at (rsc)/./src/app/admin/layout.tsx (/app/.next/server/app/admin/page.js:446:1)
+    at Function.__webpack_require__ (/app/.next/server/webpack-runtime.js:33:42)
+    at async e7 (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:396747)
+    at async tS (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:400444)
+    at async tw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:401005)
+    at async tw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:401136)
+    at async tO (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:36:2130)
+    at async /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:36:2722 {
+  digest: '65117939',
+  page: '/admin'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1510ms (1927 modules)
+ GET /admin 500 in 3184ms
+[?25h
