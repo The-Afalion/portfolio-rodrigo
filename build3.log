@@ -1,0 +1,24 @@
+
+> portfolio-rodrigo@0.1.0 build
+> prisma generate && next build
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 347ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Help us improve the Prisma ORM for everyone. Share your feedback in a short 2-min survey: https://pris.ly/orm/survey/release-5-22
+
+  ▲ Next.js 14.2.5
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/app/chess/play/[gameId]/page.tsx
+Module not found: Can't resolve '@supabase/auth-helpers-nextjs'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors
