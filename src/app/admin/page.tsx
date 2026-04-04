@@ -8,10 +8,16 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 async function getStats() {
-  const postCount = await prisma.post.count();
-  const publishedPostCount = await prisma.post.count({ where: { published: true } });
-  const subscriberCount = await prisma.subscriber.count();
-  const chessGameCount = await prisma.chessGame.count();
+  let postCount = 0;
+  let publishedPostCount = 0;
+  let subscriberCount = 0;
+  let chessGameCount = 0;
+
+  try { postCount = await prisma.post.count(); } catch (e) { console.error("Error fetching post count", e); }
+  try { publishedPostCount = await prisma.post.count({ where: { published: true } }); } catch (e) { }
+  try { subscriberCount = await prisma.subscriber.count(); } catch (e) { console.error("Error fetching subscriber count. DB sync missing?", e); }
+  try { chessGameCount = await prisma.chessGame.count(); } catch (e) { console.error("Error fetching chess game count.", e); }
+
   return { postCount, publishedPostCount, subscriberCount, chessGameCount };
 }
 
