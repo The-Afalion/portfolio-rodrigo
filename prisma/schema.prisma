@@ -1,0 +1,183 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --- MODELOS GENERALES ---
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String
+  published   Boolean  @default(false)
+  views       Int      @default(0)
+  likes       Int      @default(0)
+  authorId    String?
+  author      Profile? @relation(fields: [authorId], references: [id])
+  coverImage  String?
+  typography  String   @default("font-serif")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tags        Tag[]
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts Post[]
+}
+
+// --- MODELOS DE AJEDREZ ---
+
+// Perfil de usuario, extiende la tabla `auth.users` de Supabase
+model Profile {
+  id                  String           @id // Coincide con el ID de `auth.users`
+  elo                 Int              @default(1000)
+  role                String           @default("USER") // "USER" | "ADMIN"
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  gamesAsWhite        ChessGame[]      @relation("GamesAsWhite")
+  gamesAsBlack        ChessGame[]      @relation("GamesAsBlack")
+  sentMessages        Message[]        @relation("SentMessages")
+  sentInvitations     GameInvitation[] @relation("SentInvitations")
+  receivedInvitations GameInvitation[] @relation("ReceivedInvitations")
+  posts               Post[]
+}
+
+model ChessBot {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  personality String?
+  elo         Int         @default(1200)
+  profileIcon String?
+  gamesAsBot  ChessGame[] @relation("BotGames")
+  createdAt   DateTime    @default(now())
+}
+
+model ChessGame {
+  id            String    @id @default(cuid())
+  whitePlayerId String?
+  whitePlayer   Profile?  @relation("GamesAsWhite", fields: [whitePlayerId], references: [id])
+  blackPlayerId String?
+  blackPlayer   Profile?  @relation("GamesAsBlack", fields: [blackPlayerId], references: [id])
+  botId         String?
+  bot           ChessBot?   @relation("BotGames", fields: [botId], references: [id])
+  moves         String // PGN format
+  fen           String?   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  result        String?   // e.g., "1-0", "0-1", "1/2-1/2"
+  status        String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, ABANDONED
+
+  // Link to the invitation that started this game
+  invitationId  String?      @unique
+  invitation    GameInvitation? @relation(fields: [invitationId], references: [id])
+  messages      Message[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([whitePlayerId])
+  @@index([blackPlayerId])
+  @@index([botId])
+}
+
+// --- MODELOS DE CHAT Y NOTIFICACIONES ---
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum GameType {
+  CHESS
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  senderId  String
+  sender    Profile  @relation("SentMessages", fields: [senderId], references: [id])
+  gameId    String
+  game      ChessGame @relation(fields: [gameId], references: [id])
+
+  @@index([senderId])
+  @@index([gameId])
+}
+
+model GameInvitation {
+  id        String           @id @default(cuid())
+  status    InvitationStatus @default(PENDING)
+  gameType  GameType         @default(CHESS)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  inviterId String
+  inviter   Profile          @relation("SentInvitations", fields: [inviterId], references: [id])
+  inviteeId String
+  invitee   Profile          @relation("ReceivedInvitations", fields: [inviteeId], references: [id])
+
+  game      ChessGame?
+
+  @@index([inviterId])
+  @@index([inviteeId])
+}
+
+model AITournament {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  status      String
+  winner      String?
+}
+
+model SlalomCourse {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  bestTime    Float?
+}
+
+// --- COMMUNICATION AND MAILING ---
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// --- COMMUNITY CHESS ---
+
+model CommunityChessGame {
+  id            String   @id @default("main_game")
+  fen           String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  nextMoveDue   DateTime @default(now())
+  lastMoveAt    DateTime @default(now())
+  votes         CommunityVote[]
+}
+
+model CommunityVote {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      CommunityChessGame @relation(fields: [gameId], references: [id])
+  move      String
+  userId    String?
+  createdAt DateTime @default(now())
+}

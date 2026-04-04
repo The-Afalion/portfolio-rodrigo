@@ -1,0 +1,128 @@
+"use server";
+
+import prisma from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { getEditorAccess } from '@/lib/editor-access';
+
+const PostSchema = z.object({
+  title: z.string().min(3, { message: "El título debe tener al menos 3 caracteres." }),
+  content: z.string().min(10, { message: "El contenido debe tener al menos 10 caracteres." }),
+  tags: z.string().optional(), // Campo para tags
+});
+
+// ... (createPost se mantiene igual por ahora, nos centramos en update)
+
+export async function updatePost(prevState: any, formData: FormData) {
+  const access = await getEditorAccess();
+  if (!access.user || !access.isEditor) return { message: 'Error: No autorizado' };
+
+  const validatedFields = PostSchema.safeParse({
+    title: formData.get('title'),
+    content: formData.get('content'),
+    tags: formData.get('tags'),
+  });
+
+  if (!validatedFields.success) {
+    return { message: 'Error de validación', errors: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const { title, content, tags } = validatedFields.data;
+  const postId = formData.get('postId') as string;
+  const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+  try {
+    // Lógica para conectar o crear tags
+    const tagOperations = tags
+      ? tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tagName => ({
+        where: { name: tagName },
+        create: { name: tagName },
+      }))
+      : [];
+
+    await prisma.post.update({
+      where: { id: postId },
+      data: {
+        title,
+        slug,
+        content,
+        tags: {
+          set: [], // Desconectar tags antiguos
+          connectOrCreate: tagOperations, // Conectar o crear los nuevos
+        }
+      },
+    });
+
+    revalidatePath('/admin/posts');
+    revalidatePath(`/blog/${slug}`);
+    return { message: 'Post actualizado con éxito', errors: {} };
+  } catch (e) {
+    return { message: 'Error en la base de datos', errors: {} };
+  }
+}
+
+export async function createPost(prevState: any, formData: FormData) {
+  const access = await getEditorAccess();
+  if (!access.user || !access.isEditor) return { message: 'Error: No autorizado' };
+
+  const validatedFields = PostSchema.safeParse({
+    title: formData.get('title'),
+    content: formData.get('content'),
+    tags: formData.get('tags'),
+  });
+
+  if (!validatedFields.success) {
+    return { message: 'Error de validación', errors: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const { title, content, tags } = validatedFields.data;
+  const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+  try {
+    const tagOperations = tags
+      ? tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tagName => ({
+        where: { name: tagName },
+        create: { name: tagName },
+      }))
+      : [];
+
+    await prisma.post.create({
+      data: {
+        title,
+        slug,
+        content,
+        authorId: access.user.id,
+        tags: { connectOrCreate: tagOperations }
+      },
+    });
+
+    revalidatePath('/admin/posts');
+    return { message: 'Post creado con éxito', errors: {} };
+  } catch (e) {
+    return { message: 'Error en la base de datos', errors: {} };
+  }
+}
+
+export async function togglePublish(id: string, published: boolean) {
+  try {
+    const access = await getEditorAccess();
+    if (!access.user || !access.isEditor) return;
+
+    await prisma.post.update({ where: { id }, data: { published: !published } });
+    revalidatePath('/admin/posts');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function deletePost(id: string) {
+  try {
+    const access = await getEditorAccess();
+    if (!access.user || !access.isEditor) return;
+
+    await prisma.post.delete({ where: { id } });
+    revalidatePath('/admin/posts');
+  } catch (e) {
+    console.error(e);
+  }
+}
