@@ -29,7 +29,7 @@ export default function EngineeringPage() {
       <div className="pointer-events-none absolute bottom-6 left-6 z-50">
         <h1 className="text-4xl font-bold tracking-tighter text-white">PROCEDURAL AI HUB</h1>
         <p className="mt-1 font-mono text-xs text-white/55">
-          Click &amp; drag para orbitar. Activa la nave y toca un planeta para entrar en hiperspacio.
+          Click &amp; drag para orbitar. Activa la nave, lee las etiquetas flotantes y toca un planeta para entrar en hiperspacio.
         </p>
       </div>
 

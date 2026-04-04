@@ -1,13 +1,44 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Stars, OrbitControls, Text, Float } from '@react-three/drei';
+import { Stars, OrbitControls, Text, Float, Billboard } from '@react-three/drei';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { PROYECTOS_CORE } from '@/datos/proyectos';
 import * as THREE from 'three';
 import { useRouter } from 'next/navigation';
 import { Spaceship } from '@/components/3d/Spaceship';
+
+type ProjectVisualMeta = {
+  title: string;
+  category: string;
+  shape: 'planet' | 'ring' | 'crystal' | 'station';
+  accent: THREE.Color;
+  glow: THREE.Color;
+};
+
+function getProjectVisualMeta(project: typeof PROYECTOS_CORE[number]): ProjectVisualMeta {
+  const accent = new THREE.Color(project.color);
+  const glow = accent.clone().lerp(new THREE.Color("#ffffff"), 0.35);
+
+  if (project.id === "chess-engine") {
+    return { title: "Chess AI", category: "Ajedrez e IA", shape: "ring", accent, glow };
+  }
+  if (project.id === "slalom") {
+    return { title: "Slalom Architect", category: "Diseño CAD", shape: "station", accent, glow };
+  }
+  if (project.id === "space-sandbox" || project.id === "chrono-dasher") {
+    return { title: project.title, category: "Vuelo y simulación", shape: "ring", accent, glow };
+  }
+  if (project.id === "aetheria" || project.id === "algo-vis") {
+    return { title: project.title, category: "Lógica y estrategia", shape: "crystal", accent, glow };
+  }
+  if (project.id === "urban" || project.id === "nexus") {
+    return { title: project.title, category: "Sistemas complejos", shape: "station", accent, glow };
+  }
+
+  return { title: project.title, category: project.tech[0] ?? "Experiencia interactiva", shape: "planet", accent, glow };
+}
 
 // --- CONTROLADOR DE CÁMARA WARP ---
 function WarpCamera({ target, isActive, type }: { target: THREE.Vector3 | null, isActive: boolean, type: 'hyperspace' | 'wormhole' }) {
@@ -131,7 +162,7 @@ function GalaxyCollisionManager({ shipRef, onCollide, isActive, isWarping, aster
         Math.sin(currentAngle) * orbitRadius
       );
 
-      if (shipRef.current!.position.distanceTo(planetPos) < 1.8) {
+      if (shipRef.current!.position.distanceTo(planetPos) < 2.1) {
         onCollide(p.id, p.link, planetPos);
       }
     });
@@ -179,6 +210,8 @@ function ProjectPlanet({ project, index, total }: { project: typeof PROYECTOS_CO
   const planetRef = useRef<THREE.Mesh>(null);
   const [hovered, setHover] = useState(false);
   const router = useRouter();
+  const meta = useMemo(() => getProjectVisualMeta(project), [project]);
+  const labelWidth = Math.max(3.4, meta.title.length * 0.16);
 
   const orbitRadius = 4 + index * 1.5;
   const orbitSpeed = 0.5 + (total - index) * 0.1;
@@ -204,28 +237,87 @@ function ProjectPlanet({ project, index, total }: { project: typeof PROYECTOS_CO
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[orbitRadius - 0.02, orbitRadius + 0.02, 64]} />
-        <meshBasicMaterial color={project.color} transparent opacity={hovered ? 0.3 : 0.1} />
+        <meshBasicMaterial color={meta.glow} transparent opacity={hovered ? 0.34 : 0.12} />
       </mesh>
 
       <group ref={groupRef}>
         <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
           <mesh 
             ref={planetRef} 
-            scale={hovered ? 1.4 : 1}
+            scale={hovered ? 1.18 : 1}
             onClick={handleClick}
             onPointerOver={() => { setHover(true); document.body.style.cursor = 'pointer'; }}
             onPointerOut={() => { setHover(false); document.body.style.cursor = 'auto'; }}
           >
-            {index % 2 === 0 ? <torusGeometry args={[0.8, 0.4, 16, 32]} /> : <icosahedronGeometry args={[1, 1]} />}
-            {/* ToneMapped = false para que el Bloom haga efecto estelar */}
-            <meshStandardMaterial color={project.color} wireframe toneMapped={false} emissive={project.color} emissiveIntensity={hovered ? 4 : 1.5} />
+            {meta.shape === 'ring' ? (
+              <torusGeometry args={[0.9, 0.28, 18, 48]} />
+            ) : meta.shape === 'crystal' ? (
+              <icosahedronGeometry args={[0.94, 1]} />
+            ) : meta.shape === 'station' ? (
+              <octahedronGeometry args={[1.02, 0]} />
+            ) : (
+              <sphereGeometry args={[0.92, 32, 32]} />
+            )}
+            <meshStandardMaterial
+              color={meta.accent}
+              toneMapped={false}
+              emissive={meta.glow}
+              emissiveIntensity={hovered ? 2.8 : 1.15}
+              roughness={0.3}
+              metalness={0.15}
+            />
           </mesh>
-          <mesh scale={index % 2 === 0 ? 0.6 : 0.8}>
-            <sphereGeometry args={[1, 16, 16]} />
-            <meshBasicMaterial color={project.color} transparent opacity={0.3} />
+
+          <mesh scale={meta.shape === 'ring' ? 1.18 : 1.08}>
+            <sphereGeometry args={[1, 24, 24]} />
+            <meshBasicMaterial color={meta.glow} transparent opacity={hovered ? 0.2 : 0.1} />
           </mesh>
+
+          {(meta.shape === 'planet' || meta.shape === 'station') && (
+            <mesh rotation={[Math.PI / 3, Math.PI / 4, 0]}>
+              <torusGeometry args={[1.28, 0.045, 8, 48]} />
+              <meshBasicMaterial color={meta.glow} transparent opacity={0.42} />
+            </mesh>
+          )}
         </Float>
-        <Text position={[0, 1.8, 0]} fontSize={0.35} color="white">{project.title}</Text>
+
+        <Billboard position={[0, 2.45, 0]} follow>
+          <group>
+            <mesh position={[0, 0, -0.02]}>
+              <planeGeometry args={[labelWidth, 0.96]} />
+              <meshBasicMaterial color="#020617" transparent opacity={hovered ? 0.78 : 0.58} />
+            </mesh>
+            <mesh position={[0, -0.4, -0.015]}>
+              <planeGeometry args={[labelWidth, 0.14]} />
+              <meshBasicMaterial color={meta.accent} transparent opacity={0.85} />
+            </mesh>
+            <Text
+              position={[0, 0.1, 0]}
+              fontSize={hovered ? 0.34 : 0.3}
+              maxWidth={labelWidth - 0.4}
+              lineHeight={1}
+              anchorX="center"
+              anchorY="middle"
+              color="white"
+              outlineWidth={0.03}
+              outlineColor="#020617"
+            >
+              {meta.title}
+            </Text>
+            <Text
+              position={[0, -0.28, 0]}
+              fontSize={0.14}
+              maxWidth={labelWidth - 0.5}
+              anchorX="center"
+              anchorY="middle"
+              color="#dbe7f5"
+              outlineWidth={0.018}
+              outlineColor="#020617"
+            >
+              {meta.category}
+            </Text>
+          </group>
+        </Billboard>
       </group>
     </>
   );
@@ -280,7 +372,7 @@ export default function GalaxyScene() {
           onClick={() => {
             if (!isWarping) setIsShipMode(!isShipMode);
           }} 
-          className="px-6 py-2 bg-black/40 backdrop-blur-md border border-white/20 text-white font-mono text-sm uppercase tracking-wider rounded-md hover:bg-white hover:text-black hover:border-white transition-all duration-300"
+          className="rounded-md border border-white/20 bg-slate-950/55 px-6 py-2 font-mono text-sm uppercase tracking-wider text-white backdrop-blur-md transition-all duration-300 hover:border-white/60 hover:bg-white hover:text-black"
         >
           {isShipMode ? 'Desactivar Nave' : 'Pilotar Nave'}
         </button>
@@ -288,7 +380,9 @@ export default function GalaxyScene() {
 
       <Canvas camera={{ fov: 60, position: [0, 15, 35] }}>
         <color attach="background" args={['#010103']} />
-        <ambientLight intensity={0.2} />
+        <ambientLight intensity={0.45} />
+        <directionalLight position={[14, 18, 8]} intensity={0.65} color="#dbeafe" />
+        <pointLight position={[-18, 12, -14]} intensity={0.4} color="#fde68a" />
         
         {/* Entorno base */}
         <Stars radius={150} depth={50} count={10000} factor={6} saturation={1} fade speed={isWarping ? 5 : 1} />
@@ -333,12 +427,12 @@ export default function GalaxyScene() {
 
       {/* HUD de Nave */}
       {isShipMode && !isWarping && (
-        <div className="absolute bottom-20 right-6 z-40 text-white/40 font-mono text-[10px] text-right pointer-events-none animate-fade-in shadow-black drop-shadow-md">
-          <p className="font-bold text-white/80 mb-1">INTERFAZ DE VUELO ACTIVA</p>
+        <div className="absolute bottom-20 right-6 z-40 rounded-xl border border-white/12 bg-slate-950/45 px-4 py-3 text-right font-mono text-[10px] text-white/55 pointer-events-none shadow-black/40 backdrop-blur-md drop-shadow-md">
+          <p className="mb-1 font-bold text-white/85">INTERFAZ DE VUELO ACTIVA</p>
           <p>[W] ACELERAR   |   [S] FRENAR</p>
           <p>[A] Babor     |   [D] Estribor</p>
-          <p className="mt-1 text-red-500 font-bold">ESTADO DE VUELO EXPERIMENTAL (6-DOF)</p>
-          <p className="mt-2 text-white/50">INTERSECTAR CON LA ÓRBITA DEL PROYECTO PARA ENTRAR</p>
+          <p className="mt-1 font-bold text-sky-300">ESTADO DE VUELO EXPERIMENTAL (6-DOF)</p>
+          <p className="mt-2 text-white/65">TOCA UN PLANETA O SU ÓRBITA PARA ENTRAR</p>
         </div>
       )}
 

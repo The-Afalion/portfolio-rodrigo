@@ -56,7 +56,7 @@ export default function Presentacion() {
         <motion.div variants={itemVariants} className="mb-12">
           <span className="inline-flex items-center gap-2 px-3 py-1 font-mono text-[10px] sm:text-xs tracking-[0.2em] uppercase border-b border-primary/30 text-primary">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Ingeniero de Software
+            Ingeniero Informático
           </span>
         </motion.div>
 

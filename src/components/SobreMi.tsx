@@ -40,7 +40,7 @@ export default function SobreMi() {
 
           <motion.div variants={itemVariants} className="space-y-6 text-muted-foreground leading-relaxed font-sans text-lg md:text-xl font-light max-w-3xl mx-auto">
             <p>
-              Como Ingeniero de Software, mi objetivo es transformar ideas complejas en productos digitales eficientes y escalables. Me especializo en el desarrollo full-stack, con un fuerte enfoque en la arquitectura rigurosa y la optimización del rendimiento.
+              Como Ingeniero Informático, mi objetivo es transformar ideas complejas en productos digitales eficientes y escalables. Me especializo en el desarrollo full-stack, con un fuerte enfoque en la arquitectura rigurosa y la optimización del rendimiento.
             </p>
             <p>
               Mi experiencia abarca desde la creación de APIs robustas hasta el diseño de interfaces de usuario minimalistas e interactivas. Disfruto trabajando en proyectos que requieren un alto nivel de detalle técnico, donde la forma sigue estrictamente a la función.

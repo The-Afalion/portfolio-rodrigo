@@ -12,8 +12,8 @@ const fallbackUrl = 'https://rodocodes.dev';
 
 export const siteConfig = {
   name: 'Rodrigo Alonso',
-  role: 'Ingeniero de Software',
-  title: 'Rodrigo Alonso | Ingeniero de Software',
+  role: 'Ingeniero Informático',
+  title: 'Rodrigo Alonso | Ingeniero Informático',
   description:
     'Portafolio de Rodrigo Alonso. Ingeniería de software, sistemas interactivos, IA aplicada y experiencias inmersivas construidas con criterio.',
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || fallbackUrl,

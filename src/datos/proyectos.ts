@@ -16,7 +16,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'NEXUS',
     description: 'Simulador de Sistema de Archivos Distribuido. Visualización en tiempo real de sharding y distribución de datos.',
     tech: ['Next.js', 'Framer Motion', 'Algorithms'],
-    color: '#4ade80', // Verde Matrix
+    color: '#7dd3a7',
     position: [0, 0, 0] as [number, number, number],
     link: '/nexus',
     github: 'https://github.com/The-Afalion/portfolio-rodrigo',
@@ -27,7 +27,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Slalom Arch.',
     description: 'Herramienta CAD para diseño de circuitos. Editor vectorial interactivo con gestión de estado compleja.',
     tech: ['SVG', 'React', 'Supabase'],
-    color: '#3b82f6', // Azul Agua
+    color: '#76a9fa',
     position: [5, 2, -5] as [number, number, number],
     link: '/slalom',
     github: 'https://github.com/The-Afalion/portfolio-rodrigo',
@@ -38,7 +38,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Chess AI',
     description: 'Motor de ajedrez serverless con personalidades múltiples y torneos en tiempo real.',
     tech: ['QStash', 'Serverless', 'Chess.js'],
-    color: '#f59e0b', // Dorado
+    color: '#f1c27d',
     position: [-5, -2, -10] as [number, number, number],
     link: '/chess',
     github: 'https://github.com/The-Afalion/portfolio-rodrigo',
@@ -49,7 +49,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Galton Physics',
     description: 'Simulación de físicas demostrando el Teorema del Límite Central con miles de colisiones.',
     tech: ['Matter.js', 'Canvas API', 'Physics Engine'],
-    color: '#ef4444', // Rojo
+    color: '#f29c8f',
     position: [6, -4, 5] as [number, number, number],
     link: '/physics',
     featured: true,
@@ -59,7 +59,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Algo Vision',
     description: 'Visualizador interactivo de algoritmos de ordenamiento. Observa la lógica interna del código en acción.',
     tech: ['React', 'Algorithms', 'Visualization'],
-    color: '#d946ef', // Magenta
+    color: '#c7a6ff',
     position: [-6, 4, 5] as [number, number, number],
     link: '/algorithms',
     featured: true,
@@ -69,7 +69,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Sonic Canvas',
     description: 'Sintetizador visual experimental. Dibuja en el lienzo para generar frecuencias de audio en tiempo real.',
     tech: ['Web Audio API', 'Canvas', 'DSP'],
-    color: '#06b6d4', // Cyan
+    color: '#79d8e8',
     position: [0, 6, -8] as [number, number, number],
     link: '/sonic',
     featured: true,
@@ -79,7 +79,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Urban Pulse',
     description: 'Gemelo digital de una ciudad visualizando datos masivos de tráfico y energía en un entorno 3D.',
     tech: ['Three.js', 'Data Viz', 'WebGL'],
-    color: '#8b5cf6', // Violeta
+    color: '#9e97ff',
     position: [0, -6, -8] as [number, number, number],
     link: '/urban'
   },
@@ -88,7 +88,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Chrono Dasher',
     description: 'Endless runner 3D con generación procedural de niveles y efectos de post-procesado.',
     tech: ['R3F', 'Game Logic', 'WebGL'],
-    color: '#f97316', // Naranja Neón
+    color: '#f3b37a',
     position: [8, 0, -12] as [number, number, number],
     link: '/chrono-dasher'
   },
@@ -97,7 +97,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Neural Racing',
     description: 'Vehículos evolucionan sus Redes Neuronales mediante Algoritmos Genéticos en el cliente.',
     tech: ['TypeScript', 'Neuroevolution', 'Canvas'],
-    color: '#10b981', // Verde IA
+    color: '#81d4b0',
     position: [4, 4, -5] as [number, number, number],
     link: '/engineering/neural-racing'
   },
@@ -106,7 +106,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Ecosystem Engine',
     description: 'Sandbox de Vida Artificial evolutivo. Presas, depredadores y especiación algorítmica.',
     tech: ['TypeScript', 'Artificial Life', 'ProcGen'],
-    color: '#8b5cf6', // Violeta evolutivo
+    color: '#b39ddb',
     position: [-4, -4, -2] as [number, number, number],
     link: '/engineering/ecosystem'
   },
@@ -115,7 +115,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Neural Swarm',
     description: 'Sandbox interactivo. Dibuja laberintos y observa a enjambres neuronales evolucionar para resolverlos.',
     tech: ['TypeScript', 'Genetic Algorithm', 'Raycasting'],
-    color: '#fbbf24', // Amber/Yellow
+    color: '#e7cf82',
     position: [0, 3, 4] as [number, number, number],
     link: '/engineering/swarm'
   },
@@ -124,7 +124,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Lumina Flow',
     description: 'Boids interactivos y arte generativo. Relájate observando bancos de luz orgánicos.',
     tech: ['Flocking Math', 'Canvas', 'Generative'],
-    color: '#0ea5e9', // Ocean Blue
+    color: '#7db9e8',
     position: [-8, 2, 2] as [number, number, number],
     link: '/engineering/lumina'
   },
@@ -133,7 +133,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Deep Space Sandbox',
     description: 'Vuelo 6DOF, comercio, recolección de plasma y combate espacial.',
     tech: ['R3F', 'Physics', 'RPG'],
-    color: '#ec4899', // Pink
+    color: '#e5a6c6',
     position: [0, -5, 12] as [number, number, number],
     link: '/engineering/sandbox'
   },
@@ -142,7 +142,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     title: 'Aetheria Tactics',
     description: 'Elegante juego de cartas 4x4. Domina batallas posicionales contra rivales y la IA.',
     tech: ['React', 'Framer Motion', 'Minimax AI'],
-    color: '#d97706', // Wood/Gold
+    color: '#d7b083',
     position: [6, 4, 10] as [number, number, number],
     link: '/engineering/aetheria'
   }
