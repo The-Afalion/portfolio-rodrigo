@@ -329,9 +329,6 @@ function Dashboard() {
                     <Link
                       href={`/chess/play/${bot.id}`}
                       prefetch
-                      onClick={() => {
-                        router.push(`/chess/play/${bot.id}`);
-                      }}
                       className="block w-full rounded-full bg-foreground py-3 text-center text-sm font-medium text-background transition-all hover:opacity-90"
                     >
                       Jugar Partida

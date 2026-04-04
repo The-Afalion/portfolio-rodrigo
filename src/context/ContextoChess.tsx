@@ -84,57 +84,66 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const client = supabase;
+    let isCancelled = false;
 
     if (!client) {
       setEstaInicializando(false);
       return;
     }
 
-    const syncCurrentUser = async () => {
-      const {
-        data: { session },
-      } = await client.auth.getSession();
+    const syncCurrentUser = async (sessionUser?: { id: string } | null) => {
+      setEstaInicializando(true);
 
-      if (!session?.user) {
-        setUsuario(null);
-        setEstaInicializando(false);
+      const resolvedUser = sessionUser
+        ? sessionUser
+        : (
+            await client.auth.getSession()
+          ).data.session?.user ?? null;
+
+      if (!resolvedUser) {
+        if (!isCancelled) {
+          setUsuario(null);
+          setEstaInicializando(false);
+        }
         return;
       }
 
       try {
         const currentUser = await ensureProfileAndLoadUser();
-        setUsuario(currentUser);
+
+        if (!isCancelled) {
+          setUsuario(currentUser);
+          setError(null);
+        }
       } catch (syncError) {
         console.error('Error cargando perfil global:', syncError);
-        setError('No se pudo cargar tu perfil compartido.');
+
+        if (!isCancelled) {
+          setError('No se pudo cargar tu perfil compartido.');
+        }
       } finally {
-        setEstaInicializando(false);
+        if (!isCancelled) {
+          setEstaInicializando(false);
+        }
       }
     };
 
-    syncCurrentUser();
+    void syncCurrentUser();
 
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((_event, session) => {
-      setEstaInicializando(false);
-
       if (!session?.user) {
         setUsuario(null);
+        setEstaInicializando(false);
         return;
       }
 
-      ensureProfileAndLoadUser()
-        .then((currentUser) => {
-          setUsuario(currentUser);
-        })
-        .catch((syncError) => {
-          console.error('Error sincronizando perfil:', syncError);
-          setError('No se pudo sincronizar tu perfil.');
-        });
+      void syncCurrentUser(session.user);
     });
 
     return () => {
+      isCancelled = true;
       subscription.unsubscribe();
     };
   }, []);
