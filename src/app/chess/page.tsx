@@ -22,7 +22,7 @@ function LoadingScreen() {
         </div>
         <h1 className="text-3xl font-semibold tracking-tight">Preparando tu mesa de juego</h1>
         <p className="mt-4 text-sm leading-7 text-muted-foreground">
-          Estamos comprobando tu sesión global para recuperar tu perfil, tu ELO y el acceso al lobby.
+          Comprobando tu sesión, tu perfil y el acceso al lobby.
         </p>
       </motion.div>
     </div>
@@ -57,7 +57,7 @@ function AuthGate() {
         animate={{ opacity: 1, y: 0 }}
         className="surface-panel relative z-10 w-full max-w-3xl overflow-hidden p-8 md:p-10"
       >
-        <div className="absolute inset-y-0 right-0 hidden w-[38%] border-l border-border/70 bg-gradient-to-b from-cyan-200/10 via-transparent to-amber-200/10 md:block" />
+        <div className="absolute inset-y-0 right-0 hidden w-[38%] border-l border-border/70 bg-background/30 md:block" />
 
         <div className="relative grid gap-8 md:grid-cols-[1.15fr_0.85fr] md:items-center">
           <div>
@@ -69,11 +69,10 @@ function AuthGate() {
 
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Chess Club</p>
             <h1 className="text-center text-3xl font-semibold tracking-tight md:text-left md:text-4xl">
-              El acceso de ajedrez ahora es una cuenta global
+              Accede con tu cuenta global
             </h1>
             <p className="mt-4 text-center text-sm leading-7 text-muted-foreground md:text-left">
-              Usa una sola identidad para chess, blog y futuras zonas privadas. Tu perfil se sincroniza y el progreso
-              queda unido a la misma cuenta.
+              Usa la misma identidad del resto de la web para mantener perfil, progreso y acceso sincronizados.
             </p>
 
             {error ? (
@@ -118,10 +117,10 @@ function AuthGate() {
 
             <div className="space-y-4 text-sm leading-7 text-muted-foreground">
               <p>
-                Entra con tu correo y contraseña para conservar tu ELO, el acceso al lobby y la evolución futura de tu perfil.
+                Entra con tu correo y contraseña para conservar tu ELO y el acceso al lobby.
               </p>
               <p>
-                No necesitas otra cuenta distinta para el blog o nuevas áreas. Todo queda centralizado bajo una sola sesión.
+                No necesitas cuentas separadas para blog o nuevas áreas privadas.
               </p>
             </div>
 
@@ -186,7 +185,7 @@ function Dashboard() {
         <div className="mb-16 text-center">
           <h2 className="mb-6 text-4xl font-semibold md:text-5xl">Chess Club</h2>
           <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            Entra al lobby global, reta a jugadores conectados en tiempo real y después sigue afinando tu nivel contra nuestras IAs.
+            Lobby en tiempo real, modos colectivos y arena contra bots dentro del mismo hub.
           </p>
         </div>
 
@@ -195,7 +194,6 @@ function Dashboard() {
             href="/chess/community"
             className="surface-panel group relative overflow-hidden p-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary/25"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.18),_transparent_35%),linear-gradient(135deg,rgba(14,165,233,0.08),transparent_48%)] opacity-90" />
             <div className="relative z-10">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                 Modo destacado
@@ -212,7 +210,7 @@ function Dashboard() {
                 </div>
               </div>
               <p className="mt-6 max-w-2xl text-sm leading-7 text-muted-foreground">
-                Tu bando ya está asignado en tu cuenta. Entras, votas una jugada y los resultados quedan ocultos hasta que participas en la ronda actual.
+                Entras, votas una jugada y el resultado queda oculto hasta que participas en la ronda actual.
               </p>
               <div className="mt-6 flex flex-wrap gap-3 text-xs text-muted-foreground">
                 <span className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5">1 movimiento por día</span>
@@ -244,9 +242,7 @@ function Dashboard() {
             </div>
             <div className="mt-8 flex items-center gap-3 rounded-3xl border border-border/70 bg-background/70 p-4">
               <Flame size={18} className="text-primary" />
-              <p className="text-sm text-foreground">
-                El modo comunal ahora queda arriba del todo para que no se pierda dentro del hub.
-              </p>
+              <p className="text-sm text-foreground">Todo el flujo está agrupado para entrar, jugar y volver rápido a lo importante.</p>
             </div>
           </div>
         </section>
@@ -259,7 +255,7 @@ function Dashboard() {
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Modo individual</p>
           <h3 className="mt-4 text-3xl font-semibold md:text-4xl">La Arena contra bots</h3>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Cuando no haya nadie conectado, puedes seguir escalando el club derrotando a cada rival artificial.
+            Cuando no haya nadie conectado, puedes seguir jugando y subir de nivel contra cada rival artificial.
           </p>
         </div>
 
@@ -294,7 +290,7 @@ function Dashboard() {
                 )}
 
                 <div className="relative flex flex-grow flex-col items-center p-8 text-center">
-                  <div className="absolute inset-0 bg-gradient-to-b from-accent/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
+                  <div className="absolute inset-0 bg-accent/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
 
                   <div className={`relative z-10 mb-6 flex h-24 w-24 items-center justify-center rounded-full border bg-background text-5xl shadow-sm ${unlocked ? 'border-border/80' : 'border-border/60'}`}>
                     {bot.avatar}

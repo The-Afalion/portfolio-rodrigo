@@ -41,9 +41,9 @@ export default async function PaginaBlog({
   return (
     <PageShell>
       <PageHero
-        eyebrow="Publicaciones"
-        title="Notas técnicas, proyectos y decisiones de producto con un marco visual más sereno."
-        description="Un espacio editorial pensado para leer, filtrar y volver rápido a lo importante. Misma filosofía visual, pero con el ritmo de un hub profesional."
+        eyebrow="Blog"
+        title="Notas técnicas, arquitectura y producto."
+        description="Artículos, procesos y aprendizajes alrededor del software, la interacción y los sistemas que construyo."
         actions={
           <>
             <div className="min-w-[280px] max-w-md flex-1">
@@ -57,9 +57,9 @@ export default async function PaginaBlog({
         }
         aside={
           <SectionPanel className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Criterio</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Archivo</p>
             <p className="text-sm leading-6 text-muted-foreground">
-              Arquitectura, sistemas interactivos e IA aplicada explicados con calma, sin ruido visual innecesario.
+              {posts.length} {posts.length === 1 ? "publicación" : "publicaciones"} {query ? "en resultado" : "publicadas"}.
             </p>
           </SectionPanel>
         }
@@ -83,10 +83,10 @@ export default async function PaginaBlog({
                       alt={post.title}
                       fill
                       sizes="(min-width: 1280px) 30vw, (min-width: 768px) 50vw, 100vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(102,126,149,0.18),transparent_55%),radial-gradient(circle_at_top_right,rgba(199,177,158,0.18),transparent_32%)]" />
+                    <div className="absolute inset-0 bg-secondary" />
                   )}
                   {post.tags.length > 0 ? (
                     <div className="absolute left-4 top-4 rounded-full border border-border/80 bg-background/88 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground backdrop-blur-xl">
@@ -120,8 +120,8 @@ export default async function PaginaBlog({
         </section>
       ) : (
         <SectionPanel className="py-16 text-center">
-          <h2 className="text-2xl font-semibold">Aún no hay publicaciones</h2>
-          <p className="mt-3 text-muted-foreground">Pronto habrá contenido interesante por aquí.</p>
+          <h2 className="text-2xl font-semibold">No hay publicaciones todavía</h2>
+          <p className="mt-3 text-muted-foreground">Este espacio se irá llenando con notas y artículos nuevos.</p>
         </SectionPanel>
       )}
     </PageShell>

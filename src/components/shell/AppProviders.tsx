@@ -36,7 +36,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ProveedorContextoGlobal>
       <ThemeProvider
         attribute="class"
-        defaultTheme="dark"
+        defaultTheme="light"
         enableSystem={false}
         disableTransitionOnChange
         themes={["light", "dark", "forest", "sepia"]}

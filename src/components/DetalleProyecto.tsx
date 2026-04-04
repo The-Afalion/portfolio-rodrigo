@@ -7,7 +7,7 @@ function isInternalLink(href: string) {
 }
 
 export default function DetalleProyecto({ proyecto }: { proyecto: ProyectoCore }) {
-  const { title, description, tech, link, github = "#" } = proyecto;
+  const { description, tech, link, github = "#" } = proyecto;
 
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -17,19 +17,17 @@ export default function DetalleProyecto({ proyecto }: { proyecto: ProyectoCore }
             <Code2 size={24} />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Proyecto</p>
-            <h1 className="text-3xl font-semibold sm:text-4xl">{title}</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Resumen</p>
+            <p className="mt-2 text-base leading-8 text-muted-foreground">
+              {description}
+            </p>
           </div>
-        </div>
-
-        <div className="max-w-3xl text-base leading-8 text-muted-foreground">
-          <p>{description}</p>
         </div>
       </div>
 
       <aside className="space-y-6">
         <div className="surface-panel-muted p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Tecnologías</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Stack</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {tech.map((tag) => (
               <span
@@ -43,7 +41,7 @@ export default function DetalleProyecto({ proyecto }: { proyecto: ProyectoCore }
         </div>
 
         <div className="surface-panel-muted p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Enlaces</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Accesos</p>
           <div className="mt-4 flex flex-col gap-3">
             {github !== "#" ? (
               <a
@@ -65,7 +63,7 @@ export default function DetalleProyecto({ proyecto }: { proyecto: ProyectoCore }
                 <Link href={link} className="action-pill w-full justify-between">
                   <span className="inline-flex items-center gap-2">
                     <ExternalLink size={16} />
-                    Abrir experiencia
+                    Abrir proyecto
                   </span>
                   <ExternalLink size={14} />
                 </Link>

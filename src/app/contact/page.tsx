@@ -41,13 +41,13 @@ export default function ContactPage() {
     <PageShell>
       <PageHero
         eyebrow="Contacto"
-        title="Una entrada clara, sobria y útil para abrir conversación."
-        description="Si tienes una idea, una colaboración o un proyecto con ambición técnica, este espacio está pensado para que escribir sea rápido y agradable."
+        title="Cuéntame el proyecto."
+        description="Si tienes una idea, una colaboración o una pieza de producto que necesita criterio técnico y visual, este es el punto de entrada."
         aside={
           <SectionPanel className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Respuesta</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Qué ayuda</p>
             <p className="text-sm leading-7 text-muted-foreground">
-              Prefiero mensajes concretos con contexto, objetivo y plazo. Así la conversación arranca mejor desde el primer correo.
+              Contexto, objetivo, alcance y plazo. Con eso la conversación empieza mucho mejor.
             </p>
           </SectionPanel>
         }
@@ -121,12 +121,14 @@ export default function ContactPage() {
 
         <div className="space-y-4">
           <SectionInset>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Ideal para</p>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">Arquitectura frontend, producto interactivo, IA aplicada y experiencias técnicas bien resueltas.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Ámbitos</p>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">Frontend, producto interactivo, prototipos técnicos, IA aplicada y visualización.</p>
           </SectionInset>
           <SectionInset>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Estilo</p>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">Misma dirección visual del resto del sitio: menos artificio, más legibilidad y jerarquía.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Email</p>
+            <a href="mailto:rodrigo@rodocodes.dev" className="mt-3 block text-sm font-medium text-foreground hover:text-muted-foreground">
+              rodrigo@rodocodes.dev
+            </a>
           </SectionInset>
         </div>
       </div>

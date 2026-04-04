@@ -13,7 +13,7 @@ export default function SonicPage() {
       <PageHero
         eyebrow="Laboratorio"
         title="Sonic Canvas"
-        description="Sintetizador visual experimental dentro de un lenguaje de interfaz más refinado y homogéneo."
+        description="Dibuja sobre el lienzo para generar sonido y alterar el comportamiento del sintetizador en tiempo real."
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -24,13 +24,13 @@ export default function SonicPage() {
           <SectionInset>
             <div className="flex items-center gap-3">
               <AudioWaveform size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">La interfaz acompaña la experimentación audiovisual sin caer en la estética neon por defecto.</p>
+              <p className="text-sm leading-7 text-muted-foreground">Cada gesto produce una respuesta sonora inmediata.</p>
             </div>
           </SectionInset>
           <SectionInset>
             <div className="flex items-center gap-3">
               <SlidersHorizontal size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">Más producto, menos “pantalla de sistema”.</p>
+              <p className="text-sm leading-7 text-muted-foreground">Pensado para explorar ritmo, densidad y timbre desde una interfaz directa.</p>
             </div>
           </SectionInset>
         </div>

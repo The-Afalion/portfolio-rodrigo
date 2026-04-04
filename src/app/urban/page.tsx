@@ -13,7 +13,7 @@ export default function UrbanPage() {
       <PageHero
         eyebrow="Laboratorio"
         title="Urban Pulse"
-        description="Simulación urbana con métricas visibles, pero dentro de una presentación armoniosa y menos agresiva."
+        description="Lectura urbana en 3D para seguir tráfico, consumo energético y estado de red dentro de una misma escena."
       />
 
       <div className="space-y-6">

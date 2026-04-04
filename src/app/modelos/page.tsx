@@ -12,13 +12,13 @@ export default function PaginaGaleria3D() {
     <PageShell>
       <PageHero
         eyebrow="Modelos 3D"
-        title="Una galería tridimensional presentada como parte del mismo ecosistema profesional."
-        description="Menos espectáculo de interfaz y más foco en la pieza, la interacción y el contexto. Arrastra para rotar y usa la rueda para acercar."
+        title="Galería 3D"
+        description="Piezas y estudios tridimensionales para revisar forma, materiales y movimiento. Arrastra para rotar y usa la rueda para acercar."
         aside={
           <SectionPanel className="space-y-4">
             <div className="flex items-center gap-3">
               <Cuboid size={18} className="text-primary" />
-              <p className="text-sm text-muted-foreground">Superficies limpias y una escena contenida para que el modelo sea el protagonista.</p>
+              <p className="text-sm text-muted-foreground">El foco está en la pieza y en la lectura espacial, no en el marco alrededor.</p>
             </div>
           </SectionPanel>
         }
@@ -33,13 +33,13 @@ export default function PaginaGaleria3D() {
           <SectionInset>
             <div className="flex items-center gap-3">
               <MousePointerClick size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">Control directo, lectura clara y menos capas decorativas alrededor.</p>
+              <p className="text-sm leading-7 text-muted-foreground">Control directo para inspeccionar volumen, silueta y detalle.</p>
             </div>
           </SectionInset>
           <SectionInset>
             <div className="flex items-center gap-3">
               <ScanLine size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">Cada tema conserva una personalidad distinta, pero todos comparten la misma filosofía visual.</p>
+              <p className="text-sm leading-7 text-muted-foreground">Cada escena mantiene una lectura limpia y un marco estable.</p>
             </div>
           </SectionInset>
         </div>

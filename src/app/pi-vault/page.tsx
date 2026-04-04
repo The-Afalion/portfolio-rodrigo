@@ -49,7 +49,7 @@ export default function PiVaultPage() {
       <PageHero
         eyebrow="Laboratorio"
         title="Pi Vault"
-        description="Experimento criptográfico presentado como herramienta, no como pantalla temática. El protagonismo lo tienen el flujo y la lectura."
+        description="Cifra y descifra texto usando una clave que determina un desplazamiento derivado de pi."
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -112,7 +112,7 @@ export default function PiVaultPage() {
           <SectionInset>
             <div className="flex items-center gap-3">
               <ShieldCheck size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">El experimento mantiene su personalidad técnica, pero la interfaz ya pertenece al mismo sistema que el resto de la web.</p>
+              <p className="text-sm leading-7 text-muted-foreground">El experimento está pensado para probar el flujo, la legibilidad del resultado y el uso de una clave maestra.</p>
             </div>
           </SectionInset>
         </div>

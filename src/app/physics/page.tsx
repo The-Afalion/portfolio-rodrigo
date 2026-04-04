@@ -13,7 +13,7 @@ export default function PhysicsPage() {
       <PageHero
         eyebrow="Laboratorio"
         title="Galton Board"
-        description="Una simulación de probabilidad presentada como instrumento de estudio, con más aire y menos teatralidad visual."
+        description="Simulación del tablero de Galton para observar probabilidad, dispersión y distribución normal."
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -24,13 +24,13 @@ export default function PhysicsPage() {
           <SectionInset>
             <div className="flex items-center gap-3">
               <Sigma size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">La interfaz acompaña al fenómeno en lugar de competir con él.</p>
+              <p className="text-sm leading-7 text-muted-foreground">La lectura se centra en el patrón estadístico que aparece al caer las bolas.</p>
             </div>
           </SectionInset>
           <SectionInset>
             <div className="flex items-center gap-3">
               <Activity size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">Tonos reales y una estructura de producto para que la experiencia se sienta más madura.</p>
+              <p className="text-sm leading-7 text-muted-foreground">Útil para explicar visualmente el límite central y la acumulación de frecuencias.</p>
             </div>
           </SectionInset>
         </div>

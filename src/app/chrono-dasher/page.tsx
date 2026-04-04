@@ -13,7 +13,7 @@ export default function ChronoDasherPage() {
       <PageHero
         eyebrow="Laboratorio"
         title="Chrono Dasher"
-        description="La experiencia sigue siendo rápida e inmersiva, pero ahora vive dentro de una presentación más limpia y profesional."
+        description="Runner 3D con generación procedural y control lateral directo."
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -24,7 +24,7 @@ export default function ChronoDasherPage() {
           <SectionInset>
             <div className="flex items-center gap-3">
               <Gauge size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">El juego mantiene su energía sin arrastrar un HUD estridente por toda la página.</p>
+              <p className="text-sm leading-7 text-muted-foreground">La velocidad y el ritmo mandan durante toda la partida.</p>
             </div>
           </SectionInset>
           <SectionInset>

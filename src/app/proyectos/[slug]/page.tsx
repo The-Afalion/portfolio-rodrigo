@@ -36,12 +36,12 @@ export default function PaginaProyecto({ params }: PageProps) {
     <PageShell>
       <div className="mb-8">
         <Link href="/" className="action-pill">
-          <ArrowLeft size={16} /> Volver al inicio
+          <ArrowLeft size={16} /> Volver al portfolio
         </Link>
       </div>
 
       <PageHero
-        eyebrow="Detalle de proyecto"
+        eyebrow="Proyecto"
         title={proyecto.title}
         description={proyecto.description}
       />

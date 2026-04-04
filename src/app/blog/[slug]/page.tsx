@@ -132,16 +132,29 @@ export default async function PostPage({ params }: Props) {
 
         <div className="space-y-4">
           <SectionInset>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Lectura</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Publicado</p>
             <p className="mt-3 text-sm leading-7 text-muted-foreground">
-              La maquetación prioriza contraste, ritmo tipográfico y una jerarquía limpia para que el contenido respire.
+              {new Date(post.createdAt).toLocaleDateString("es-ES", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                timeZone: "UTC",
+              })}
             </p>
           </SectionInset>
           <SectionInset>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Formato</p>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">
-              Misma filosofía visual que el resto del portfolio: tonos reales, superficies suaves y detalle mínimo.
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Etiquetas</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/blog/tags/${tag.name}`}
+                  className="rounded-full border border-border/80 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground"
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
           </SectionInset>
         </div>
       </section>

@@ -12,10 +12,10 @@ const fallbackUrl = 'https://rodocodes.dev';
 
 export const siteConfig = {
   name: 'Rodrigo Alonso',
-  role: 'Ingeniero Informático',
-  title: 'Rodrigo Alonso | Ingeniero Informático',
+  role: 'Ingeniero de software',
+  title: 'Rodrigo Alonso | Ingeniero de software',
   description:
-    'Portafolio de Rodrigo Alonso. Ingeniería de software, sistemas interactivos, IA aplicada y experiencias inmersivas construidas con criterio.',
+    'Portfolio de Rodrigo Alonso. Producto digital, sistemas interactivos, IA aplicada y prototipos técnicos.',
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || fallbackUrl,
   email: 'rodrigo@rodocodes.dev',
   github: 'https://github.com/The-Afalion',
@@ -24,19 +24,20 @@ export const siteConfig = {
 } as const;
 
 export const primaryNavigation: SiteLink[] = [
-  { label: 'Inicio', href: '/' },
+  { label: 'Portfolio', href: '/' },
   { label: 'Blog', href: '/blog' },
   { label: 'Laboratorios', href: '/engineering' },
-  { label: 'Ajedrez', href: '/chess' },
-  { label: 'Modelos 3D', href: '/modelos' },
+  { label: 'Chess', href: '/chess' },
+  { label: '3D', href: '/modelos' },
   { label: 'Contacto', href: '/contact' },
 ];
 
 export const footerNavigation: SiteLink[] = [
+  { label: 'Portfolio', href: '/' },
   { label: 'Blog', href: '/blog' },
   { label: 'Laboratorios', href: '/engineering' },
-  { label: 'Ajedrez', href: '/chess' },
-  { label: 'Modelos 3D', href: '/modelos' },
+  { label: 'Chess', href: '/chess' },
+  { label: '3D', href: '/modelos' },
   { label: 'Contacto', href: '/contact' },
 ];
 
@@ -81,8 +82,35 @@ function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
-const chromeHiddenPrefixes = ['/admin', '/login', '/signup', '/forgot-password', '/reset-password', '/blog/login'] as const;
-const footerHiddenPrefixes = ['/admin', '/login', '/signup', '/forgot-password', '/reset-password', '/blog/login', '/nexus'] as const;
+const immersivePrefixes = [
+  '/nexus',
+  '/slalom',
+  '/chess/play',
+  '/engineering/aetheria',
+  '/engineering/ecosystem',
+  '/engineering/lumina',
+  '/engineering/neural-racing',
+  '/engineering/sandbox',
+  '/engineering/swarm',
+] as const;
+const chromeHiddenPrefixes = [
+  '/admin',
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/blog/login',
+  ...immersivePrefixes,
+] as const;
+const footerHiddenPrefixes = [
+  '/admin',
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/blog/login',
+  ...immersivePrefixes,
+] as const;
 const newsletterHiddenPrefixes = [
   '/admin',
   '/login',
@@ -105,7 +133,7 @@ export function shouldShowFooter(pathname: string) {
 }
 
 export function shouldShowNewsletter(pathname: string) {
-  return !matchesPrefix(pathname, newsletterHiddenPrefixes);
+  return !matchesPrefix(pathname, newsletterHiddenPrefixes) && false;
 }
 
 export function shouldShowChat(pathname: string) {
@@ -117,7 +145,7 @@ export function shouldShowChat(pathname: string) {
 }
 
 export function shouldEnableHomeEffects(pathname: string) {
-  return pathname === '/';
+  return false;
 }
 
 export function shouldUsePlainShell(pathname: string) {

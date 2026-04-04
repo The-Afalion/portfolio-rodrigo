@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Manrope, Sora } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
@@ -7,28 +7,29 @@ import { Proveedores } from "@/components/Proveedores";
 import ContenidoPrincipal from "@/components/ContenidoPrincipal";
 import { siteConfig } from "@/config/site";
 
-const fuenteSans = Inter({
+const fuenteSans = Manrope({
   subsets: ["latin"],
   variable: "--font-sans",
   display: 'swap',
 });
 
-const fuenteDisplay = Space_Grotesk({
+const fuenteDisplay = Sora({
   subsets: ["latin"],
   variable: "--font-display",
   display: 'swap',
 });
 
-const fuenteMono = JetBrains_Mono({
+const fuenteMono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+  weight: ["400", "500"],
   display: 'swap',
 });
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0f19" },
+    { media: "(prefers-color-scheme: light)", color: "#f4efe6" },
+    { media: "(prefers-color-scheme: dark)", color: "#161a20" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -101,8 +102,11 @@ export default function DisposicionRaiz({
           toastOptions={{
             className: 'font-mono',
             style: {
-              background: '#333',
-              color: '#fff',
+              background: 'hsl(var(--card))',
+              color: 'hsl(var(--foreground))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '1.1rem',
+              boxShadow: '0 18px 48px rgba(15, 23, 42, 0.14)',
             },
           }}
         />

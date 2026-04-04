@@ -12,7 +12,7 @@ export default function AlgorithmsPage() {
       <PageHero
         eyebrow="Laboratorio"
         title="Algo Vision"
-        description="Visualización de complejidad algorítmica dentro de un marco más sobrio, claro y consistente con el resto del portfolio."
+        description="Visualizador de algoritmos de ordenación para seguir comparaciones, intercambios y ritmo de ejecución."
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -23,13 +23,13 @@ export default function AlgorithmsPage() {
           <SectionInset>
             <div className="flex items-center gap-3">
               <Binary size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">La demo conserva su carácter técnico, pero ya no depende de un estilo terminal agresivo para comunicarlo.</p>
+              <p className="text-sm leading-7 text-muted-foreground">Prueba diferentes algoritmos y observa cómo cambia el patrón de trabajo.</p>
             </div>
           </SectionInset>
           <SectionInset>
             <div className="flex items-center gap-3">
               <Braces size={18} className="text-primary" />
-              <p className="text-sm leading-7 text-muted-foreground">Menos ruido cromático, más foco en el comportamiento y la lectura de estados.</p>
+              <p className="text-sm leading-7 text-muted-foreground">El objetivo es leer la lógica, no decorar la pantalla.</p>
             </div>
           </SectionInset>
         </div>

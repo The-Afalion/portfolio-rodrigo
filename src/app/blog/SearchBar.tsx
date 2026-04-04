@@ -20,14 +20,14 @@ export default function SearchBar() {
   }, 300);
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+    <div className="relative mx-auto w-full max-w-md">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
         <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
       </div>
       <input
         type="text"
-        className="block w-full pl-10 pr-3 py-2 border border-border rounded-md leading-5 bg-background placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
-        placeholder="Buscar artículos..."
+        className="block w-full rounded-full border border-border/85 bg-card py-3 pl-12 pr-4 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:border-foreground/20 focus:outline-none focus:ring-1 focus:ring-foreground/10"
+        placeholder="Buscar artículo"
         defaultValue={searchParams.get('q')?.toString()}
         onChange={(e) => handleSearch(e.target.value)}
       />

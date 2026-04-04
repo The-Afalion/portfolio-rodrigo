@@ -35,7 +35,7 @@ export function PageHero({ eyebrow, title, description, actions, aside }: PageHe
           <h1 className="page-title">{title}</h1>
           <p className="page-lead">{description}</p>
         </div>
-        {actions ? <div className="flex flex-wrap items-center gap-3">{actions}</div> : null}
+        {actions ? <div className="flex flex-wrap items-center gap-3 pt-1">{actions}</div> : null}
       </div>
       {aside ? <div className="w-full max-w-sm">{aside}</div> : null}
     </section>
