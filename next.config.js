@@ -22,6 +22,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/blog/editor',
+        destination: '/admin',
+        permanent: false,
+      },
+      {
         source: '/models',
         destination: '/modelos',
         permanent: true,
