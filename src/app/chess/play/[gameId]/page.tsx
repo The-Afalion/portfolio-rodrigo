@@ -187,9 +187,52 @@ const BotGame = ({ botId }: { botId: string }) => {
         return;
       }
 
-      const move = snapshot.move(analysis.san) as ChessMoveLike | null;
+      const move = snapshot.move({
+        from: analysis.from,
+        to: analysis.to,
+        promotion: analysis.promotion ?? "q",
+      }) as ChessMoveLike | null;
 
       if (!move) {
+        const fallbackMove = snapshot.moves({ verbose: true })[0];
+
+        if (!fallbackMove) {
+          setPensando(false);
+          return;
+        }
+
+        const emergencyMove = snapshot.move({
+          from: fallbackMove.from,
+          to: fallbackMove.to,
+          promotion: fallbackMove.promotion ?? "q",
+        }) as ChessMoveLike | null;
+
+        if (!emergencyMove) {
+          setPensando(false);
+          return;
+        }
+
+        const fallbackEval = evaluarTablero(snapshot);
+        setFen(snapshot.fen());
+        setSelectedSquare(null);
+        setLegalTargets([]);
+        setLecturaPosicional(`${bot.personalidad.etiqueta} · ${describePosition(fallbackEval)} · plan de emergencia`);
+
+        if (snapshot.isCheckmate()) {
+          setEstadoJuego("derrota");
+          setDialogo(pickRandom(bot.dialogos.victoria));
+          setPensando(false);
+          return;
+        }
+
+        if (snapshot.isDraw()) {
+          setEstadoJuego("tablas");
+          setDialogo("Tablas. Incluso el acero a veces se detiene.");
+          setPensando(false);
+          return;
+        }
+
+        setDialogo(buildBotReply(bot, emergencyMove, beforeEval, fallbackEval));
         setPensando(false);
         return;
       }

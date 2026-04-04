@@ -4,6 +4,9 @@ export type EstiloIA = "agresivo" | "defensivo" | "equilibrado" | "caotico";
 
 export interface AnalisisMovimientoIA {
   san: string;
+  from: string;
+  to: string;
+  promotion?: string;
   score: number;
   quality: number;
   bestQuality: number;
@@ -499,6 +502,9 @@ export function analizarMovimientoIA(partida: Chess, elo: number, estilo: Estilo
 
   return {
     san: selected.move.san,
+    from: selected.move.from,
+    to: selected.move.to,
+    promotion: selected.move.promotion,
     score: selected.score,
     quality: selected.quality,
     bestQuality,
