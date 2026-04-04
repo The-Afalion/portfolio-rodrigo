@@ -29,6 +29,9 @@ export interface InvitacionLobby {
   status: "PENDING" | "ACCEPTED" | "DECLINED";
   createdAt: string;
   updatedAt: string;
+  gameType: string;
+  modeKey: string;
+  modeLabel: string;
   gameId: string | null;
   inviterId: string;
   inviterName: string;
@@ -63,7 +66,10 @@ interface ContextoRealtimeProps {
   invitacionesSalientes: InvitacionLobby[];
   estadoRealtime: RealtimeStatus;
   enviarMensaje: (content: string) => Promise<void>;
-  invitarJugador: (targetUserId: string) => Promise<void>;
+  invitarJugador: (
+    targetUserId: string,
+    options?: { modeKey?: string; friendshipId?: string | null }
+  ) => Promise<void>;
   aceptarInvitacion: (invitationId: string) => Promise<void>;
   rechazarInvitacion: (invitationId: string) => Promise<void>;
   refrescarInvitaciones: () => Promise<void>;
@@ -209,19 +215,29 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
     void refrescarInvitaciones();
     void cargarMensajes();
 
-    const refreshInvitationsInterval = window.setInterval(() => {
-      void refrescarInvitaciones();
-    }, 20000);
+    const refreshInvitationsInterval =
+      estadoRealtime === "connected"
+        ? null
+        : window.setInterval(() => {
+            void refrescarInvitaciones();
+          }, 30000);
 
-    const refreshMessagesInterval = window.setInterval(() => {
-      void cargarMensajes();
-    }, 8000);
+    const refreshMessagesInterval =
+      estadoRealtime === "connected"
+        ? null
+        : window.setInterval(() => {
+            void cargarMensajes();
+          }, 20000);
 
     return () => {
-      window.clearInterval(refreshInvitationsInterval);
-      window.clearInterval(refreshMessagesInterval);
+      if (refreshInvitationsInterval) {
+        window.clearInterval(refreshInvitationsInterval);
+      }
+      if (refreshMessagesInterval) {
+        window.clearInterval(refreshMessagesInterval);
+      }
     };
-  }, [cargarMensajes, refrescarInvitaciones, usuario]);
+  }, [cargarMensajes, estadoRealtime, refrescarInvitaciones, usuario]);
 
   const emitirEventoRealtime = useCallback(
     async (event: string, payload: unknown) => {
@@ -279,7 +295,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
   );
 
   const invitarJugador = useCallback(
-    async (targetUserId: string) => {
+    async (targetUserId: string, options?: { modeKey?: string; friendshipId?: string | null }) => {
       if (!usuario || targetUserId === usuario.id) {
         return;
       }
@@ -293,7 +309,11 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({ opponentId: targetUserId }),
+          body: JSON.stringify({
+            opponentId: targetUserId,
+            modeKey: options?.modeKey,
+            friendshipId: options?.friendshipId ?? null,
+          }),
         });
 
         const payload = await response.json().catch(() => null);
@@ -309,6 +329,9 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
           status: payload.status,
           createdAt: payload.createdAt ?? new Date().toISOString(),
           updatedAt: payload.updatedAt ?? new Date().toISOString(),
+          gameType: payload.gameType ?? "CHESS",
+          modeKey: payload.modeKey ?? "chess_rapid_10m",
+          modeLabel: payload.modeLabel ?? "Ajedrez 10 min",
           gameId: payload.game?.id ?? null,
           inviterId: usuario.id,
           inviterName: usuario.username,

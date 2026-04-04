@@ -109,6 +109,10 @@ export function shouldShowNewsletter(pathname: string) {
 }
 
 export function shouldShowChat(pathname: string) {
+  if (pathname.startsWith('/chess/play/')) {
+    return false;
+  }
+
   return matchesPrefix(pathname, chatEnabledPrefixes);
 }
 

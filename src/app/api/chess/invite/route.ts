@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import { qstash } from "@/lib/qstash";
 import { ensureProfileForUserSafely } from "@/lib/profile";
+import { findFriendshipBetweenUsers } from "@/lib/chess-social";
+import { getChessModeConfig } from "@/lib/chess-modes";
 
 export async function POST(request: Request) {
   const cookieStore = cookies();
@@ -27,7 +29,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { opponentId } = await request.json();
+  const payload = await request.json().catch(() => null);
+  const opponentId = typeof payload?.opponentId === "string" ? payload.opponentId.trim() : "";
+  const requestedModeKey = typeof payload?.modeKey === "string" ? payload.modeKey.trim() : null;
+  const friendshipId = typeof payload?.friendshipId === "string" ? payload.friendshipId.trim() : null;
+  const modeConfig = getChessModeConfig(requestedModeKey);
 
   if (typeof opponentId !== "string" || opponentId.trim().length === 0) {
     return NextResponse.json({ error: "Missing opponent id" }, { status: 400 });
@@ -56,9 +62,21 @@ export async function POST(request: Request) {
       );
     }
 
+    if (friendshipId) {
+      const friendship = await findFriendshipBetweenUsers(user.id, opponentId);
+
+      if (!friendship || friendship.id !== friendshipId || friendship.status !== "ACCEPTED") {
+        return NextResponse.json(
+          { error: "Solo puedes usar ese reto si la amistad está aceptada." },
+          { status: 409 }
+        );
+      }
+    }
+
     const existingInvitation = await prisma.gameInvitation.findFirst({
       where: {
         status: "PENDING",
+        gameType: "CHESS",
         OR: [
           {
             inviterId: user.id,
@@ -93,12 +111,28 @@ export async function POST(request: Request) {
       data: {
         inviterId: user.id,
         inviteeId: opponentId,
+        gameType: "CHESS",
+        modeKey: modeConfig.key,
+        modeLabel: modeConfig.label,
+        friendshipId,
+        payload: {
+          modeDescription: modeConfig.description,
+          timeControlType: modeConfig.timeControlType,
+        },
         game: {
           create: {
             whitePlayerId: user.id,
             blackPlayerId: opponentId,
             moves: "",
             status: "PENDING",
+            modeKey: modeConfig.key,
+            modeLabel: modeConfig.label,
+            timeControlType: modeConfig.timeControlType,
+            initialTimeMs: modeConfig.initialTimeMs,
+            incrementMs: modeConfig.incrementMs,
+            whiteTimeMs: modeConfig.initialTimeMs,
+            blackTimeMs: modeConfig.initialTimeMs,
+            correspondenceTurnMs: modeConfig.correspondenceTurnMs,
           },
         },
       },

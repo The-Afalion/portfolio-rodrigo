@@ -27,6 +27,7 @@ const Minijuego1984 = dynamic(() => import("@/components/Minijuego1984"), { ssr:
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { efectoMatrixVisible, estado1984 } = useContextoGlobal();
+  const shouldAvoidTranslateMotion = pathname.startsWith("/chess");
 
   const enableHomeEffects = shouldEnableHomeEffects(pathname);
   const showHeader = shouldShowHeader(pathname);
@@ -44,9 +45,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <AnimatePresence mode="wait">
         <motion.main
           key={pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          initial={shouldAvoidTranslateMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+          animate={shouldAvoidTranslateMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          exit={shouldAvoidTranslateMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
           transition={{ duration: 0.28 }}
           className={plainShell ? undefined : "min-h-screen"}
         >

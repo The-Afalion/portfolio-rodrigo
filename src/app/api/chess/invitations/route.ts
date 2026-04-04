@@ -47,6 +47,9 @@ function serializeInvitation(
     inviteeId: invitation.inviteeId,
     inviteeName: displayNames.get(invitation.inviteeId) ?? buildFallbackName(invitation.inviteeId),
     inviteeElo: invitation.invitee.elo,
+    gameType: invitation.gameType,
+    modeKey: invitation.modeKey,
+    modeLabel: invitation.modeLabel,
   };
 }
 

@@ -49,6 +49,9 @@ model Profile {
   sentMessages        Message[]        @relation("SentMessages")
   sentInvitations     GameInvitation[] @relation("SentInvitations")
   receivedInvitations GameInvitation[] @relation("ReceivedInvitations")
+  sentFriendRequests  Friendship[]     @relation("FriendRequestsSent")
+  receivedFriendRequests Friendship[]  @relation("FriendRequestsReceived")
+  sentFriendMessages  FriendDirectMessage[] @relation("FriendMessagesSent")
   posts               Post[]
 }
 
@@ -74,6 +77,15 @@ model ChessGame {
   fen           String?   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
   result        String?   // e.g., "1-0", "0-1", "1/2-1/2"
   status        String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, ABANDONED
+  modeKey       String    @default("chess_rapid_10m")
+  modeLabel     String    @default("Ajedrez 10 min")
+  timeControlType String  @default("REALTIME")
+  initialTimeMs Int?
+  incrementMs   Int       @default(0)
+  whiteTimeMs   Int?
+  blackTimeMs   Int?
+  correspondenceTurnMs Int?
+  currentTurnStartedAt DateTime?
 
   // Link to the invitation that started this game
   invitationId  String?      @unique
@@ -98,6 +110,14 @@ enum InvitationStatus {
 
 enum GameType {
   CHESS
+  MINIGAME
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
 }
 
 model Message {
@@ -128,17 +148,55 @@ model GameInvitation {
   id        String           @id @default(cuid())
   status    InvitationStatus @default(PENDING)
   gameType  GameType         @default(CHESS)
+  modeKey   String           @default("chess_rapid_10m")
+  modeLabel String           @default("Ajedrez 10 min")
+  payload   Json?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   inviterId String
   inviter   Profile          @relation("SentInvitations", fields: [inviterId], references: [id])
   inviteeId String
   invitee   Profile          @relation("ReceivedInvitations", fields: [inviteeId], references: [id])
+  friendshipId String?
+  friendship Friendship?     @relation(fields: [friendshipId], references: [id])
 
   game      ChessGame?
 
   @@index([inviterId])
   @@index([inviteeId])
+  @@index([status, modeKey])
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  requester   Profile          @relation("FriendRequestsSent", fields: [requesterId], references: [id])
+  addresseeId String
+  addressee   Profile          @relation("FriendRequestsReceived", fields: [addresseeId], references: [id])
+  status      FriendshipStatus @default(PENDING)
+  acceptedAt  DateTime?
+  lastMessageAt DateTime?
+  messages    FriendDirectMessage[]
+  invitations GameInvitation[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([requesterId, addresseeId])
+  @@index([requesterId, status])
+  @@index([addresseeId, status])
+}
+
+model FriendDirectMessage {
+  id           String     @id @default(cuid())
+  friendshipId String
+  friendship   Friendship @relation(fields: [friendshipId], references: [id])
+  senderId     String
+  sender       Profile    @relation("FriendMessagesSent", fields: [senderId], references: [id])
+  content      String
+  createdAt    DateTime   @default(now())
+
+  @@index([friendshipId, createdAt])
+  @@index([senderId])
 }
 
 model AITournament {

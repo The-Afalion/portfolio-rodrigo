@@ -169,25 +169,42 @@ export default function ChessLobby() {
                           Aceptar reto
                         </button>
                       ) : (
-                        <button
-                          onClick={() => void invitarJugador(player.userId)}
-                          disabled={isBusy}
-                          className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {enviandoInvitacionA === player.userId ? (
-                            <>
-                              <Loader2 size={16} className="animate-spin" />
-                              Enviando...
-                            </>
-                          ) : alreadyInvited ? (
-                            "Invitación pendiente"
-                          ) : (
-                            <>
-                              <Crown size={16} />
-                              Invitar a jugar
-                            </>
-                          )}
-                        </button>
+                        <>
+                          <button
+                            onClick={() =>
+                              void invitarJugador(player.userId, {
+                                modeKey: "chess_rapid_10m",
+                              })
+                            }
+                            disabled={isBusy}
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {enviandoInvitacionA === player.userId ? (
+                              <>
+                                <Loader2 size={16} className="animate-spin" />
+                                Enviando...
+                              </>
+                            ) : alreadyInvited ? (
+                              "Invitación pendiente"
+                            ) : (
+                              <>
+                                <Crown size={16} />
+                                Reto 10 min
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() =>
+                              void invitarJugador(player.userId, {
+                                modeKey: "chess_correspondence_3d",
+                              })
+                            }
+                            disabled={isBusy}
+                            className="inline-flex items-center justify-center gap-2 rounded-full border border-border/80 bg-background/80 px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/60 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Correspondencia
+                          </button>
+                        </>
                       )}
                     </div>
                   </motion.div>
@@ -226,7 +243,7 @@ export default function ChessLobby() {
                       <div>
                         <p className="font-medium text-foreground">{invitation.inviterName}</p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          ELO {invitation.inviterElo} · {formatRelativeTime(invitation.createdAt)}
+                          ELO {invitation.inviterElo} · {invitation.modeLabel} · {formatRelativeTime(invitation.createdAt)}
                         </p>
                       </div>
                       <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
@@ -276,7 +293,7 @@ export default function ChessLobby() {
                       <div>
                         <p className="font-medium text-foreground">{invitation.inviteeName}</p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          ELO {invitation.inviteeElo} · enviado {formatRelativeTime(invitation.createdAt)}
+                          ELO {invitation.inviteeElo} · {invitation.modeLabel} · enviado {formatRelativeTime(invitation.createdAt)}
                         </p>
                       </div>
                       <span className="rounded-full border border-sky-400/30 bg-sky-400/10 px-2.5 py-1 text-xs font-medium text-sky-300">

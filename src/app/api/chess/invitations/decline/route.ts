@@ -28,15 +28,20 @@ export async function POST(request: Request) {
   const { invitationId } = await request.json();
 
   try {
-    await prisma.gameInvitation.update({
+    const result = await prisma.gameInvitation.updateMany({
       where: {
         id: invitationId,
         inviteeId: user.id,
+        status: "PENDING",
       },
       data: {
         status: "DECLINED",
       },
     });
+
+    if (result.count === 0) {
+      return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ message: "Invitation declined" });
   } catch (error) {

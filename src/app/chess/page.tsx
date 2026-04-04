@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Flame, Lock, LogOut, ShieldCheck, Trophy, Vote } from 'lucide-react';
 import Link from 'next/link';
@@ -8,6 +9,7 @@ import { useChess } from '@/context/ContextoChess';
 import { BOTS } from '@/datos/bots';
 import { buildForgotPasswordPath, buildLoginPath, buildSignupPath } from '@/lib/auth';
 import ChessLobby from './ChessLobby';
+import ChessFriendsPanel from './ChessFriendsPanel';
 
 function LoadingScreen() {
   return (
@@ -156,6 +158,14 @@ function Dashboard() {
     return usuario?.botsDefeated.includes(previousBotId);
   };
 
+  const unlockedBotIds = BOTS.filter((_, index) => isBotUnlocked(index)).map((bot) => bot.id);
+
+  useEffect(() => {
+    unlockedBotIds.slice(0, 3).forEach((botId) => {
+      router.prefetch(`/chess/play/${botId}`);
+    });
+  }, [router, unlockedBotIds]);
+
   return (
     <div className="page-shell min-h-screen font-sans">
       <header className="sticky top-24 z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -254,6 +264,8 @@ function Dashboard() {
 
         <ChessLobby />
 
+        <ChessFriendsPanel />
+
         <div className="mb-10 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Modo individual</p>
           <h3 className="mt-4 text-3xl font-semibold md:text-4xl">La Arena contra bots</h3>
@@ -313,21 +325,26 @@ function Dashboard() {
                 </div>
 
                 <div className="surface-divider relative z-10 mt-auto p-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (unlocked) {
+                  {unlocked ? (
+                    <Link
+                      href={`/chess/play/${bot.id}`}
+                      prefetch
+                      onClick={() => {
                         router.push(`/chess/play/${bot.id}`);
-                      }
-                    }}
-                    disabled={!unlocked}
-                    className={`block w-full rounded-full py-3 text-center text-sm font-medium transition-all ${unlocked
-                        ? 'bg-foreground text-background hover:opacity-90'
-                        : 'cursor-not-allowed bg-background/70 text-muted-foreground'
-                      }`}
-                  >
-                    {unlocked ? 'Jugar Partida' : 'Bloqueado'}
-                  </button>
+                      }}
+                      className="block w-full rounded-full bg-foreground py-3 text-center text-sm font-medium text-background transition-all hover:opacity-90"
+                    >
+                      Jugar Partida
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="block w-full cursor-not-allowed rounded-full bg-background/70 py-3 text-center text-sm font-medium text-muted-foreground transition-all"
+                    >
+                      Bloqueado
+                    </button>
+                  )}
                 </div>
               </motion.div>
             );

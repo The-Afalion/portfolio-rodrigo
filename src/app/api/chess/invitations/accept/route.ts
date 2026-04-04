@@ -28,16 +28,25 @@ export async function POST(request: Request) {
   const { invitationId } = await request.json();
 
   try {
-    const invitation = await prisma.gameInvitation.update({
+    const invitation = await prisma.gameInvitation.findFirst({
       where: {
         id: invitationId,
         inviteeId: user.id,
+        status: "PENDING",
+      },
+      include: { game: true },
+    });
+
+    if (!invitation) {
+      return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
+    }
+
+    await prisma.gameInvitation.update({
+      where: {
+        id: invitationId,
       },
       data: {
         status: "ACCEPTED",
-      },
-      include: {
-        game: true,
       },
     });
 
@@ -48,6 +57,7 @@ export async function POST(request: Request) {
         },
         data: {
           status: "IN_PROGRESS",
+          currentTurnStartedAt: new Date(),
         },
       });
     }
