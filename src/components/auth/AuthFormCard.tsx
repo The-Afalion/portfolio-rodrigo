@@ -14,7 +14,6 @@ import {
   buildForgotPasswordPath,
   buildLoginPath,
   buildSignupPath,
-  isGoogleAuthEnabled,
   resolveSuccessfulAuthPath,
 } from '@/lib/auth';
 
@@ -30,7 +29,7 @@ const audienceUi: Record<
   general: {
     title: 'Acceso centralizado',
     description: 'Misma cuenta para todo el ecosistema de Rodocodes.',
-    allowGoogle: isGoogleAuthEnabled(),
+    allowGoogle: true,
     allowSignup: true,
   },
   editor: {
@@ -42,7 +41,7 @@ const audienceUi: Record<
   chess: {
     title: 'Acceso al Chess Club',
     description: 'Entra con tu cuenta global para seguir jugando y conservar progreso.',
-    allowGoogle: isGoogleAuthEnabled(),
+    allowGoogle: true,
     allowSignup: true,
   },
 };
@@ -153,7 +152,7 @@ export function AuthFormCard({
         return;
       }
 
-      setError('No se pudo iniciar el acceso con Google.');
+      setError(`No se pudo iniciar el acceso con Google: ${oauthError.message}`);
     }
   }
 

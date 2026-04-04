@@ -142,10 +142,6 @@ export function buildAuthCallbackUrl(next: string) {
   return `${getBaseSiteUrl()}/auth/callback?next=${encodeURIComponent(next)}`;
 }
 
-export function isGoogleAuthEnabled() {
-  return process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH === 'true';
-}
-
 export function getAuthErrorMessage(code: string | null | undefined, audience: AuthAudience) {
   switch (code) {
     case 'auth_callback':
