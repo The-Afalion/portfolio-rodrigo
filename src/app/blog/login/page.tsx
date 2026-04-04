@@ -1,17 +1,67 @@
 "use client";
 
-import { useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
-export default function BlogLoginPage() {
+function getSafeNextPath(next: string | null) {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) {
+    return '/admin';
+  }
+
+  return next;
+}
+
+function BlogLoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [supabase] = useState(() => createClient());
   const router = useRouter();
-  const supabase = createClient();
+  const searchParams = useSearchParams();
+
+  const nextPath = useMemo(
+    () => getSafeNextPath(searchParams.get('next')),
+    [searchParams]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function checkSession() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (user) {
+        router.replace(nextPath);
+        router.refresh();
+        return;
+      }
+
+      const errorParam = searchParams.get('error');
+      if (errorParam === 'not_editor') {
+        setError('Tu cuenta existe, pero todavia no tiene permisos de editor del blog.');
+      } else if (errorParam === 'auth_callback' || errorParam === 'auth_verify') {
+        setError('No se pudo completar el acceso desde el enlace de Supabase. Intenta iniciar sesion otra vez.');
+      }
+
+      setCheckingSession(false);
+    }
+
+    checkSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [nextPath, router, searchParams, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,29 +69,29 @@ export default function BlogLoginPage() {
     setLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
 
     if (error) {
       setLoading(false);
-      setError("Credenciales incorrectas o usuario no autorizado.");
-    } else {
-      router.refresh();
-      router.push("/admin");
+      setError('No se pudo iniciar sesion. Revisa el correo, la contrasena y que la invitacion del editor este aceptada.');
+      return;
     }
+
+    router.replace(nextPath);
+    router.refresh();
   };
 
   return (
     <main className="min-h-screen bg-[#f8fafc] text-slate-800 flex items-center justify-center p-4 font-sans relative overflow-hidden">
-      {/* Elementos decorativos futuristas pacíficos */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-50/50 rounded-full blur-3xl pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
         className="w-full max-w-md relative z-10"
       >
         <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-3xl p-8 sm:p-12">
@@ -52,23 +102,23 @@ export default function BlogLoginPage() {
               </svg>
             </div>
             <h1 className="text-3xl font-serif font-bold text-slate-900 mb-2">Nexus de Editores</h1>
-            <p className="text-sm text-slate-500 font-medium">Portal administrativo del Blog</p>
+            <p className="text-sm text-slate-500 font-medium">Acceso al panel editorial del blog</p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Correo Electrónico</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Correo Electronico</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="rodrigo@rodocodes.dev"
+                placeholder="editor@rodocodes.dev"
                 required
                 className="bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all font-medium text-sm"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Contraseña de Acceso</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Contrasena</label>
               <input
                 type="password"
                 value={password}
@@ -81,10 +131,10 @@ export default function BlogLoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || checkingSession}
               className="mt-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? 'Autenticando...' : 'Iniciar Sesión'}
+              {checkingSession ? 'Comprobando acceso...' : loading ? 'Autenticando...' : 'Entrar al panel'}
             </button>
           </form>
 
@@ -98,11 +148,20 @@ export default function BlogLoginPage() {
             </motion.div>
           )}
 
-          <div className="mt-8 text-center text-xs text-slate-400 font-medium border-t border-slate-100 pt-6">
-            <p>Acceso restringido únicamente al personal autorizado.</p>
+          <div className="mt-8 text-center text-xs text-slate-400 font-medium border-t border-slate-100 pt-6 space-y-2">
+            <p>Solo pueden acceder usuarios invitados como editores en Supabase Auth.</p>
+            <p>Si recibiste un correo de invitacion, acepta el enlace primero y crea tu contrasena.</p>
           </div>
         </div>
       </motion.div>
     </main>
+  );
+}
+
+export default function BlogLoginPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#f8fafc]" />}>
+      <BlogLoginContent />
+    </Suspense>
   );
 }

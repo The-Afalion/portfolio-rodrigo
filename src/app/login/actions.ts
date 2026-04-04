@@ -1,5 +1,6 @@
 "use server";
 
+import { ensureProfileForUser } from '@/lib/profile';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 
@@ -8,8 +9,13 @@ export async function signInWithPassword(email: string, password: string) {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
       password,
     });
 
@@ -18,6 +24,10 @@ export async function signInWithPassword(email: string, password: string) {
         return { error: 'Usuario o contraseña incorrectos.' };
       }
       return { error: `Error de Supabase: ${error.message}` };
+    }
+
+    if (user) {
+      await ensureProfileForUser(user);
     }
 
     return { success: true };

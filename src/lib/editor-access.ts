@@ -88,11 +88,11 @@ export async function requireEditorAccess() {
   const access = await getEditorAccess();
 
   if (!access.user) {
-    redirect('/blog/login');
+    redirect('/blog/login?next=/admin');
   }
 
   if (!access.isEditor) {
-    redirect('/blog');
+    redirect('/blog/login?error=not_editor');
   }
 
   return access;

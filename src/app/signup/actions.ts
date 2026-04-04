@@ -1,30 +1,36 @@
 "use server";
 
-import { createServerClient } from '@supabase/ssr';
+import { ensureProfileForUser } from '@/lib/profile';
+import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 
-export async function signUp(email: string, password: string) {
+export async function signUp(email: string, password: string, confirmPassword: string) {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      return { error: 'El correo electrónico es obligatorio.' };
+    }
+
+    if (password.length < 8) {
+      return { error: 'La contraseña debe tener al menos 8 caracteres.' };
+    }
+
+    if (password !== confirmPassword) {
+      return { error: 'Las contraseñas no coinciden.' };
+    }
+
     const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get: (name: string) => cookieStore.get(name)?.value,
-          set: (name: string, value: string, options: any) => {
-            cookieStore.set({ name, value, ...options });
-          },
-          remove: (name: string, options: any) => {
-            cookieStore.set({ name, value: '', ...options });
-          },
-        },
-      }
-    );
+    const supabase = createClient(cookieStore);
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
+      options: {
+        data: {
+          display_name: normalizedEmail.split('@')[0],
+        },
+      },
     });
 
     if (error) {
@@ -32,10 +38,13 @@ export async function signUp(email: string, password: string) {
     }
 
     if (data.user) {
-      await supabase.from('Profile').insert({ id: data.user.id });
+      await ensureProfileForUser(data.user);
     }
 
-    return { success: true };
+    return {
+      success: true,
+      needsEmailConfirmation: !data.session,
+    };
 
   } catch (e) {
     if (e instanceof Error) {

@@ -1,4 +1,4 @@
-import { hasSupabaseAdminEnv, supabaseAdmin } from '@/lib/db';
+import { hasSupabaseAdminEnv, isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import FondoAjedrez from '@/components/FondoAjedrez';
@@ -25,7 +25,11 @@ async function getInitialTournamentData() {
       .limit(1)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw new Error(error.message);
+    if (error && error.code !== 'PGRST116') {
+      if (!isMissingSupabaseTableError(error)) {
+        throw new Error(error.message);
+      }
+    }
 
     const { data: leaderboard } = await supabaseAdmin
       .from('ChessBot')
@@ -35,7 +39,9 @@ async function getInitialTournamentData() {
     return { tournament, leaderboard: leaderboard || [] };
 
   } catch (error: any) {
-    console.error("Error fetching initial tournament data:", error.message);
+    if (!isMissingSupabaseTableError(error)) {
+      console.error("Error fetching initial tournament data:", error.message);
+    }
     return { tournament: null, leaderboard: [] };
   }
 }

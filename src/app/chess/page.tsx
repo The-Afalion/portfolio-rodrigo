@@ -9,18 +9,26 @@ import Link from 'next/link';
 
 // --- Componente de Login Temático ---
 function LoginScreen() {
-  const { iniciarSesion, registrarse, error, cargando } = useChess();
-  const [nombre, setNombre] = useState('');
+  const { iniciarSesion, registrarse, error, mensaje, cargando } = useChess();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [modoRegistro, setModoRegistro] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (nombre.trim() && password.trim()) {
+    setLocalError(null);
+
+    if (email.trim() && password.trim()) {
       if (modoRegistro) {
-        await registrarse(nombre, password);
+        if (password !== confirmPassword) {
+          setLocalError('Las contrasenas no coinciden.');
+          return;
+        }
+        await registrarse(email, password);
       } else {
-        await iniciarSesion(nombre, password);
+        await iniciarSesion(email, password);
       }
     }
   };
@@ -62,15 +70,27 @@ function LoginScreen() {
           </div>
         )}
 
+        {localError && (
+          <div className="mb-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-center text-sm text-red-500">
+            {localError}
+          </div>
+        )}
+
+        {mensaje && (
+          <div className="mb-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-center text-sm text-emerald-400">
+            {mensaje}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5 font-sans">
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Usuario</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Correo electronico</label>
             <input
-              type="text"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-2xl border border-border/80 bg-background/75 p-3 text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/40"
-              placeholder="Grandmaster_01"
+              placeholder="tu@email.com"
               autoFocus
               required
             />
@@ -88,6 +108,20 @@ function LoginScreen() {
             />
           </div>
 
+          {modoRegistro && (
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Repite la contrasena</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full rounded-2xl border border-border/80 bg-background/75 p-3 text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/40"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={cargando}
@@ -101,7 +135,8 @@ function LoginScreen() {
           <button
             onClick={() => {
               setModoRegistro(!modoRegistro);
-              // setError(null);
+              setConfirmPassword('');
+              setLocalError(null);
             }}
             className="text-xs text-muted-foreground underline transition-colors hover:text-foreground font-sans"
           >

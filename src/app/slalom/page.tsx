@@ -1,4 +1,4 @@
-import { hasSupabaseAdminEnv, supabaseAdmin } from '@/lib/db';
+import { hasSupabaseAdminEnv, isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Map, Activity } from 'lucide-react';
 
@@ -45,7 +45,9 @@ async function getCourses() {
     .limit(12);
 
   if (error) {
-    console.error("Error fetching courses:", error.message);
+    if (!isMissingSupabaseTableError(error)) {
+      console.error("Error fetching courses:", error.message);
+    }
     return [];
   }
   return data;

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/db';
+import { isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { Client } from '@upstash/qstash';
 
@@ -57,6 +57,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: `Nuevo torneo ${newTournament.id} configurado y en cola.` });
 
   } catch (error: any) {
+    if (isMissingSupabaseTableError(error)) {
+      return NextResponse.json({ message: 'Tournament tables are not available in Supabase yet.' });
+    }
+
     console.error("Error en el cron job de configuración de torneo:", error.message);
     return new Response(error.message, { status: 500 });
   }

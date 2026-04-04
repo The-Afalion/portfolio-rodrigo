@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseAdmin } from '@/lib/db';
+import { isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { Chess } from 'chess.js';
 
@@ -179,6 +179,10 @@ export async function startNewTournament() {
     return { success: `Nuevo torneo ${newTournament.id} iniciado.` };
 
   } catch (error: any) {
+    if (isMissingSupabaseTableError(error)) {
+      return { error: 'Las tablas del torneo todavia no estan disponibles en Supabase.' };
+    }
+
     console.error("Error al forzar el inicio del torneo:", error.message);
     return { error: error.message };
   }

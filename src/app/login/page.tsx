@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { signInWithPassword } from './actions';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,15 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get('error');
+
+    if (authError === 'auth_callback' || authError === 'auth_verify') {
+      setError('No se pudo completar el acceso con Supabase. Intentalo otra vez.');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +51,7 @@ export default function LoginPage() {
           className="text-center mb-8"
         >
           <h1 className="text-4xl font-bold font-serif text-white">CHESS CLUB</h1>
-          <p className="text-zinc-500">Accede al santuario de la estrategia.</p>
+          <p className="text-zinc-500">Accede con tu cuenta compartida para chess, blog y futuras zonas.</p>
         </motion.div>
 
         <motion.form 
@@ -52,12 +61,12 @@ export default function LoginPage() {
           className="flex flex-col gap-4"
         >
           <div className="flex flex-col">
-            <label className="text-zinc-400 text-sm mb-1">Usuario</label>
+            <label className="text-zinc-400 text-sm mb-1">Correo electrónico</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="rodocodes"
+              placeholder="tu@email.com"
               required
               className="bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:outline-none focus:border-green-500 transition-colors"
             />

@@ -1,4 +1,4 @@
-import { hasSupabaseAdminEnv, supabaseAdmin } from '@/lib/db';
+import { hasSupabaseAdminEnv, isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import FondoAjedrez from '@/components/FondoAjedrez';
@@ -32,7 +32,9 @@ async function getArchivedTournament(id: string) {
     .single();
 
   if (error) {
-    console.error(`Error fetching archived tournament ${id}:`, error.message);
+    if (!isMissingSupabaseTableError(error)) {
+      console.error(`Error fetching archived tournament ${id}:`, error.message);
+    }
     return null;
   }
   return data;

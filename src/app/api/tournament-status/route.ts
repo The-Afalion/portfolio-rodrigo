@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/db';
+import { isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +34,10 @@ export async function GET() {
     return NextResponse.json({ tournament, leaderboard });
 
   } catch (error: any) {
+    if (isMissingSupabaseTableError(error)) {
+      return NextResponse.json({ tournament: null, leaderboard: [] });
+    }
+
     console.error("Error fetching tournament status:", error.message);
     return new Response(error.message, { status: 500 });
   }

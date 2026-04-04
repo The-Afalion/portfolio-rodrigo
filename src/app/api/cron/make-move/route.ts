@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/db';
+import { isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
 
@@ -102,6 +102,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: `Movimiento ${(moveResult as any).san} realizado.` });
 
   } catch (error: any) {
+    if (isMissingSupabaseTableError(error)) {
+      return NextResponse.json({ message: 'Tournament tables are not available in Supabase yet.' });
+    }
+
     console.error("Error en la API de movimiento:", error.message);
     return new Response(error.message, { status: 500 });
   }

@@ -1,4 +1,4 @@
-import { hasSupabaseAdminEnv, supabaseAdmin } from '@/lib/db';
+import { hasSupabaseAdminEnv, isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import Link from 'next/link';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import FondoAjedrez from '@/components/FondoAjedrez';
@@ -15,7 +15,9 @@ async function getFinishedTournaments() {
     .order('createdAt', { ascending: false });
 
   if (error) {
-    console.error("Error fetching finished tournaments:", error.message);
+    if (!isMissingSupabaseTableError(error)) {
+      console.error("Error fetching finished tournaments:", error.message);
+    }
     return [];
   }
   return data;

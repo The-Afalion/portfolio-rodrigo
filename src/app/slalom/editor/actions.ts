@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseAdmin } from '@/lib/db';
+import { isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -25,6 +25,9 @@ export async function saveCourse(name: string, layout: any[]) {
       });
 
     if (error) {
+      if (isMissingSupabaseTableError(error)) {
+        return { error: "La tabla de circuitos de slalom todavia no existe en Supabase." };
+      }
       throw new Error(error.message);
     }
 

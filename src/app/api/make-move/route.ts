@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/db';
+import { isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import { Chess } from 'chess.js';
 import { NextResponse } from 'next/server';
 import { Client } from '@upstash/qstash';
@@ -104,6 +104,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: `Move ${(moveResult as any).san} made.` });
 
   } catch (error: any) {
+    if (isMissingSupabaseTableError(error)) {
+      return NextResponse.json({ message: 'Tournament tables are not available in Supabase yet.' });
+    }
+
     console.error("Error in make-move API:", error.message);
     return new Response(error.message, { status: 500 });
   }

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen, Users, Swords, Home, AlertTriangle, Inbox } from 'lucide-react';
 import { requireEditorAccess } from '@/lib/editor-access';
+import AdminSignOutButton from './AdminSignOutButton';
 
 export default async function AdminLayout({
   children,
@@ -62,6 +63,7 @@ export default async function AdminLayout({
             <Home size={18} />
             <span>Volver a la web</span>
           </Link>
+          <AdminSignOutButton />
         </div>
       </aside>
       <main className="flex-1 p-8">

@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { ensureProfileForUser } from '@/lib/profile';
 
 type CookieToSet = {
   name: string;
@@ -17,12 +18,21 @@ function getSafeNextPath(next: string | null) {
   return next;
 }
 
+function getAuthErrorRedirectPath(nextPath: string) {
+  if (nextPath.startsWith('/admin') || nextPath.startsWith('/blog')) {
+    return '/blog/login';
+  }
+
+  return '/login';
+}
+
 export async function handleAuthCallback(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const tokenHash = requestUrl.searchParams.get('token_hash');
   const type = requestUrl.searchParams.get('type') as EmailOtpType | null;
   const nextPath = getSafeNextPath(requestUrl.searchParams.get('next'));
+  const authErrorRedirectPath = getAuthErrorRedirectPath(nextPath);
 
   let response = NextResponse.redirect(new URL(nextPath, requestUrl.origin));
 
@@ -47,7 +57,7 @@ export async function handleAuthCallback(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
-      return NextResponse.redirect(new URL('/blog/login?error=auth_callback', requestUrl.origin));
+      return NextResponse.redirect(new URL(`${authErrorRedirectPath}?error=auth_callback`, requestUrl.origin));
     }
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({
@@ -56,8 +66,16 @@ export async function handleAuthCallback(request: NextRequest) {
     });
 
     if (error) {
-      return NextResponse.redirect(new URL('/blog/login?error=auth_verify', requestUrl.origin));
+      return NextResponse.redirect(new URL(`${authErrorRedirectPath}?error=auth_verify`, requestUrl.origin));
     }
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    await ensureProfileForUser(user);
   }
 
   return response;
