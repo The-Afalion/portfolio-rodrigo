@@ -95,7 +95,7 @@ const newsletterHiddenPrefixes = [
 const chatEnabledPrefixes = ['/chess', '/nexus'] as const;
 
 export function shouldShowHeader(pathname: string) {
-  return pathname === '/';
+  return !matchesPrefix(pathname, chromeHiddenPrefixes);
 }
 
 export function shouldShowFooter(pathname: string) {

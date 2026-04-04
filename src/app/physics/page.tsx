@@ -1,30 +1,40 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
+import { Activity, Sigma } from "lucide-react";
+import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
 
-const GaltonBoard = dynamic(() => import('./GaltonBoard'), {
+const GaltonBoard = dynamic(() => import("./GaltonBoard"), {
   ssr: false,
-  loading: () => <div className="min-h-screen bg-black flex items-center justify-center text-white font-mono">Cargando Motor de Físicas...</div>,
+  loading: () => <div className="interactive-frame flex min-h-[420px] items-center justify-center text-sm text-muted-foreground">Cargando motor de físicas...</div>,
 });
 
 export default function PhysicsPage() {
   return (
-    <main className="min-h-screen bg-black text-white font-mono p-6 relative overflow-hidden">
-      <div className="relative z-10 max-w-7xl mx-auto h-full flex flex-col">
-        <header className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-          <div>
-            <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm mb-2">
-              <ArrowLeft size={16} /> SYSTEM_EXIT
-            </Link>
-            <h1 className="text-3xl font-bold tracking-tighter">GALTON BOARD</h1>
-            <p className="text-white/50 text-xs">Simulación del Teorema del Límite Central</p>
-          </div>
-        </header>
+    <PageShell>
+      <PageHero
+        eyebrow="Laboratorio"
+        title="Galton Board"
+        description="Una simulación de probabilidad presentada como instrumento de estudio, con más aire y menos teatralidad visual."
+      />
 
-        <div className="flex-grow bg-white/5 rounded-xl border border-white/10 overflow-hidden relative">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="interactive-frame min-h-[640px] overflow-hidden">
           <GaltonBoard />
         </div>
+        <div className="space-y-4">
+          <SectionInset>
+            <div className="flex items-center gap-3">
+              <Sigma size={18} className="text-primary" />
+              <p className="text-sm leading-7 text-muted-foreground">La interfaz acompaña al fenómeno en lugar de competir con él.</p>
+            </div>
+          </SectionInset>
+          <SectionInset>
+            <div className="flex items-center gap-3">
+              <Activity size={18} className="text-primary" />
+              <p className="text-sm leading-7 text-muted-foreground">Tonos reales y una estructura de producto para que la experiencia se sienta más madura.</p>
+            </div>
+          </SectionInset>
+        </div>
       </div>
-    </main>
+    </PageShell>
   );
 }

@@ -1,30 +1,40 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
+import { AudioWaveform, SlidersHorizontal } from "lucide-react";
+import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
 
-const SonicCanvas = dynamic(() => import('./SonicCanvas'), {
+const SonicCanvas = dynamic(() => import("./SonicCanvas"), {
   ssr: false,
-  loading: () => <div className="min-h-screen bg-black flex items-center justify-center text-cyan-500 font-mono">INICIALIZANDO MOTOR DE AUDIO...</div>,
+  loading: () => <div className="interactive-frame flex min-h-[520px] items-center justify-center text-sm text-muted-foreground">Inicializando motor de audio...</div>,
 });
 
 export default function SonicPage() {
   return (
-    <main className="min-h-screen bg-black text-cyan-400 font-mono p-6 relative overflow-hidden flex flex-col">
-      <div className="relative z-10 max-w-7xl mx-auto w-full">
-        <header className="flex items-center justify-between mb-8 border-b border-cyan-900/50 pb-4">
-          <div>
-            <Link href="/engineering" className="inline-flex items-center gap-2 text-cyan-700 hover:text-cyan-400 transition-colors text-sm mb-2">
-              <ArrowLeft size={16} /> VOLVER AL CORE
-            </Link>
-            <h1 className="text-3xl font-bold tracking-tighter text-white">SONIC CANVAS</h1>
-            <p className="text-cyan-800 text-xs">Sintetizador Visual Experimental</p>
-          </div>
-        </header>
-      </div>
+    <PageShell>
+      <PageHero
+        eyebrow="Laboratorio"
+        title="Sonic Canvas"
+        description="Sintetizador visual experimental dentro de un lenguaje de interfaz más refinado y homogéneo."
+      />
 
-      <div className="relative z-10 flex-grow flex items-center justify-center">
-        <SonicCanvas />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="interactive-frame p-4 md:p-6">
+          <SonicCanvas />
+        </div>
+        <div className="space-y-4">
+          <SectionInset>
+            <div className="flex items-center gap-3">
+              <AudioWaveform size={18} className="text-primary" />
+              <p className="text-sm leading-7 text-muted-foreground">La interfaz acompaña la experimentación audiovisual sin caer en la estética neon por defecto.</p>
+            </div>
+          </SectionInset>
+          <SectionInset>
+            <div className="flex items-center gap-3">
+              <SlidersHorizontal size={18} className="text-primary" />
+              <p className="text-sm leading-7 text-muted-foreground">Más producto, menos “pantalla de sistema”.</p>
+            </div>
+          </SectionInset>
+        </div>
       </div>
-    </main>
+    </PageShell>
   );
 }

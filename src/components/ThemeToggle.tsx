@@ -6,10 +6,10 @@ import { Sun, Moon, Sparkles, BookOpen, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const THEMES = [
-  { id: 'light', name: 'Alabaster', icon: Sun },
-  { id: 'dark', name: 'Obsidian', icon: Moon },
-  { id: 'forest', name: 'Forest', icon: Sparkles },
-  { id: 'sepia', name: 'Sepia', icon: BookOpen },
+  { id: 'light', name: 'Studio', icon: Sun },
+  { id: 'dark', name: 'Slate', icon: Moon },
+  { id: 'forest', name: 'Moss', icon: Sparkles },
+  { id: 'sepia', name: 'Archive', icon: BookOpen },
 ];
 
 export default function ThemeToggle() {
@@ -33,7 +33,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="h-10 w-10 flex items-center justify-center rounded-full bg-secondary/50 animate-pulse" disabled>
+      <button className="flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-card/60 animate-pulse" disabled>
         <span className="sr-only">Cargando temas...</span>
       </button>
     );
@@ -45,7 +45,7 @@ export default function ThemeToggle() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-background border border-border text-muted-foreground hover:text-foreground hover:border-primary transition-all duration-300 shadow-sm"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-card/80 text-muted-foreground shadow-sm transition-all duration-300 hover:border-primary/40 hover:text-foreground"
         aria-label="Cambiar tema de diseño"
       >
         <CurrentIcon size={18} strokeWidth={1.5} />
@@ -58,7 +58,7 @@ export default function ThemeToggle() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute right-0 top-12 mt-2 w-48 bg-card border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col p-2 z-50 font-sans"
+            className="absolute right-0 top-12 mt-2 z-50 flex w-56 flex-col overflow-hidden rounded-3xl border border-border/80 bg-card/95 p-2 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-xl font-sans"
           >
             {THEMES.map((t) => {
               const Icon = t.icon;
@@ -71,9 +71,9 @@ export default function ThemeToggle() {
                     setTheme(t.id);
                     setIsOpen(false);
                   }}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isSelected
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                  className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${isSelected
+                    ? 'bg-foreground text-background'
+                    : 'text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
                     }`}
                 >
                   <Icon size={16} strokeWidth={isSelected ? 2 : 1.5} />

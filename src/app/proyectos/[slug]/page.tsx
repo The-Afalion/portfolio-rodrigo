@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import DetalleProyecto from '@/components/DetalleProyecto';
 import { PROYECTOS_CORE as DATOS_PROYECTOS } from '@/datos/proyectos';
+import { PageHero, PageShell, SectionPanel } from '@/components/shell/PagePrimitives';
 
 type PageProps = {
   params: { slug: string };
@@ -32,17 +33,23 @@ export default function PaginaProyecto({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-12 md:px-8">
-      <div className="mx-auto max-w-5xl">
-        <Link href="/" className="mb-8 inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground">
+    <PageShell>
+      <div className="mb-8">
+        <Link href="/" className="action-pill">
           <ArrowLeft size={16} /> Volver al inicio
         </Link>
-
-        <div className="overflow-hidden rounded-3xl border border-border bg-secondary/40">
-          <DetalleProyecto proyecto={proyecto} />
-        </div>
       </div>
-    </main>
+
+      <PageHero
+        eyebrow="Detalle de proyecto"
+        title={proyecto.title}
+        description={proyecto.description}
+      />
+
+      <SectionPanel>
+          <DetalleProyecto proyecto={proyecto} />
+      </SectionPanel>
+    </PageShell>
   );
 }
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github, ExternalLink, Code } from "lucide-react";
+import { Github, ExternalLink, Code2 } from "lucide-react";
 import type { ProyectoCore } from "@/datos/proyectos";
 
 function isInternalLink(href: string) {
@@ -7,60 +7,81 @@ function isInternalLink(href: string) {
 }
 
 export default function DetalleProyecto({ proyecto }: { proyecto: ProyectoCore }) {
-  const { title: titulo, description, tech: etiquetas, link: enlace, github = "#" } = proyecto;
-  const descripcionLarga = [description];
-  const Icono = Code;
+  const { title, description, tech, link, github = "#" } = proyecto;
 
   return (
-    <div className="p-8 md:p-12">
-      <div className="flex items-center gap-4 mb-8">
-        <Icono size={40} className="text-blue-500" />
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter">{titulo}</h1>
+    <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="space-y-8">
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/80 bg-background/80 text-primary">
+            <Code2 size={24} />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Proyecto</p>
+            <h1 className="text-3xl font-semibold sm:text-4xl">{title}</h1>
+          </div>
+        </div>
+
+        <div className="max-w-3xl text-base leading-8 text-muted-foreground">
+          <p>{description}</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-        <div className="md:col-span-2 space-y-4 text-lg text-muted-foreground">
-          {descripcionLarga.map((parrafo, i) => (
-            <p key={i}>{parrafo}</p>
-          ))}
+      <aside className="space-y-6">
+        <div className="surface-panel-muted p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Tecnologías</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {tech.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-border/80 bg-background/75 px-3 py-1 text-xs font-medium text-muted-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-        <aside className="space-y-8">
-          <div>
-            <h3 className="text-xl font-bold mb-3">Tecnologías</h3>
-            <div className="flex flex-wrap gap-2">
-              {etiquetas.map((tag) => (
-                <span key={tag} className="px-3 py-1 text-xs font-mono rounded-full bg-background text-muted-foreground border border-border">
-                  {tag}
+
+        <div className="surface-panel-muted p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Enlaces</p>
+          <div className="mt-4 flex flex-col gap-3">
+            {github !== "#" ? (
+              <a
+                href={github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="action-pill w-full justify-between"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Github size={16} />
+                  Código fuente
                 </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-3">Enlaces</h3>
-            <div className="flex flex-col gap-3">
-              {github !== "#" && (
-                <a href={github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                  <Github size={20} />
-                  <span>Código Fuente</span>
+                <ExternalLink size={14} />
+              </a>
+            ) : null}
+
+            {link !== "#" ? (
+              isInternalLink(link) ? (
+                <Link href={link} className="action-pill w-full justify-between">
+                  <span className="inline-flex items-center gap-2">
+                    <ExternalLink size={16} />
+                    Abrir experiencia
+                  </span>
+                  <ExternalLink size={14} />
+                </Link>
+              ) : (
+                <a href={link} target="_blank" rel="noopener noreferrer" className="action-pill w-full justify-between">
+                  <span className="inline-flex items-center gap-2">
+                    <ExternalLink size={16} />
+                    Ver demo
+                  </span>
+                  <ExternalLink size={14} />
                 </a>
-              )}
-              {enlace !== "#" && (
-                isInternalLink(enlace) ? (
-                  <Link href={enlace} className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                    <ExternalLink size={20} />
-                    <span>Abrir Experiencia</span>
-                  </Link>
-                ) : (
-                  <a href={enlace} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                    <ExternalLink size={20} />
-                    <span>Ver Demo</span>
-                  </a>
-                )
-              )}
-            </div>
+              )
+            ) : null}
           </div>
-        </aside>
-      </div>
+        </div>
+      </aside>
     </div>
   );
 }

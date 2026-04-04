@@ -1,40 +1,40 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
+import { Gauge, MoveRight } from "lucide-react";
+import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
 
-const Game = dynamic(() => import('./Game'), {
+const Game = dynamic(() => import("./Game"), {
   ssr: false,
-  loading: () => <div className="h-screen w-screen bg-black flex items-center justify-center text-orange-500 font-mono">CARGANDO SIMULACIÓN DE VUELO...</div>,
+  loading: () => <div className="interactive-frame flex min-h-[520px] items-center justify-center text-sm text-muted-foreground">Cargando simulación de vuelo...</div>,
 });
 
 export default function ChronoDasherPage() {
   return (
-    <main className="h-screen w-screen bg-black text-orange-400 font-mono relative overflow-hidden">
-      
-      {/* Escena 3D del juego */}
-      <div className="absolute inset-0 z-0">
-        <Game />
-      </div>
+    <PageShell>
+      <PageHero
+        eyebrow="Laboratorio"
+        title="Chrono Dasher"
+        description="La experiencia sigue siendo rápida e inmersiva, pero ahora vive dentro de una presentación más limpia y profesional."
+      />
 
-      {/* Interfaz superpuesta (HUD) */}
-      <div className="absolute inset-0 z-10 p-6 flex flex-col justify-between pointer-events-none">
-        <header className="flex items-center justify-between">
-          <Link href="/engineering" className="inline-flex items-center gap-2 text-orange-700 hover:text-orange-400 transition-colors text-sm pointer-events-auto">
-            <ArrowLeft size={16} /> SALIR DE LA SIMULACIÓN
-          </Link>
-          <div className="text-right">
-            <p className="text-lg font-bold text-white">PUNTUACIÓN: <span id="score">0</span></p>
-          </div>
-        </header>
-        
-        <div id="game-status" className="text-center text-4xl font-bold text-white animate-pulse">
-          PULSA ESPACIO PARA EMPEZAR
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="interactive-frame min-h-[640px]">
+          <Game />
         </div>
-
-        <footer className="text-center text-xs text-orange-800">
-          CONTROLES: Flechas Izquierda/Derecha para moverse.
-        </footer>
+        <div className="space-y-4">
+          <SectionInset>
+            <div className="flex items-center gap-3">
+              <Gauge size={18} className="text-primary" />
+              <p className="text-sm leading-7 text-muted-foreground">El juego mantiene su energía sin arrastrar un HUD estridente por toda la página.</p>
+            </div>
+          </SectionInset>
+          <SectionInset>
+            <div className="flex items-center gap-3">
+              <MoveRight size={18} className="text-primary" />
+              <p className="text-sm leading-7 text-muted-foreground">Controles: flechas izquierda y derecha para moverse.</p>
+            </div>
+          </SectionInset>
+        </div>
       </div>
-    </main>
+    </PageShell>
   );
 }
