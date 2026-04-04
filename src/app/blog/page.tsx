@@ -49,7 +49,7 @@ export default async function PaginaBlog({
             <div className="min-w-[280px] max-w-md flex-1">
               <SearchBar />
             </div>
-            <Link href="/blog/editor" prefetch={false} className="action-pill">
+            <Link href="/admin" prefetch={false} className="action-pill">
               <PenSquare size={16} />
               <span>Acceso editores</span>
             </Link>
