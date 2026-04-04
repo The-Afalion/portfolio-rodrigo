@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Flame, Lock, LogOut, ShieldCheck, Trophy, Vote } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useChess } from '@/context/ContextoChess';
 import { BOTS } from '@/datos/bots';
 import { buildForgotPasswordPath, buildLoginPath, buildSignupPath } from '@/lib/auth';
@@ -150,21 +148,12 @@ function AuthGate() {
 
 function Dashboard() {
   const { usuario, cerrarSesion } = useChess();
-  const router = useRouter();
 
   const isBotUnlocked = (index: number) => {
     if (index === 0) return true;
     const previousBotId = BOTS[index - 1].id;
     return usuario?.botsDefeated.includes(previousBotId);
   };
-
-  const unlockedBotIds = BOTS.filter((_, index) => isBotUnlocked(index)).map((bot) => bot.id);
-
-  useEffect(() => {
-    unlockedBotIds.slice(0, 3).forEach((botId) => {
-      router.prefetch(`/chess/play/${botId}`);
-    });
-  }, [router, unlockedBotIds]);
 
   return (
     <div className="page-shell min-h-screen font-sans">
@@ -326,13 +315,15 @@ function Dashboard() {
 
                 <div className="surface-divider relative z-10 mt-auto p-4">
                   {unlocked ? (
-                    <Link
-                      href={`/chess/play/${bot.id}`}
-                      prefetch
+                    <button
+                      type="button"
+                      onClick={() => {
+                        window.location.assign(`/chess/play/${bot.id}`);
+                      }}
                       className="block w-full rounded-full bg-foreground py-3 text-center text-sm font-medium text-background transition-all hover:opacity-90"
                     >
                       Jugar Partida
-                    </Link>
+                    </button>
                   ) : (
                     <button
                       type="button"

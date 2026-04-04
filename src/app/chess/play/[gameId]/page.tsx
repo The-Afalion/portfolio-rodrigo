@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties, FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Chess } from "chess.js";
@@ -18,6 +19,33 @@ type ChessMoveLike = {
   flags: string;
   captured?: string;
 };
+
+type SquareStyleMap = Record<string, CSSProperties>;
+
+function buildMoveHintStyles(selectedSquare: string | null, legalTargets: string[]) {
+  const styles: SquareStyleMap = {};
+
+  if (selectedSquare) {
+    styles[selectedSquare] = {
+      background:
+        "radial-gradient(circle, rgba(56,189,248,0.22) 0%, rgba(56,189,248,0.38) 62%, rgba(15,23,42,0.1) 100%)",
+      boxShadow: "inset 0 0 0 3px rgba(56,189,248,0.55)",
+    };
+  }
+
+  for (const square of legalTargets) {
+    styles[square] = {
+      background:
+        "radial-gradient(circle, rgba(15,23,42,0) 0 58%, rgba(56,189,248,0.85) 58% 70%, rgba(15,23,42,0) 70%)",
+    };
+  }
+
+  return styles;
+}
+
+function getLegalTargets(game: Chess, square: string) {
+  return game.moves({ square, verbose: true }).map((move) => move.to);
+}
 
 function pickRandom(lines: string[]) {
   return lines[Math.floor(Math.random() * lines.length)] ?? "";
@@ -113,9 +141,15 @@ const BotGame = ({ botId }: { botId: string }) => {
   const [lecturaPosicional, setLecturaPosicional] = useState("Esperando el primer movimiento.");
   const [estadoJuego, setEstadoJuego] = useState<"jugando" | "victoria" | "derrota" | "tablas">("jugando");
   const [pensando, setPensando] = useState(false);
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+  const [legalTargets, setLegalTargets] = useState<string[]>([]);
 
   const game = useMemo(() => new Chess(fen), [fen]);
   const evaluation = useMemo(() => evaluarTablero(game), [game]);
+  const moveHintStyles = useMemo(
+    () => buildMoveHintStyles(selectedSquare, legalTargets),
+    [legalTargets, selectedSquare]
+  );
 
   useEffect(() => {
     if (!estaInicializando && !bot) {
@@ -133,6 +167,8 @@ const BotGame = ({ botId }: { botId: string }) => {
     setFen(new Chess().fen());
     setEstadoJuego("jugando");
     setPensando(false);
+    setSelectedSquare(null);
+    setLegalTargets([]);
   }, [bot]);
 
   useEffect(() => {
@@ -160,6 +196,8 @@ const BotGame = ({ botId }: { botId: string }) => {
 
       const afterEval = evaluarTablero(snapshot);
       setFen(snapshot.fen());
+      setSelectedSquare(null);
+      setLegalTargets([]);
       setLecturaPosicional(
         `${bot.personalidad.etiqueta} · ${describePosition(afterEval)} · elección ${analysis.rank + 1}`
       );
@@ -197,9 +235,16 @@ const BotGame = ({ botId }: { botId: string }) => {
     setPensando(false);
     setDialogo(pickRandom(bot.dialogos.entrada));
     setLecturaPosicional(bot.personalidad.resumen);
+    setSelectedSquare(null);
+    setLegalTargets([]);
   }
 
-  function onDrop(sourceSquare: string, targetSquare: string) {
+  function clearSelection() {
+    setSelectedSquare(null);
+    setLegalTargets([]);
+  }
+
+  function playPlayerMove(sourceSquare: string, targetSquare: string) {
     if (!bot || estadoJuego !== "jugando" || pensando || game.turn() !== "w") {
       return false;
     }
@@ -215,6 +260,7 @@ const BotGame = ({ botId }: { botId: string }) => {
 
       const afterEval = evaluarTablero(nextGame);
       setFen(nextGame.fen());
+      clearSelection();
       setLecturaPosicional(`Tu jugada: ${move.san} · ${describePosition(afterEval)}`);
 
       if (nextGame.isCheckmate()) {
@@ -237,6 +283,56 @@ const BotGame = ({ botId }: { botId: string }) => {
     } catch {
       return false;
     }
+  }
+
+  function onDrop(sourceSquare: string, targetSquare: string) {
+    return playPlayerMove(sourceSquare, targetSquare);
+  }
+
+  function onPieceClick(piece: string, square: string) {
+    if (!bot || estadoJuego !== "jugando" || pensando || game.turn() !== "w") {
+      clearSelection();
+      return;
+    }
+
+    if (!piece.startsWith("w")) {
+      clearSelection();
+      return;
+    }
+
+    if (selectedSquare === square) {
+      clearSelection();
+      return;
+    }
+
+    const targets = getLegalTargets(game, square);
+    setSelectedSquare(square);
+    setLegalTargets(targets);
+  }
+
+  function onSquareClick(square: string) {
+    if (!selectedSquare) {
+      return;
+    }
+
+    if (square === selectedSquare) {
+      clearSelection();
+      return;
+    }
+
+    if (!legalTargets.includes(square)) {
+      const piece = game.get(square);
+      if (piece?.color === "w") {
+        setSelectedSquare(square);
+        setLegalTargets(getLegalTargets(game, square));
+        return;
+      }
+
+      clearSelection();
+      return;
+    }
+
+    void playPlayerMove(selectedSquare, square);
   }
 
   if (estaInicializando && !bot) {
@@ -402,7 +498,11 @@ const BotGame = ({ botId }: { botId: string }) => {
                 <Chessboard
                   position={fen}
                   onPieceDrop={onDrop}
+                  onPieceClick={onPieceClick}
+                  onSquareClick={onSquareClick}
                   boardOrientation="white"
+                  snapToCursor
+                  customSquareStyles={moveHintStyles}
                   customDarkSquareStyle={{ backgroundColor: "#475569" }}
                   customLightSquareStyle={{ backgroundColor: "#d6d3d1" }}
                   animationDuration={220}
@@ -452,7 +552,7 @@ const Chat = ({ gameId, supabase, user }: { gameId: string; supabase: ReturnType
     };
   }, [gameId, supabase]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
 
     if (newMessage.trim() === "") {
@@ -516,6 +616,12 @@ const MultiplayerGame = ({ gameId }: { gameId: string }) => {
   const [submittingMove, setSubmittingMove] = useState(false);
   const [syncedAt, setSyncedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+  const [legalTargets, setLegalTargets] = useState<string[]>([]);
+  const moveHintStyles = useMemo(
+    () => buildMoveHintStyles(selectedSquare, legalTargets),
+    [legalTargets, selectedSquare]
+  );
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -541,6 +647,8 @@ const MultiplayerGame = ({ gameId }: { gameId: string }) => {
       const payload = (await response.json()) as MultiplayerSnapshot;
       setSnapshot(payload);
       setSyncedAt(Date.now());
+      setSelectedSquare(null);
+      setLegalTargets([]);
     } catch (error) {
       console.error(error);
       router.push("/chess");
@@ -635,6 +743,8 @@ const MultiplayerGame = ({ gameId }: { gameId: string }) => {
       if (payload?.game) {
         setSnapshot(payload.game as MultiplayerSnapshot);
         setSyncedAt(Date.now());
+        setSelectedSquare(null);
+        setLegalTargets([]);
       }
 
       return true;
@@ -676,8 +786,62 @@ const MultiplayerGame = ({ gameId }: { gameId: string }) => {
           }
         : current
     );
+    setSelectedSquare(null);
+    setLegalTargets([]);
     void submitMove(sourceSquare, targetSquare);
     return true;
+  }
+
+  function onPieceClick(piece: string, square: string) {
+    if (!snapshot || snapshot.turn !== snapshot.playerColor || snapshot.status !== "IN_PROGRESS" || submittingMove) {
+      setSelectedSquare(null);
+      setLegalTargets([]);
+      return;
+    }
+
+    if (!piece.startsWith(snapshot.playerColor)) {
+      setSelectedSquare(null);
+      setLegalTargets([]);
+      return;
+    }
+
+    if (selectedSquare === square) {
+      setSelectedSquare(null);
+      setLegalTargets([]);
+      return;
+    }
+
+    const board = new Chess(snapshot.fen);
+    setSelectedSquare(square);
+    setLegalTargets(getLegalTargets(board, square));
+  }
+
+  function onSquareClick(square: string) {
+    if (!snapshot || !selectedSquare) {
+      return;
+    }
+
+    if (square === selectedSquare) {
+      setSelectedSquare(null);
+      setLegalTargets([]);
+      return;
+    }
+
+    if (!legalTargets.includes(square)) {
+      const board = new Chess(snapshot.fen);
+      const piece = board.get(square);
+      if (piece?.color === snapshot.playerColor) {
+        setSelectedSquare(square);
+        setLegalTargets(getLegalTargets(board, square));
+        return;
+      }
+
+      setSelectedSquare(null);
+      setLegalTargets([]);
+      return;
+    }
+
+    void onDrop(selectedSquare, square);
   }
 
   if (estaInicializando || loadingGame || !usuario) {
@@ -824,8 +988,12 @@ const MultiplayerGame = ({ gameId }: { gameId: string }) => {
                 <Chessboard
                   position={snapshot.fen}
                   onPieceDrop={onDrop}
+                  onPieceClick={onPieceClick}
+                  onSquareClick={onSquareClick}
                   boardOrientation={snapshot.playerColor === "b" ? "black" : "white"}
                   arePiecesDraggable={snapshot.status === "IN_PROGRESS" && snapshot.turn === snapshot.playerColor && !submittingMove}
+                  snapToCursor
+                  customSquareStyles={moveHintStyles}
                   customDarkSquareStyle={{ backgroundColor: "#475569" }}
                   customLightSquareStyle={{ backgroundColor: "#d6d3d1" }}
                   animationDuration={220}
