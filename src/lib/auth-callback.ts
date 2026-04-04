@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { ensureProfileForUser } from '@/lib/profile';
+import { ensureProfileForUserSafely } from '@/lib/profile';
 
 type CookieToSet = {
   name: string;
@@ -84,7 +84,7 @@ export async function handleAuthCallback(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (user) {
-    await ensureProfileForUser(user);
+    await ensureProfileForUserSafely(user);
   }
 
   return response;

@@ -1,6 +1,6 @@
 "use server";
 
-import { ensureProfileForUser } from '@/lib/profile';
+import { ensureProfileForUserSafely } from '@/lib/profile';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 
@@ -38,7 +38,7 @@ export async function signUp(email: string, password: string, confirmPassword: s
     }
 
     if (data.user) {
-      await ensureProfileForUser(data.user);
+      await ensureProfileForUserSafely(data.user);
     }
 
     return {

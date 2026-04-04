@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { useParams, useRouter } from 'next/navigation';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import toast from 'react-hot-toast';
 import { ArrowLeft, User, Wifi, WifiOff } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-let supabase: any;
-if (supabaseUrl && supabaseAnonKey) supabase = createClient(supabaseUrl, supabaseAnonKey);
+let supabase: ReturnType<typeof createClient> | null = null;
+
+try {
+  supabase = createClient();
+} catch {
+  supabase = null;
+}
 
 function getCookie(name: string): string | null {
   if (typeof window === 'undefined') return null;

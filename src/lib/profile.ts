@@ -42,6 +42,19 @@ export function getUserDisplayName(user: Pick<User, 'email' | 'user_metadata'>) 
   return email.split('@')[0];
 }
 
+function isMissingProfileTableError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    error.message.includes('does not exist') ||
+    error.message.includes('The table `public.Profile` does not exist') ||
+    error.message.includes('Could not find the table') ||
+    error.message.includes('P2021')
+  );
+}
+
 export async function ensureProfileForUser(user: Pick<User, 'id' | 'email'>) {
   const role = isAdminEmail(user.email) ? 'ADMIN' : undefined;
 
@@ -53,4 +66,23 @@ export async function ensureProfileForUser(user: Pick<User, 'id' | 'email'>) {
       ...(role ? { role } : {}),
     },
   });
+}
+
+export async function ensureProfileForUserSafely(user: Pick<User, 'id' | 'email'>) {
+  try {
+    return await ensureProfileForUser(user);
+  } catch (error) {
+    if (isMissingProfileTableError(error)) {
+      console.warn('Profile table unavailable, using fallback profile.', error);
+      return {
+        id: user.id,
+        elo: 1000,
+        role: isAdminEmail(user.email) ? 'ADMIN' : 'USER',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    }
+
+    throw error;
+  }
 }

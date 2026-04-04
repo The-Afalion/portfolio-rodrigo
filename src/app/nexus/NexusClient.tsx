@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, User, Wifi, WifiOff, AlertTriangle, Send, Swords } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@/utils/supabase/client';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-let supabase: any;
-if (supabaseUrl && supabaseAnonKey) supabase = createClient(supabaseUrl, supabaseAnonKey);
+let supabase: ReturnType<typeof createClient> | null = null;
+
+try {
+  supabase = createClient();
+} catch {
+  supabase = null;
+}
 
 type Presence = { user: string; online_at: string; };
 type Message = { id: string; user: string; text: string; created_at: string; };

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
-import { ensureProfileForUser, getUserDisplayName } from '@/lib/profile';
+import { ensureProfileForUserSafely, getUserDisplayName } from '@/lib/profile';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,7 +19,7 @@ export async function POST() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const profile = await ensureProfileForUser(user);
+  const profile = await ensureProfileForUserSafely(user);
 
   return NextResponse.json({
     user: {

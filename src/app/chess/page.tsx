@@ -142,6 +142,13 @@ function LoginScreen() {
           >
             {modoRegistro ? '¿Ya tienes cuenta? Inicia sesión' : '¿Nuevo aquí? Regístrate gratis'}
           </button>
+          {!modoRegistro && (
+            <p className="mt-3 text-xs text-muted-foreground font-sans">
+              <Link href="/forgot-password" className="underline transition-colors hover:text-foreground">
+                He olvidado mi contraseña
+              </Link>
+            </p>
+          )}
         </div>
       </motion.div>
     </div>
