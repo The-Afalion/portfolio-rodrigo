@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Menu, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 import { primaryNavigation, siteConfig } from "@/config/site";
@@ -16,14 +16,10 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navigation = useMemo(
-    () =>
-      primaryNavigation.map((item) => ({
-        ...item,
-        active: isActive(pathname, item.href),
-      })),
-    [pathname],
-  );
+  const navigation = primaryNavigation.map((item) => ({
+    ...item,
+    active: isActive(pathname, item.href),
+  }));
 
   return (
     <motion.header
