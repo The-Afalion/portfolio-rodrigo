@@ -14,6 +14,7 @@ import {
   buildForgotPasswordPath,
   buildLoginPath,
   buildSignupPath,
+  isGoogleAuthEnabled,
   resolveSuccessfulAuthPath,
 } from '@/lib/auth';
 
@@ -29,7 +30,7 @@ const audienceUi: Record<
   general: {
     title: 'Acceso centralizado',
     description: 'Misma cuenta para todo el ecosistema de Rodocodes.',
-    allowGoogle: true,
+    allowGoogle: isGoogleAuthEnabled(),
     allowSignup: true,
   },
   editor: {
@@ -41,7 +42,7 @@ const audienceUi: Record<
   chess: {
     title: 'Acceso al Chess Club',
     description: 'Entra con tu cuenta global para seguir jugando y conservar progreso.',
-    allowGoogle: true,
+    allowGoogle: isGoogleAuthEnabled(),
     allowSignup: true,
   },
 };
@@ -147,6 +148,11 @@ export function AuthFormCard({
 
     if (oauthError) {
       setLoading(false);
+      if (oauthError.message.includes('Unsupported provider')) {
+        setError('Google no está habilitado ahora mismo en Supabase para este proyecto.');
+        return;
+      }
+
       setError('No se pudo iniciar el acceso con Google.');
     }
   }

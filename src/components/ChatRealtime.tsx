@@ -11,6 +11,7 @@ export default function ChatRealtime() {
   const { usuario } = useChess();
   const [isOpen, setIsOpen] = useState(false);
   const [mensajeInput, setMensajeInput] = useState('');
+  const [sending, setSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll al final del chat
@@ -18,11 +19,16 @@ export default function ChatRealtime() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensajes]);
 
-  const handleEnviar = (e: React.FormEvent) => {
+  const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mensajeInput.trim()) {
-      enviarMensaje(mensajeInput);
-      setMensajeInput('');
+      setSending(true);
+      try {
+        await enviarMensaje(mensajeInput);
+        setMensajeInput('');
+      } finally {
+        setSending(false);
+      }
     }
   };
 
@@ -118,7 +124,7 @@ export default function ChatRealtime() {
               />
               <button 
                 type="submit" 
-                disabled={!mensajeInput.trim()}
+                disabled={!mensajeInput.trim() || sending}
                 className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send size={18} />

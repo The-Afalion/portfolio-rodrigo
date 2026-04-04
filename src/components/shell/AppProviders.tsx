@@ -8,7 +8,12 @@ import { ProveedorContextoChess } from "@/context/ContextoChess";
 import { ProveedorContextoRealtime } from "@/context/ContextoRealtime";
 
 function shouldUseInteractiveAuthProviders(pathname: string) {
-  return pathname === "/chess" || pathname.startsWith("/chess/");
+  return (
+    pathname === "/chess" ||
+    pathname.startsWith("/chess/") ||
+    pathname === "/nexus" ||
+    pathname.startsWith("/nexus/")
+  );
 }
 
 function ProvidersWithOptionalRealtime({ children }: { children: ReactNode }) {

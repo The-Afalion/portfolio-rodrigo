@@ -161,27 +161,37 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
       return;
     }
 
-    const trimmedContent = content.trim();
-    if (!trimmedContent) {
-      return;
+    try {
+      const trimmedContent = content.trim();
+      if (!trimmedContent) {
+        return;
+      }
+
+      const mensaje: MensajeChat = {
+        id: crypto.randomUUID(),
+        senderId: usuario.id,
+        senderName: usuario.username,
+        content: trimmedContent,
+        timestamp: Date.now(),
+        type: "chat",
+      };
+
+      const sendStatus = await channel.send({
+        type: "broadcast",
+        event: "chat_message",
+        payload: mensaje,
+      });
+
+      if (sendStatus !== "ok") {
+        throw new Error("Realtime no ha confirmado el mensaje.");
+      }
+
+      setMensajes((current) => [...current, mensaje]);
+    } catch (error) {
+      console.error("Error enviando mensaje del lobby:", error);
+      toast.error(error instanceof Error ? error.message : "No se ha podido enviar el mensaje.");
+      throw error;
     }
-
-    const mensaje: MensajeChat = {
-      id: crypto.randomUUID(),
-      senderId: usuario.id,
-      senderName: usuario.username,
-      content: trimmedContent,
-      timestamp: Date.now(),
-      type: "chat",
-    };
-
-    await channel.send({
-      type: "broadcast",
-      event: "chat_message",
-      payload: mensaje,
-    });
-
-    setMensajes((current) => [...current, mensaje]);
   }, [channel, usuario]);
 
   const invitarJugador = useCallback(async (targetUserId: string) => {
@@ -225,7 +235,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
           usuariosOnline.find((onlineUser) => onlineUser.userId === targetUserId)?.elo ?? 1000,
       };
 
-      await channel.send({
+      const sendStatus = await channel.send({
         type: "broadcast",
         event: "game_invite",
         payload: {
@@ -233,6 +243,10 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
           invitation,
         } satisfies GameInvitePayload,
       });
+
+      if (sendStatus !== "ok") {
+        throw new Error("La invitación no se ha propagado por Realtime.");
+      }
 
       toast.success("Invitación enviada");
     } catch (error) {
@@ -272,7 +286,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
         throw new Error(payload?.error ?? "No se pudo aceptar la invitación");
       }
 
-      await channel.send({
+      const sendStatus = await channel.send({
         type: "broadcast",
         event: "game_invite_response",
         payload: {
@@ -284,6 +298,10 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
           gameId: payload?.gameId ?? invitation.gameId,
         } satisfies InviteResponsePayload,
       });
+
+      if (sendStatus !== "ok") {
+        throw new Error("No se ha podido notificar la aceptación en tiempo real.");
+      }
 
       await refrescarInvitaciones();
 
@@ -324,7 +342,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
         throw new Error(payload?.error ?? "No se pudo rechazar la invitación");
       }
 
-      await channel.send({
+      const sendStatus = await channel.send({
         type: "broadcast",
         event: "game_invite_response",
         payload: {
@@ -336,6 +354,10 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
           gameId: null,
         } satisfies InviteResponsePayload,
       });
+
+      if (sendStatus !== "ok") {
+        throw new Error("No se ha podido notificar el rechazo en tiempo real.");
+      }
 
       await refrescarInvitaciones();
       toast.success("Invitación rechazada");
@@ -354,6 +376,9 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
 
     const newChannel = realtimeClient.channel("global_lobby", {
       config: {
+        broadcast: {
+          ack: true,
+        },
         presence: {
           key: usuario.id,
         },
