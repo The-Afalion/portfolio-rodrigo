@@ -1,178 +1,513 @@
 import { Chess } from "chess.js";
 
-type Dificultad = "Fácil" | "Medio" | "Difícil";
+export type EstiloIA = "agresivo" | "defensivo" | "equilibrado" | "caotico";
 
-/**
- * Mapa con los valores de cada pieza.
- * Se usa para calcular la puntuación de una posición.
- */
-const VALOR_PIEZAS: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 90 };
+export interface AnalisisMovimientoIA {
+  san: string;
+  score: number;
+  quality: number;
+  bestQuality: number;
+  rank: number;
+  classification: "best" | "strong" | "risky" | "blunder";
+  tags: {
+    capture: boolean;
+    check: boolean;
+    castle: boolean;
+    promotion: boolean;
+  };
+}
 
-/**
- * Calcula la puntuación de una posición del tablero.
- * Una puntuación positiva favorece a las blancas, una negativa a las negras.
- * @param partida - El estado actual de la partida.
- * @returns La puntuación numérica del tablero.
- */
+type ChessMoveLike = {
+  san: string;
+  flags: string;
+  to: string;
+  captured?: string;
+  promotion?: string;
+};
+
+type BoardPiece = {
+  type: string;
+  color: "w" | "b";
+} | null;
+
+const INFINITY_SCORE = 100_000;
+const PIECE_VALUES: Record<string, number> = {
+  p: 100,
+  n: 320,
+  b: 335,
+  r: 500,
+  q: 900,
+  k: 20_000,
+};
+
+const PAWN_TABLE = [
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [50, 50, 50, 50, 50, 50, 50, 50],
+  [10, 10, 20, 30, 30, 20, 10, 10],
+  [6, 6, 12, 26, 26, 12, 6, 6],
+  [0, 0, 0, 22, 22, 0, 0, 0],
+  [6, -4, -10, 0, 0, -10, -4, 6],
+  [6, 12, 12, -18, -18, 12, 12, 6],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+];
+
+const KNIGHT_TABLE = [
+  [-50, -35, -30, -30, -30, -30, -35, -50],
+  [-35, -10, 0, 5, 5, 0, -10, -35],
+  [-30, 5, 10, 15, 15, 10, 5, -30],
+  [-30, 0, 15, 20, 20, 15, 0, -30],
+  [-30, 5, 15, 20, 20, 15, 5, -30],
+  [-30, 0, 10, 15, 15, 10, 0, -30],
+  [-35, -10, 0, 0, 0, 0, -10, -35],
+  [-50, -35, -30, -30, -30, -30, -35, -50],
+];
+
+const BISHOP_TABLE = [
+  [-20, -10, -10, -10, -10, -10, -10, -20],
+  [-10, 8, 0, 0, 0, 0, 8, -10],
+  [-10, 10, 10, 12, 12, 10, 10, -10],
+  [-10, 0, 12, 14, 14, 12, 0, -10],
+  [-10, 5, 5, 14, 14, 5, 5, -10],
+  [-10, 0, 5, 10, 10, 5, 0, -10],
+  [-10, 0, 0, 0, 0, 0, 0, -10],
+  [-20, -10, -10, -10, -10, -10, -10, -20],
+];
+
+const ROOK_TABLE = [
+  [0, 0, 4, 10, 10, 4, 0, 0],
+  [-6, 0, 0, 0, 0, 0, 0, -6],
+  [-6, 0, 0, 0, 0, 0, 0, -6],
+  [-6, 0, 0, 0, 0, 0, 0, -6],
+  [-6, 0, 0, 0, 0, 0, 0, -6],
+  [-6, 0, 0, 0, 0, 0, 0, -6],
+  [6, 12, 12, 12, 12, 12, 12, 6],
+  [0, 0, 4, 10, 10, 4, 0, 0],
+];
+
+const QUEEN_TABLE = [
+  [-20, -10, -10, -5, -5, -10, -10, -20],
+  [-10, 0, 0, 0, 0, 0, 0, -10],
+  [-10, 0, 6, 6, 6, 6, 0, -10],
+  [-5, 0, 6, 6, 6, 6, 0, -5],
+  [0, 0, 6, 6, 6, 6, 0, -5],
+  [-10, 5, 6, 6, 6, 6, 0, -10],
+  [-10, 0, 5, 0, 0, 0, 0, -10],
+  [-20, -10, -10, -5, -5, -10, -10, -20],
+];
+
+const KING_MIDDLE_TABLE = [
+  [-30, -40, -40, -50, -50, -40, -40, -30],
+  [-30, -40, -40, -50, -50, -40, -40, -30],
+  [-30, -40, -40, -50, -50, -40, -40, -30],
+  [-30, -40, -40, -50, -50, -40, -40, -30],
+  [-20, -30, -30, -40, -40, -30, -30, -20],
+  [-10, -20, -20, -20, -20, -20, -20, -10],
+  [20, 20, 0, 0, 0, 0, 20, 20],
+  [20, 30, 10, 0, 0, 10, 30, 20],
+];
+
+const KING_END_TABLE = [
+  [-50, -40, -30, -20, -20, -30, -40, -50],
+  [-30, -20, -10, 0, 0, -10, -20, -30],
+  [-30, -10, 20, 30, 30, 20, -10, -30],
+  [-30, -10, 30, 40, 40, 30, -10, -30],
+  [-30, -10, 30, 40, 40, 30, -10, -30],
+  [-30, -10, 20, 30, 30, 20, -10, -30],
+  [-30, -30, 0, 0, 0, 0, -30, -30],
+  [-50, -30, -30, -30, -30, -30, -30, -50],
+];
+
+const POSITION_TABLES: Record<string, number[][]> = {
+  p: PAWN_TABLE,
+  n: KNIGHT_TABLE,
+  b: BISHOP_TABLE,
+  r: ROOK_TABLE,
+  q: QUEEN_TABLE,
+  k: KING_MIDDLE_TABLE,
+};
+
+function mirrorRow(row: number) {
+  return 7 - row;
+}
+
+function getPieceSquareValue(pieceType: string, color: "w" | "b", row: number, column: number, endgame: boolean) {
+  const table =
+    pieceType === "k" && endgame
+      ? KING_END_TABLE
+      : POSITION_TABLES[pieceType] ?? PAWN_TABLE;
+
+  const boardRow = color === "w" ? row : mirrorRow(row);
+  return table[boardRow][column] ?? 0;
+}
+
+function countMaterialWithoutKings(partida: Chess) {
+  let total = 0;
+  const board = partida.board() as BoardPiece[][];
+
+  board.forEach((row) => {
+    row.forEach((piece) => {
+      if (!piece || piece.type === "k") {
+        return;
+      }
+
+      total += PIECE_VALUES[piece.type];
+    });
+  });
+
+  return total;
+}
+
+function isEndgame(partida: Chess) {
+  return countMaterialWithoutKings(partida) <= 2_200;
+}
+
+function replaceTurnInFen(fen: string, turn: "w" | "b") {
+  const segments = fen.split(" ");
+  segments[1] = turn;
+  return segments.join(" ");
+}
+
+function countLegalMovesForTurn(fen: string, turn: "w" | "b") {
+  const simulation = new Chess(replaceTurnInFen(fen, turn));
+  return simulation.moves().length;
+}
+
+function evaluateKingSafety(partida: Chess) {
+  const fen = partida.fen();
+  const [board, , castling] = fen.split(" ");
+  const rows = board.split("/");
+  let score = 0;
+
+  const whiteKingRow = rows.findIndex((row) => row.includes("K"));
+  const blackKingRow = rows.findIndex((row) => row.includes("k"));
+
+  if (rows[whiteKingRow]?.includes("K") && rows[whiteKingRow]?.includes("K")) {
+    if (rows[7]?.includes("K")) {
+      score -= castling.includes("K") || castling.includes("Q") ? 6 : 16;
+    }
+
+    if (rows[7]?.includes("1K1") || rows[7]?.includes("2K")) {
+      score += 18;
+    }
+  }
+
+  if (rows[blackKingRow]?.includes("k") && rows[blackKingRow]?.includes("k")) {
+    if (rows[0]?.includes("k")) {
+      score += castling.includes("k") || castling.includes("q") ? 6 : 16;
+    }
+
+    if (rows[0]?.includes("1k1") || rows[0]?.includes("2k")) {
+      score -= 18;
+    }
+  }
+
+  return score;
+}
+
+function evaluateMobility(partida: Chess) {
+  const fen = partida.fen();
+  const whiteMoves = countLegalMovesForTurn(fen, "w");
+  const blackMoves = countLegalMovesForTurn(fen, "b");
+  return (whiteMoves - blackMoves) * 3;
+}
+
 export function evaluarTablero(partida: Chess): number {
-    if (partida.isCheckmate()) {
-        // Si hay jaque mate, es la peor/mejor situación posible.
-        return partida.turn() === 'w' ? -Infinity : Infinity;
-    }
-    if (partida.isDraw()) {
-        return 0; // Tablas (empate).
-    }
+  if (partida.isCheckmate()) {
+    return partida.turn() === "w" ? -INFINITY_SCORE : INFINITY_SCORE;
+  }
 
-    let puntuacionTotal = 0;
-    const tablero = partida.board();
+  if (partida.isDraw()) {
+    return 0;
+  }
 
-    for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-            const pieza = tablero[i][j];
-            if (pieza) {
-                const valor = VALOR_PIEZAS[pieza.type];
-                puntuacionTotal += (pieza.color === 'w' ? valor : -valor);
-            }
-        }
-    }
-    return puntuacionTotal;
+  const endgame = isEndgame(partida);
+  let score = 0;
+  const board = partida.board() as BoardPiece[][];
+
+  board.forEach((row, rowIndex) => {
+    row.forEach((piece, columnIndex) => {
+      if (!piece) {
+        return;
+      }
+
+      const material = PIECE_VALUES[piece.type];
+      const positional = getPieceSquareValue(piece.type, piece.color, rowIndex, columnIndex, endgame);
+      const value = material + positional;
+      score += piece.color === "w" ? value : -value;
+    });
+  });
+
+  score += evaluateMobility(partida);
+  score += evaluateKingSafety(partida);
+
+  if (partida.isCheck()) {
+    score += partida.turn() === "w" ? -24 : 24;
+  }
+
+  return score;
 }
 
-/**
- * Una cola de prioridad simple para el algoritmo de Dijkstra.
- * Almacena los nodos a visitar, ordenados por el de menor coste primero.
- */
-class ColaDePrioridad {
-    private nodos: { fen: string, coste: number, camino: string[] }[] = [];
+function getSearchDepth(elo: number, partida: Chess) {
+  if (elo >= 1850) {
+    return partida.moves().length <= 18 || isEndgame(partida) ? 4 : 3;
+  }
 
-    encolar(fen: string, coste: number, camino: string[]) {
-        this.nodos.push({ fen, coste, camino });
-        this.ordenar();
-    }
+  if (elo >= 1350) {
+    return 3;
+  }
 
-    desencolar() {
-        return this.nodos.shift();
-    }
+  if (elo >= 750) {
+    return 2;
+  }
 
-    estaVacia() {
-        return this.nodos.length === 0;
-    }
-
-    private ordenar() {
-        this.nodos.sort((a, b) => a.coste - b.coste);
-    }
+  return 1;
 }
 
-/**
- * Encuentra el mejor movimiento usando una lógica inspirada en Dijkstra.
- * Busca el "camino" de N movimientos que lleva al estado del tablero
- * con el menor coste acumulado (evaluación más baja para las negras).
- * @param partida - El estado actual de la partida.
- * @param profundidad - Cuántos movimientos hacia adelante debe "pensar" la IA.
- * @returns El mejor movimiento encontrado o uno aleatorio si no hay más opción.
- */
-function encontrarMejorMovimientoConDijkstra(partida: Chess, profundidad: number): string | null {
-    const fenInicial = partida.fen();
-    const cola = new ColaDePrioridad();
-    cola.encolar(fenInicial, 0, []);
+function getTemperature(elo: number, estilo: EstiloIA) {
+  let temperature = 10;
 
-    const costes = new Map<string, number>();
-    costes.set(fenInicial, 0);
+  if (elo <= 500) {
+    temperature = 160;
+  } else if (elo <= 850) {
+    temperature = 90;
+  } else if (elo <= 1250) {
+    temperature = 48;
+  } else if (elo <= 1650) {
+    temperature = 26;
+  } else {
+    temperature = 12;
+  }
 
-    let mejorMovimiento: string | null = null;
-    let mejorCoste = Infinity;
+  if (estilo === "caotico") {
+    return temperature * 1.45;
+  }
 
-    while (!cola.estaVacia()) {
-        const actual = cola.desencolar();
-        if (!actual) continue;
+  if (estilo === "defensivo") {
+    return temperature * 0.8;
+  }
 
-        const { fen, coste, camino } = actual;
+  if (estilo === "agresivo") {
+    return temperature * 0.92;
+  }
 
-        if (coste > mejorCoste) {
-            continue; // Poda: si este camino ya es peor que el mejor, no lo exploramos.
-        }
-
-        if (camino.length === profundidad) {
-            if (coste < mejorCoste) {
-                mejorCoste = coste;
-                mejorMovimiento = camino[0]; // El mejor movimiento es el inicio del mejor camino.
-            }
-            continue; // No explorar más allá de la profundidad máxima.
-        }
-
-        if (camino.length > profundidad) continue; // Salvaguarda.
-
-        const partidaActual = new Chess(fen);
-        const movimientosPosibles = partidaActual.moves() as string[];
-
-        for (const movimiento of movimientosPosibles) {
-            partidaActual.move(movimiento);
-            const siguienteFen = partidaActual.fen();
-
-            // El "coste" es la evaluación del tablero. La IA (negras) busca minimizarlo.
-            const evaluacion = evaluarTablero(partidaActual);
-            const nuevoCoste = coste + evaluacion; // Acumulamos la puntuación del camino.
-
-            if (nuevoCoste < (costes.get(siguienteFen) || Infinity)) {
-                costes.set(siguienteFen, nuevoCoste);
-                const nuevoCamino = [...camino, movimiento];
-                cola.encolar(siguienteFen, nuevoCoste, nuevoCamino);
-            }
-            partidaActual.undo();
-        }
-    }
-
-    // Si no se encontró un movimiento (algo raro), devolver uno aleatorio.
-    if (mejorMovimiento) {
-        return mejorMovimiento;
-    }
-
-    const movimientos = partida.moves() as string[];
-    return movimientos.length > 0 ? movimientos[Math.floor(Math.random() * movimientos.length)] : null;
+  return temperature;
 }
 
-/**
- * Función principal que decide el movimiento de la IA según el bot específico.
- * @param partida - El estado actual de la partida.
- * @param elo - Dificultad del bot (determina la profundidad de búsqueda).
- * @param estilo - Estilos de juego (ej. agresivo prefiere capturas).
- * @returns El movimiento que debe realizar la IA (algebráico SAN).
- */
-export function obtenerMovimientoIA(partida: Chess, elo: number, estilo: 'agresivo' | 'defensivo' | 'equilibrado' | 'caotico'): string | null {
-    const movimientosPosibles = partida.moves() as string[];
-    if (movimientosPosibles.length === 0) return null;
+function getBlunderChance(elo: number, estilo: EstiloIA) {
+  let chance = 0.01;
 
-    // La IA siempre juega con negras en este hub.
-    if (partida.turn() === 'w') {
-        return movimientosPosibles[Math.floor(Math.random() * movimientosPosibles.length)];
+  if (elo <= 500) {
+    chance = 0.28;
+  } else if (elo <= 850) {
+    chance = 0.18;
+  } else if (elo <= 1250) {
+    chance = 0.1;
+  } else if (elo <= 1650) {
+    chance = 0.05;
+  } else {
+    chance = 0.015;
+  }
+
+  if (estilo === "caotico") {
+    return chance * 1.3;
+  }
+
+  if (estilo === "defensivo") {
+    return chance * 0.8;
+  }
+
+  return chance;
+}
+
+function scoreMoveOrdering(move: ChessMoveLike) {
+  let score = 0;
+
+  if (move.captured) {
+    score += 20 + PIECE_VALUES[move.captured];
+  }
+
+  if (move.promotion) {
+    score += PIECE_VALUES[move.promotion];
+  }
+
+  if (move.san.includes("+")) {
+    score += 35;
+  }
+
+  if (move.san.includes("#")) {
+    score += 10_000;
+  }
+
+  if (move.flags.includes("k") || move.flags.includes("q")) {
+    score += 12;
+  }
+
+  return score;
+}
+
+function orderMoves(moves: ChessMoveLike[]) {
+  return [...moves].sort((left, right) => scoreMoveOrdering(right) - scoreMoveOrdering(left));
+}
+
+function alphaBeta(partida: Chess, depth: number, alpha: number, beta: number): number {
+  if (depth === 0 || partida.isGameOver()) {
+    return evaluarTablero(partida);
+  }
+
+  const moves = orderMoves(partida.moves({ verbose: true }) as ChessMoveLike[]);
+  const maximizing = partida.turn() === "w";
+
+  if (maximizing) {
+    let value = -INFINITY_SCORE;
+
+    for (const move of moves) {
+      partida.move(move);
+      value = Math.max(value, alphaBeta(partida, depth - 1, alpha, beta));
+      partida.undo();
+      alpha = Math.max(alpha, value);
+
+      if (alpha >= beta) {
+        break;
+      }
     }
 
-    // Estilo Caótico (Peón Oxidado o Joker)
-    if (estilo === 'caotico') {
-        // Joker.js mezcla jugadas troll aleatorias (50%) o nivel Difícil (50%) si su ELO es alto
-        if (elo > 1000 && Math.random() > 0.5) {
-            return encontrarMejorMovimientoConDijkstra(partida, 2);
-        }
-        return movimientosPosibles[Math.floor(Math.random() * movimientosPosibles.length)];
-    }
+    return value;
+  }
 
-    // Estilo Agresivo (Viper): Fuerza capturas si es posible y busca mate corto
-    if (estilo === 'agresivo') {
-        const movesVerbose = partida.moves({ verbose: true }) as any[];
-        const captures = movesVerbose.filter(m => m.flags.includes('c') || m.flags.includes('e'));
-        if (captures.length > 0 && Math.random() > 0.2) { // 80% de chance de priorizar captura brutal
-            return captures[Math.floor(Math.random() * captures.length)].san;
-        }
-        return encontrarMejorMovimientoConDijkstra(partida, 1);
-    }
+  let value = INFINITY_SCORE;
 
-    // Estilos Equilibrado y Defensivo basados puramente en ELO y profundidad del árbol Dijkstra
-    if (elo <= 800) {
-        return encontrarMejorMovimientoConDijkstra(partida, 1);
-    } else if (elo <= 1500) {
-        return encontrarMejorMovimientoConDijkstra(partida, 2);
-    } else {
-        // Deep Blue II etc (Profundidad 3: cuidado con performance, en un navegador tomará segundos)
-        return encontrarMejorMovimientoConDijkstra(partida, 3);
+  for (const move of moves) {
+    partida.move(move);
+    value = Math.min(value, alphaBeta(partida, depth - 1, alpha, beta));
+    partida.undo();
+    beta = Math.min(beta, value);
+
+    if (alpha >= beta) {
+      break;
     }
+  }
+
+  return value;
+}
+
+function getStyleBonus(move: ChessMoveLike, estilo: EstiloIA) {
+  if (estilo === "agresivo") {
+    return (move.captured ? 46 : 0) + (move.san.includes("+") ? 52 : 0) - (move.flags.includes("k") || move.flags.includes("q") ? 4 : 0);
+  }
+
+  if (estilo === "defensivo") {
+    return (move.flags.includes("k") || move.flags.includes("q") ? 24 : 0) + (move.captured ? 12 : 0);
+  }
+
+  if (estilo === "caotico") {
+    return (move.captured ? 18 : 0) + (move.promotion ? 20 : 0) + ((move.to === "f2" || move.to === "f7" || move.to === "g2" || move.to === "g7") ? 12 : 0);
+  }
+
+  return (move.captured ? 10 : 0) + (move.flags.includes("k") || move.flags.includes("q") ? 10 : 0);
+}
+
+function classifyMove(gap: number): AnalisisMovimientoIA["classification"] {
+  if (gap <= 18) {
+    return "best";
+  }
+
+  if (gap <= 75) {
+    return "strong";
+  }
+
+  if (gap <= 180) {
+    return "risky";
+  }
+
+  return "blunder";
+}
+
+function chooseWeightedIndex(weights: number[]) {
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+
+  if (total <= 0) {
+    return 0;
+  }
+
+  let cursor = Math.random() * total;
+
+  for (let index = 0; index < weights.length; index += 1) {
+    cursor -= weights[index];
+
+    if (cursor <= 0) {
+      return index;
+    }
+  }
+
+  return 0;
+}
+
+export function analizarMovimientoIA(partida: Chess, elo: number, estilo: EstiloIA): AnalisisMovimientoIA | null {
+  const moves = partida.moves({ verbose: true }) as ChessMoveLike[];
+
+  if (moves.length === 0) {
+    return null;
+  }
+
+  const moverIsWhite = partida.turn() === "w";
+  const depth = getSearchDepth(elo, partida);
+  const moveEvaluations = orderMoves(moves).map((move) => {
+    partida.move(move);
+    const boardScore = alphaBeta(partida, Math.max(0, depth - 1), -INFINITY_SCORE, INFINITY_SCORE);
+    partida.undo();
+
+    const sideAdjustedScore = moverIsWhite ? boardScore : -boardScore;
+    const quality = sideAdjustedScore + getStyleBonus(move, estilo);
+
+    return {
+      move,
+      score: boardScore,
+      quality,
+      tags: {
+        capture: Boolean(move.captured),
+        check: move.san.includes("+") || move.san.includes("#"),
+        castle: move.flags.includes("k") || move.flags.includes("q"),
+        promotion: Boolean(move.promotion),
+      },
+    };
+  });
+
+  const rankedMoves = [...moveEvaluations].sort((left, right) => right.quality - left.quality);
+  const bestQuality = rankedMoves[0].quality;
+  const temperature = getTemperature(elo, estilo);
+  const blunderChance = getBlunderChance(elo, estilo);
+
+  let candidatePool = rankedMoves;
+
+  if (Math.random() < blunderChance && rankedMoves.length > 2) {
+    const offset = Math.max(1, Math.floor(rankedMoves.length * 0.45));
+    candidatePool = rankedMoves.slice(offset);
+  } else if (elo <= 650 && rankedMoves.length > 5) {
+    candidatePool = rankedMoves.slice(0, 5);
+  }
+
+  const weights = candidatePool.map((entry, index) => {
+    const gap = Math.max(0, bestQuality - entry.quality);
+    const baseWeight = Math.exp(-gap / temperature);
+    const placementPenalty = estilo === "caotico" ? Math.max(0.35, 1 - index * 0.08) : 1;
+    return baseWeight * placementPenalty;
+  });
+
+  const selected = candidatePool[chooseWeightedIndex(weights)] ?? rankedMoves[0];
+  const rank = rankedMoves.findIndex((entry) => entry.move.san === selected.move.san);
+  const gap = Math.max(0, bestQuality - selected.quality);
+
+  return {
+    san: selected.move.san,
+    score: selected.score,
+    quality: selected.quality,
+    bestQuality,
+    rank: rank < 0 ? 0 : rank,
+    classification: classifyMove(gap),
+    tags: selected.tags,
+  };
+}
+
+export function obtenerMovimientoIA(partida: Chess, elo: number, estilo: EstiloIA): string | null {
+  return analizarMovimientoIA(partida, elo, estilo)?.san ?? null;
 }

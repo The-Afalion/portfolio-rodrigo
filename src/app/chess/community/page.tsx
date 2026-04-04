@@ -85,7 +85,7 @@ export default async function CommunityPage() {
 
   const chess = new Chess(game.fen);
   const playerTurn = communitySideToTurn(profile.communitySide);
-  const currentTurn = chess.turn();
+  const currentTurn = chess.turn() as "w" | "b";
   const currentTurnLabel = currentTurn === "w" ? "Blancas" : "Negras";
   const userVote = votes.find((vote) => vote.userId === user.id) ?? null;
   const hasVoted = Boolean(userVote);

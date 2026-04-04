@@ -33,6 +33,10 @@ type VoteResult = {
   percentage: number;
 };
 
+type ChessMoveLike = {
+  san: string;
+};
+
 export default function ChessCommunityClient({
   player,
   game,
@@ -66,7 +70,7 @@ export default function ChessCommunityClient({
         from: sourceSquare,
         to: targetSquare,
         promotion: "q",
-      });
+      }) as ChessMoveLike | null;
 
       if (!move) {
         return false;

@@ -113,6 +113,17 @@ model Message {
   @@index([gameId])
 }
 
+model LobbyMessage {
+  id         String   @id @default(cuid())
+  content    String
+  senderId   String
+  senderName String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([senderId])
+}
+
 model GameInvitation {
   id        String           @id @default(cuid())
   status    InvitationStatus @default(PENDING)

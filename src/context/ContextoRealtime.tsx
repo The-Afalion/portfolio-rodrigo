@@ -52,6 +52,8 @@ interface InviteResponsePayload {
   gameId: string | null;
 }
 
+type RealtimeStatus = "connecting" | "connected" | "disconnected";
+
 interface ContextoRealtimeProps {
   usuariosOnline: UsuarioOnline[];
   mensajes: MensajeChat[];
@@ -59,6 +61,7 @@ interface ContextoRealtimeProps {
   cargandoInvitaciones: boolean;
   invitacionesEntrantes: InvitacionLobby[];
   invitacionesSalientes: InvitacionLobby[];
+  estadoRealtime: RealtimeStatus;
   enviarMensaje: (content: string) => Promise<void>;
   invitarJugador: (targetUserId: string) => Promise<void>;
   aceptarInvitacion: (invitationId: string) => Promise<void>;
@@ -78,10 +81,15 @@ function sortUsers(users: UsuarioOnline[]) {
   });
 }
 
+function sortMessages(messages: MensajeChat[]) {
+  return [...messages].sort((left, right) => left.timestamp - right.timestamp);
+}
+
 export function ProveedorContextoRealtime({ children }: { children: ReactNode }) {
   const { usuario } = useChess();
   const router = useRouter();
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
+  const [estadoRealtime, setEstadoRealtime] = useState<RealtimeStatus>("disconnected");
   const [usuariosOnline, setUsuariosOnline] = useState<UsuarioOnline[]>([]);
   const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
   const [invitacionesEntrantes, setInvitacionesEntrantes] = useState<InvitacionLobby[]>([]);
@@ -95,6 +103,58 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
       isMountedRef.current = false;
     };
   }, []);
+
+  const mergeMessages = useCallback((incomingMessages: MensajeChat[]) => {
+    if (incomingMessages.length === 0) {
+      return;
+    }
+
+    setMensajes((currentMessages) => {
+      const nextMessages = [...currentMessages];
+      const knownIds = new Set(currentMessages.map((message) => message.id));
+
+      incomingMessages.forEach((message) => {
+        if (!knownIds.has(message.id)) {
+          nextMessages.push(message);
+          knownIds.add(message.id);
+        }
+      });
+
+      return sortMessages(nextMessages).slice(-80);
+    });
+  }, []);
+
+  const cargarMensajes = useCallback(async () => {
+    if (!usuario) {
+      if (isMountedRef.current) {
+        setMensajes([]);
+      }
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/chess/lobby-messages", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo cargar el chat global");
+      }
+
+      const payload = await response.json();
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      const loadedMessages = Array.isArray(payload.messages) ? (payload.messages as MensajeChat[]) : [];
+      setMensajes(sortMessages(loadedMessages).slice(-80));
+    } catch (error) {
+      console.error("Error cargando mensajes del lobby:", error);
+    }
+  }, [usuario]);
 
   const refrescarInvitaciones = useCallback(async () => {
     if (!usuario) {
@@ -142,230 +202,239 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
       setInvitacionesEntrantes([]);
       setInvitacionesSalientes([]);
       setChannel(null);
+      setEstadoRealtime("disconnected");
       return;
     }
 
     void refrescarInvitaciones();
+    void cargarMensajes();
 
-    const refreshInterval = window.setInterval(() => {
+    const refreshInvitationsInterval = window.setInterval(() => {
       void refrescarInvitaciones();
     }, 20000);
 
+    const refreshMessagesInterval = window.setInterval(() => {
+      void cargarMensajes();
+    }, 8000);
+
     return () => {
-      window.clearInterval(refreshInterval);
+      window.clearInterval(refreshInvitationsInterval);
+      window.clearInterval(refreshMessagesInterval);
     };
-  }, [refrescarInvitaciones, usuario]);
+  }, [cargarMensajes, refrescarInvitaciones, usuario]);
 
-  const enviarMensaje = useCallback(async (content: string) => {
-    if (!channel || !usuario) {
-      return;
-    }
+  const emitirEventoRealtime = useCallback(
+    async (event: string, payload: unknown) => {
+      if (!channel || estadoRealtime !== "connected") {
+        return;
+      }
 
-    try {
+      const sendStatus = await channel.send({
+        type: "broadcast",
+        event,
+        payload,
+      });
+
+      if (sendStatus !== "ok") {
+        console.warn(`Realtime no ha confirmado el evento ${event}.`, sendStatus);
+      }
+    },
+    [channel, estadoRealtime]
+  );
+
+  const enviarMensaje = useCallback(
+    async (content: string) => {
+      if (!usuario) {
+        return;
+      }
+
       const trimmedContent = content.trim();
       if (!trimmedContent) {
         return;
       }
 
-      const mensaje: MensajeChat = {
-        id: crypto.randomUUID(),
-        senderId: usuario.id,
-        senderName: usuario.username,
-        content: trimmedContent,
-        timestamp: Date.now(),
-        type: "chat",
-      };
-
-      const sendStatus = await channel.send({
-        type: "broadcast",
-        event: "chat_message",
-        payload: mensaje,
-      });
-
-      if (sendStatus !== "ok") {
-        throw new Error("Realtime no ha confirmado el mensaje.");
-      }
-
-      setMensajes((current) => [...current, mensaje]);
-    } catch (error) {
-      console.error("Error enviando mensaje del lobby:", error);
-      toast.error(error instanceof Error ? error.message : "No se ha podido enviar el mensaje.");
-      throw error;
-    }
-  }, [channel, usuario]);
-
-  const invitarJugador = useCallback(async (targetUserId: string) => {
-    if (!channel || !usuario || targetUserId === usuario.id) {
-      return;
-    }
-
-    setEnviandoInvitacionA(targetUserId);
-
-    try {
-      const response = await fetch("/api/chess/invite", {
+      const response = await fetch("/api/chess/lobby-messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ opponentId: targetUserId }),
+        body: JSON.stringify({ content: trimmedContent }),
       });
 
       const payload = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "No se pudo enviar la invitación");
+      if (!response.ok || !payload?.message) {
+        const errorMessage =
+          typeof payload?.error === "string" ? payload.error : "No se ha podido enviar el mensaje.";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
-      await refrescarInvitaciones();
+      const message = payload.message as MensajeChat;
+      mergeMessages([message]);
+      await emitirEventoRealtime("chat_message", message);
+    },
+    [emitirEventoRealtime, mergeMessages, usuario]
+  );
 
-      const invitation: InvitacionLobby = {
-        id: payload.id,
-        status: payload.status,
-        createdAt: payload.createdAt ?? new Date().toISOString(),
-        updatedAt: payload.updatedAt ?? new Date().toISOString(),
-        gameId: payload.game?.id ?? null,
-        inviterId: usuario.id,
-        inviterName: usuario.username,
-        inviterElo: usuario.elo,
-        inviteeId: targetUserId,
-        inviteeName:
-          usuariosOnline.find((onlineUser) => onlineUser.userId === targetUserId)?.username ?? "Jugador",
-        inviteeElo:
-          usuariosOnline.find((onlineUser) => onlineUser.userId === targetUserId)?.elo ?? 1000,
-      };
+  const invitarJugador = useCallback(
+    async (targetUserId: string) => {
+      if (!usuario || targetUserId === usuario.id) {
+        return;
+      }
 
-      const sendStatus = await channel.send({
-        type: "broadcast",
-        event: "game_invite",
-        payload: {
+      setEnviandoInvitacionA(targetUserId);
+
+      try {
+        const response = await fetch("/api/chess/invite", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ opponentId: targetUserId }),
+        });
+
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "No se pudo enviar la invitación");
+        }
+
+        await refrescarInvitaciones();
+
+        const invitation: InvitacionLobby = {
+          id: payload.id,
+          status: payload.status,
+          createdAt: payload.createdAt ?? new Date().toISOString(),
+          updatedAt: payload.updatedAt ?? new Date().toISOString(),
+          gameId: payload.game?.id ?? null,
+          inviterId: usuario.id,
+          inviterName: usuario.username,
+          inviterElo: usuario.elo,
+          inviteeId: targetUserId,
+          inviteeName:
+            usuariosOnline.find((onlineUser) => onlineUser.userId === targetUserId)?.username ?? "Jugador",
+          inviteeElo:
+            usuariosOnline.find((onlineUser) => onlineUser.userId === targetUserId)?.elo ?? 1000,
+        };
+
+        await emitirEventoRealtime("game_invite", {
           targetUserId,
           invitation,
-        } satisfies GameInvitePayload,
-      });
+        } satisfies GameInvitePayload);
 
-      if (sendStatus !== "ok") {
-        throw new Error("La invitación no se ha propagado por Realtime.");
+        toast.success("Invitación enviada");
+      } catch (error) {
+        console.error("Error enviando invitación de ajedrez:", error);
+        toast.error(error instanceof Error ? error.message : "No se pudo enviar la invitación");
+      } finally {
+        if (isMountedRef.current) {
+          setEnviandoInvitacionA(null);
+        }
+      }
+    },
+    [emitirEventoRealtime, refrescarInvitaciones, usuario, usuariosOnline]
+  );
+
+  const aceptarInvitacion = useCallback(
+    async (invitationId: string) => {
+      if (!usuario) {
+        return;
       }
 
-      toast.success("Invitación enviada");
-    } catch (error) {
-      console.error("Error enviando invitación de ajedrez:", error);
-      toast.error(error instanceof Error ? error.message : "No se pudo enviar la invitación");
-    } finally {
-      if (isMountedRef.current) {
-        setEnviandoInvitacionA(null);
-      }
-    }
-  }, [channel, refrescarInvitaciones, usuario, usuariosOnline]);
-
-  const aceptarInvitacion = useCallback(async (invitationId: string) => {
-    if (!channel || !usuario) {
-      return;
-    }
-
-    const invitation = invitacionesEntrantes.find((currentInvitation) => currentInvitation.id === invitationId);
-    if (!invitation) {
-      await refrescarInvitaciones();
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/chess/invitations/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ invitationId }),
-      });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "No se pudo aceptar la invitación");
+      const invitation = invitacionesEntrantes.find((currentInvitation) => currentInvitation.id === invitationId);
+      if (!invitation) {
+        await refrescarInvitaciones();
+        return;
       }
 
-      const sendStatus = await channel.send({
-        type: "broadcast",
-        event: "game_invite_response",
-        payload: {
+      try {
+        const response = await fetch("/api/chess/invitations/accept", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ invitationId }),
+        });
+
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "No se pudo aceptar la invitación");
+        }
+
+        await emitirEventoRealtime("game_invite_response", {
           invitationId,
           inviterId: invitation.inviterId,
           inviteeId: usuario.id,
           inviteeName: usuario.username,
           status: "ACCEPTED",
           gameId: payload?.gameId ?? invitation.gameId,
-        } satisfies InviteResponsePayload,
-      });
+        } satisfies InviteResponsePayload);
 
-      if (sendStatus !== "ok") {
-        throw new Error("No se ha podido notificar la aceptación en tiempo real.");
+        await refrescarInvitaciones();
+
+        const gameId = payload?.gameId ?? invitation.gameId;
+        if (gameId) {
+          router.push(`/chess/play/${gameId}`);
+        }
+      } catch (error) {
+        console.error("Error aceptando invitación:", error);
+        toast.error(error instanceof Error ? error.message : "No se pudo aceptar la invitación");
+      }
+    },
+    [emitirEventoRealtime, invitacionesEntrantes, refrescarInvitaciones, router, usuario]
+  );
+
+  const rechazarInvitacion = useCallback(
+    async (invitationId: string) => {
+      if (!usuario) {
+        return;
       }
 
-      await refrescarInvitaciones();
-
-      const gameId = payload?.gameId ?? invitation.gameId;
-      if (gameId) {
-        router.push(`/chess/play/${gameId}`);
-      }
-    } catch (error) {
-      console.error("Error aceptando invitación:", error);
-      toast.error(error instanceof Error ? error.message : "No se pudo aceptar la invitación");
-    }
-  }, [channel, invitacionesEntrantes, refrescarInvitaciones, router, usuario]);
-
-  const rechazarInvitacion = useCallback(async (invitationId: string) => {
-    if (!channel || !usuario) {
-      return;
-    }
-
-    const invitation = invitacionesEntrantes.find((currentInvitation) => currentInvitation.id === invitationId);
-    if (!invitation) {
-      await refrescarInvitaciones();
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/chess/invitations/decline", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ invitationId }),
-      });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "No se pudo rechazar la invitación");
+      const invitation = invitacionesEntrantes.find((currentInvitation) => currentInvitation.id === invitationId);
+      if (!invitation) {
+        await refrescarInvitaciones();
+        return;
       }
 
-      const sendStatus = await channel.send({
-        type: "broadcast",
-        event: "game_invite_response",
-        payload: {
+      try {
+        const response = await fetch("/api/chess/invitations/decline", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ invitationId }),
+        });
+
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "No se pudo rechazar la invitación");
+        }
+
+        await emitirEventoRealtime("game_invite_response", {
           invitationId,
           inviterId: invitation.inviterId,
           inviteeId: usuario.id,
           inviteeName: usuario.username,
           status: "DECLINED",
           gameId: null,
-        } satisfies InviteResponsePayload,
-      });
+        } satisfies InviteResponsePayload);
 
-      if (sendStatus !== "ok") {
-        throw new Error("No se ha podido notificar el rechazo en tiempo real.");
+        await refrescarInvitaciones();
+        toast.success("Invitación rechazada");
+      } catch (error) {
+        console.error("Error rechazando invitación:", error);
+        toast.error(error instanceof Error ? error.message : "No se pudo rechazar la invitación");
       }
-
-      await refrescarInvitaciones();
-      toast.success("Invitación rechazada");
-    } catch (error) {
-      console.error("Error rechazando invitación:", error);
-      toast.error(error instanceof Error ? error.message : "No se pudo rechazar la invitación");
-    }
-  }, [channel, invitacionesEntrantes, refrescarInvitaciones, usuario]);
+    },
+    [emitirEventoRealtime, invitacionesEntrantes, refrescarInvitaciones, usuario]
+  );
 
   useEffect(() => {
     const realtimeClient = supabase;
@@ -374,10 +443,13 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
       return;
     }
 
+    setEstadoRealtime("connecting");
+
     const newChannel = realtimeClient.channel("global_lobby", {
       config: {
         broadcast: {
           ack: true,
+          self: false,
         },
         presence: {
           key: usuario.id,
@@ -388,9 +460,9 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
     newChannel
       .on("presence", { event: "sync" }, () => {
         const state = newChannel.presenceState();
-        const presences = Object.values(state).flat() as unknown as Array<{
-          userId: string;
-          username: string;
+        const presences = Object.values(state).flat() as Array<{
+          userId?: string;
+          username?: string;
           elo?: number;
           status?: UsuarioOnline["status"];
           online_at?: string;
@@ -404,8 +476,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
               elo?: number;
               status?: UsuarioOnline["status"];
               online_at?: string;
-            } =>
-              typeof presence?.userId === "string" && typeof presence?.username === "string"
+            } => typeof presence.userId === "string" && typeof presence.username === "string"
           )
           .map((presence) => ({
             userId: presence.userId,
@@ -423,7 +494,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
         setUsuariosOnline(sortUsers(uniqueUsers));
       })
       .on("broadcast", { event: "chat_message" }, ({ payload }) => {
-        setMensajes((current) => [...current, payload as MensajeChat]);
+        mergeMessages([payload as MensajeChat]);
       })
       .on("broadcast", { event: "game_invite" }, ({ payload }) => {
         const data = payload as GameInvitePayload;
@@ -486,6 +557,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
+          setEstadoRealtime("connected");
           await newChannel.track({
             userId: usuario.id,
             username: usuario.username,
@@ -493,6 +565,12 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
             status: "online",
             online_at: new Date().toISOString(),
           });
+          await Promise.all([refrescarInvitaciones(), cargarMensajes()]);
+          return;
+        }
+
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          setEstadoRealtime("disconnected");
         }
       });
 
@@ -500,9 +578,10 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
 
     return () => {
       setChannel((currentChannel) => (currentChannel === newChannel ? null : currentChannel));
+      setEstadoRealtime("disconnected");
       realtimeClient.removeChannel(newChannel);
     };
-  }, [aceptarInvitacion, rechazarInvitacion, refrescarInvitaciones, router, usuario]);
+  }, [aceptarInvitacion, cargarMensajes, mergeMessages, rechazarInvitacion, refrescarInvitaciones, router, usuario]);
 
   return (
     <ContextoRealtime.Provider
@@ -513,6 +592,7 @@ export function ProveedorContextoRealtime({ children }: { children: ReactNode })
         cargandoInvitaciones,
         invitacionesEntrantes,
         invitacionesSalientes,
+        estadoRealtime,
         enviarMensaje,
         invitarJugador,
         aceptarInvitacion,

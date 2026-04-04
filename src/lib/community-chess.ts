@@ -25,6 +25,10 @@ type RankedMove = {
   score: number;
 };
 
+type ChessMoveLike = {
+  san: string;
+};
+
 function addHours(date: Date, hours: number) {
   return new Date(date.getTime() + hours * 60 * 60 * 1000);
 }
@@ -315,7 +319,7 @@ export async function executeCommunityRound(options?: { force?: boolean }) {
     };
   }
 
-  const moveResult = chess.move(selectedMove);
+  const moveResult = chess.move(selectedMove) as ChessMoveLike | null;
   if (!moveResult) {
     return {
       success: false,

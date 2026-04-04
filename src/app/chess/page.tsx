@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Lock, LogOut, ShieldCheck, Trophy } from 'lucide-react';
+import { ArrowRight, Flame, Lock, LogOut, ShieldCheck, Trophy, Vote } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useChess } from '@/context/ContextoChess';
 import { BOTS } from '@/datos/bots';
 import { buildForgotPasswordPath, buildLoginPath, buildSignupPath } from '@/lib/auth';
@@ -147,6 +148,7 @@ function AuthGate() {
 
 function Dashboard() {
   const { usuario, cerrarSesion } = useChess();
+  const router = useRouter();
 
   const isBotUnlocked = (index: number) => {
     if (index === 0) return true;
@@ -188,6 +190,67 @@ function Dashboard() {
             Entra al lobby global, reta a jugadores conectados en tiempo real y después sigue afinando tu nivel contra nuestras IAs.
           </p>
         </div>
+
+        <section className="mb-16 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <Link
+            href="/chess/community"
+            className="surface-panel group relative overflow-hidden p-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary/25"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.18),_transparent_35%),linear-gradient(135deg,rgba(14,165,233,0.08),transparent_48%)] opacity-90" />
+            <div className="relative z-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Modo destacado
+              </p>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/70 bg-background text-primary">
+                  <Vote size={24} />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-semibold tracking-tight">Ajedrez comunal</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Un tablero global donde cada día se ejecuta la jugada con más votos.
+                  </p>
+                </div>
+              </div>
+              <p className="mt-6 max-w-2xl text-sm leading-7 text-muted-foreground">
+                Tu bando ya está asignado en tu cuenta. Entras, votas una jugada y los resultados quedan ocultos hasta que participas en la ronda actual.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                <span className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5">1 movimiento por día</span>
+                <span className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5">Votos ocultos hasta votar</span>
+                <span className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5">Equipos blancas vs negras</span>
+              </div>
+              <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity group-hover:opacity-90">
+                Entrar al comunitario
+                <ArrowRight size={16} />
+              </div>
+            </div>
+          </Link>
+
+          <div className="surface-panel-muted p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              Hoy en el hub
+            </p>
+            <h3 className="mt-4 text-2xl font-semibold tracking-tight">Tres formas de jugar</h3>
+            <div className="mt-6 space-y-4 text-sm leading-7 text-muted-foreground">
+              <p>
+                <span className="font-medium text-foreground">Lobby global:</span> reta a quien esté conectado y saltad a una mesa compartida.
+              </p>
+              <p>
+                <span className="font-medium text-foreground">Ajedrez comunal:</span> vota la mejor jugada de tu bando en la gran partida diaria.
+              </p>
+              <p>
+                <span className="font-medium text-foreground">Arena de bots:</span> practica con rivales que ya reaccionan según la partida y su nivel real.
+              </p>
+            </div>
+            <div className="mt-8 flex items-center gap-3 rounded-3xl border border-border/70 bg-background/70 p-4">
+              <Flame size={18} className="text-primary" />
+              <p className="text-sm text-foreground">
+                El modo comunal ahora queda arriba del todo para que no se pierda dentro del hub.
+              </p>
+            </div>
+          </div>
+        </section>
 
         <ChessLobby />
 
@@ -250,15 +313,21 @@ function Dashboard() {
                 </div>
 
                 <div className="surface-divider relative z-10 mt-auto p-4">
-                  <Link
-                    href={unlocked ? `/chess/play/${bot.id}` : '#'}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (unlocked) {
+                        router.push(`/chess/play/${bot.id}`);
+                      }
+                    }}
+                    disabled={!unlocked}
                     className={`block w-full rounded-full py-3 text-center text-sm font-medium transition-all ${unlocked
                         ? 'bg-foreground text-background hover:opacity-90'
                         : 'cursor-not-allowed bg-background/70 text-muted-foreground'
                       }`}
                   >
                     {unlocked ? 'Jugar Partida' : 'Bloqueado'}
-                  </Link>
+                  </button>
                 </div>
               </motion.div>
             );

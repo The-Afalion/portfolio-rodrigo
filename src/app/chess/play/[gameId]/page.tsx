@@ -1,181 +1,479 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Chess } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Chess } from "chess.js";
+import { Chessboard } from "react-chessboard";
 import { createClient } from "@/utils/supabase/client";
-import { useChess } from '@/context/ContextoChess';
-import { BOTS } from '@/datos/bots';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, MessageSquare, RefreshCw, Trophy, XCircle, Flag } from 'lucide-react';
-import Link from 'next/link';
+import { useChess } from "@/context/ContextoChess";
+import { BOTS, type BotAjedrez } from "@/datos/bots";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Brain, Flag, RefreshCw, Shield, Swords, Trophy, XCircle } from "lucide-react";
+import Link from "next/link";
+import { analizarMovimientoIA, evaluarTablero } from "@/utils/chessAI";
 
-import { obtenerMovimientoIA, evaluarTablero } from '@/utils/chessAI';
+type ChessMoveLike = {
+  san: string;
+  flags: string;
+  captured?: string;
+};
+
+function pickRandom(lines: string[]) {
+  return lines[Math.floor(Math.random() * lines.length)] ?? "";
+}
+
+function getThinkingDelay(bot: BotAjedrez) {
+  const normalized = Math.max(250, 1700 - bot.elo);
+  return bot.elo >= 1800 ? 850 : normalized;
+}
+
+function describePosition(evalScore: number) {
+  if (evalScore <= -250) {
+    return "Ventaja clara para las negras";
+  }
+
+  if (evalScore <= -80) {
+    return "Iniciativa negra";
+  }
+
+  if (evalScore >= 250) {
+    return "Ventaja clara para las blancas";
+  }
+
+  if (evalScore >= 80) {
+    return "Iniciativa blanca";
+  }
+
+  return "Posición equilibrada";
+}
+
+function buildBotReply(bot: BotAjedrez, move: ChessMoveLike, beforeEval: number, afterEval: number) {
+  const blackSwing = beforeEval - afterEval;
+
+  if (move.san.includes("#")) {
+    return pickRandom(bot.dialogos.victoria);
+  }
+
+  if (move.san.includes("+")) {
+    return pickRandom(bot.dialogos.jaque);
+  }
+
+  if (move.captured) {
+    return pickRandom(bot.dialogos.captura);
+  }
+
+  if (move.flags.includes("k") || move.flags.includes("q")) {
+    return pickRandom(bot.dialogos.enroque);
+  }
+
+  if (blackSwing > 160) {
+    return pickRandom(bot.dialogos.ventaja);
+  }
+
+  if (blackSwing < -90) {
+    return pickRandom(bot.dialogos.desventaja);
+  }
+
+  return pickRandom(bot.dialogos.movimiento);
+}
+
+function buildPlayerMoveReply(bot: BotAjedrez, move: ChessMoveLike, beforeEval: number, afterEval: number) {
+  const whiteSwing = afterEval - beforeEval;
+
+  if (move.san.includes("+")) {
+    return pickRandom(bot.dialogos.respuestaJugador);
+  }
+
+  if (move.captured && whiteSwing > 50) {
+    return pickRandom(bot.dialogos.respuestaJugador);
+  }
+
+  if (move.flags.includes("k") || move.flags.includes("q")) {
+    return pickRandom(bot.dialogos.enroque);
+  }
+
+  if (whiteSwing > 170) {
+    return pickRandom(bot.dialogos.desventaja);
+  }
+
+  if (whiteSwing < -110) {
+    return pickRandom(bot.dialogos.blunder);
+  }
+
+  return pickRandom(bot.dialogos.presion);
+}
 
 const BotGame = ({ botId }: { botId: string }) => {
   const router = useRouter();
-  const { usuario, registrarVictoria } = useChess();
-
-  const [game, setGame] = useState(new Chess());
-  const [bot, setBot] = useState(BOTS.find(b => b.id === botId));
-  const [dialogo, setDialogo] = useState<string>("");
-  const [estadoJuego, setEstadoJuego] = useState<'jugando' | 'victoria' | 'derrota' | 'tablas'>('jugando');
+  const { usuario, estaInicializando, registrarVictoria } = useChess();
+  const bot = useMemo(() => BOTS.find((candidate) => candidate.id === botId) ?? null, [botId]);
+  const [fen, setFen] = useState(() => new Chess().fen());
+  const [dialogo, setDialogo] = useState("");
+  const [lecturaPosicional, setLecturaPosicional] = useState("Esperando el primer movimiento.");
+  const [estadoJuego, setEstadoJuego] = useState<"jugando" | "victoria" | "derrota" | "tablas">("jugando");
   const [pensando, setPensando] = useState(false);
 
-  useEffect(() => {
-    if (!usuario || !bot) router.push('/chess');
-  }, [usuario, bot, router]);
+  const game = useMemo(() => new Chess(fen), [fen]);
+  const evaluation = useMemo(() => evaluarTablero(game), [game]);
 
   useEffect(() => {
-    if (bot) {
-      setDialogo(bot.dialogos.entrada[Math.floor(Math.random() * bot.dialogos.entrada.length)]);
+    if (!estaInicializando && (!usuario || !bot)) {
+      router.push("/chess");
     }
+  }, [bot, estaInicializando, router, usuario]);
+
+  useEffect(() => {
+    if (!bot) {
+      return;
+    }
+
+    setDialogo(pickRandom(bot.dialogos.entrada));
+    setLecturaPosicional(bot.personalidad.resumen);
+    setFen(new Chess().fen());
+    setEstadoJuego("jugando");
+    setPensando(false);
   }, [bot]);
 
   useEffect(() => {
-    if (game.turn() === 'b' && estadoJuego === 'jugando') {
-      setPensando(true);
-      // El tiempo de pensar es artifical para los bots fáciles, y real (bloqueante) para el Dijkstra
-      const tiempoPensar = Math.max(10, 2000 - (bot?.elo || 0));
-
-      setTimeout(() => {
-        if (!bot) return;
-
-        const move = obtenerMovimientoIA(game, bot.elo, bot.estilo);
-        if (move) {
-          const result = game.move(move);
-          setGame(new Chess(game.fen()));
-
-          if (game.isCheckmate()) {
-            setEstadoJuego('derrota');
-            setDialogo(bot.dialogos.victoria[Math.floor(Math.random() * bot.dialogos.victoria.length)] || "Jaque mate.");
-          } else if (game.isCheck()) {
-            setDialogo(bot.dialogos.jaque[Math.floor(Math.random() * bot.dialogos.jaque.length)] || "Jaque.");
-          } else if (result && (result as any).captured) {
-            setDialogo(bot.dialogos.captura[Math.floor(Math.random() * bot.dialogos.captura.length)] || "Captura.");
-          } else {
-            // Si no pasó nada extraordinario, el bot puede decir una frase normal o burlarse si vas perdiendo
-            const score = evaluarTablero(game);
-            if (score < -5 && Math.random() > 0.5) {
-              setDialogo(bot.dialogos.blunder[Math.floor(Math.random() * bot.dialogos.blunder.length)] || "Tu situación empeora.");
-            } else if (Math.random() < 0.3) {
-              setDialogo(bot.dialogos.movimiento[Math.floor(Math.random() * bot.dialogos.movimiento.length)] || "Tu turno.");
-            }
-          }
-        }
-        setPensando(false);
-      }, tiempoPensar);
+    if (!bot || estadoJuego !== "jugando" || game.turn() !== "b") {
+      return;
     }
-  }, [game, bot, estadoJuego]);
+
+    setPensando(true);
+    const snapshot = new Chess(fen);
+    const timeoutId = window.setTimeout(() => {
+      const beforeEval = evaluarTablero(snapshot);
+      const analysis = analizarMovimientoIA(snapshot, bot.elo, bot.estilo);
+
+      if (!analysis) {
+        setPensando(false);
+        return;
+      }
+
+      const move = snapshot.move(analysis.san) as ChessMoveLike | null;
+
+      if (!move) {
+        setPensando(false);
+        return;
+      }
+
+      const afterEval = evaluarTablero(snapshot);
+      setFen(snapshot.fen());
+      setLecturaPosicional(
+        `${bot.personalidad.etiqueta} · ${describePosition(afterEval)} · elección ${analysis.rank + 1}`
+      );
+
+      if (snapshot.isCheckmate()) {
+        setEstadoJuego("derrota");
+        setDialogo(pickRandom(bot.dialogos.victoria));
+        setPensando(false);
+        return;
+      }
+
+      if (snapshot.isDraw()) {
+        setEstadoJuego("tablas");
+        setDialogo("Tablas. Incluso el acero a veces se detiene.");
+        setPensando(false);
+        return;
+      }
+
+      setDialogo(buildBotReply(bot, move, beforeEval, afterEval));
+      setPensando(false);
+    }, getThinkingDelay(bot));
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [bot, estadoJuego, fen, game]);
+
+  function resetMatch() {
+    if (!bot) {
+      return;
+    }
+
+    setFen(new Chess().fen());
+    setEstadoJuego("jugando");
+    setPensando(false);
+    setDialogo(pickRandom(bot.dialogos.entrada));
+    setLecturaPosicional(bot.personalidad.resumen);
+  }
 
   function onDrop(sourceSquare: string, targetSquare: string) {
-    if (estadoJuego !== 'jugando' || game.turn() !== 'w') return false;
+    if (!bot || estadoJuego !== "jugando" || pensando || game.turn() !== "w") {
+      return false;
+    }
+
     try {
-      const move = game.move({ from: sourceSquare, to: targetSquare, promotion: 'q' });
-      if (move === null) return false;
-      setGame(new Chess(game.fen()));
-      if (game.isCheckmate()) {
-        setEstadoJuego('victoria');
-        setDialogo(bot?.dialogos.derrota[Math.floor(Math.random() * bot.dialogos.derrota.length)] || "Imposible...");
-        if (bot) registrarVictoria(bot.id);
-      } else if (game.isDraw()) {
-        setEstadoJuego('tablas');
-        setDialogo("Tablas. Un resultado aceptable.");
+      const nextGame = new Chess(fen);
+      const beforeEval = evaluarTablero(nextGame);
+      const move = nextGame.move({ from: sourceSquare, to: targetSquare, promotion: "q" }) as ChessMoveLike | null;
+
+      if (!move) {
+        return false;
       }
+
+      const afterEval = evaluarTablero(nextGame);
+      setFen(nextGame.fen());
+      setLecturaPosicional(`Tu jugada: ${move.san} · ${describePosition(afterEval)}`);
+
+      if (nextGame.isCheckmate()) {
+        setEstadoJuego("victoria");
+        setDialogo(pickRandom(bot.dialogos.derrota));
+        void registrarVictoria(bot.id);
+        return true;
+      }
+
+      if (nextGame.isDraw()) {
+        setEstadoJuego("tablas");
+        setDialogo("Tablas. Ninguno ha conseguido romper la posición.");
+        return true;
+      }
+
+      setDialogo(buildPlayerMoveReply(bot, move, beforeEval, afterEval));
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
 
-  if (!bot) return null;
-
-  return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col md:flex-row font-sans">
-      <div className="w-full md:w-1/3 p-8 border-r border-zinc-800 flex flex-col bg-zinc-900 relative z-20 shadow-2xl">
-        <Link href="/chess" className="inline-flex items-center gap-2 text-zinc-500 hover:text-white mb-10 transition-colors font-medium text-sm uppercase tracking-wider">
-          <ArrowLeft size={16} /> Volver al Club
-        </Link>
-        <div className="flex items-center gap-6 mb-8">
-          <div className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center text-5xl border-4 border-zinc-700 shadow-lg">
-            {bot.avatar}
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold font-serif mb-1">{bot.nombre}</h2>
-            <div className="flex gap-2">
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-400 uppercase tracking-wider">{bot.titulo}</span>
-              <span className="text-xs font-mono text-zinc-500 pt-0.5">ELO {bot.elo}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex-grow relative bg-zinc-950 rounded-2xl p-8 border border-zinc-800 shadow-inner mb-8">
-          <div className="absolute -top-3 left-8 bg-zinc-800 text-zinc-400 px-3 py-1 text-xs rounded-full uppercase font-bold tracking-wider border border-zinc-700">Chat en vivo</div>
-          <AnimatePresence mode="wait">
-            <motion.p key={dialogo} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="text-xl font-serif italic leading-relaxed text-zinc-300">&quot;{dialogo}&quot;</motion.p>
-          </AnimatePresence>
-          {pensando && (
-            <div className="mt-6 flex gap-2 opacity-50">
-              <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-              <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-              <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-            </div>
-          )}
-        </div>
-        {estadoJuego !== 'jugando' && (
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`p-6 rounded-xl text-center mb-6 border-2 ${estadoJuego === 'victoria' ? 'bg-green-900/20 border-green-500/50 text-green-400' : estadoJuego === 'derrota' ? 'bg-red-900/20 border-red-500/50 text-red-400' : 'bg-yellow-900/20 border-yellow-500/50 text-yellow-400'}`}>
-            {estadoJuego === 'victoria' && <Trophy className="mx-auto mb-3 w-10 h-10" />}
-            {estadoJuego === 'derrota' && <XCircle className="mx-auto mb-3 w-10 h-10" />}
-            <h3 className="text-2xl font-bold uppercase tracking-widest font-serif">{estadoJuego === 'victoria' ? '¡VICTORIA!' : estadoJuego === 'derrota' ? 'DERROTA' : 'TABLAS'}</h3>
-            {estadoJuego === 'victoria' && <p className="text-sm mt-2 font-mono">+50 Puntos de ELO</p>}
-          </motion.div>
-        )}
-        <div className="grid grid-cols-2 gap-4">
-          <button onClick={() => { setGame(new Chess()); setEstadoJuego('jugando'); setDialogo(bot.dialogos.entrada[Math.floor(Math.random() * bot.dialogos.entrada.length)]); }} className="py-4 bg-zinc-100 hover:bg-white text-zinc-900 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl uppercase tracking-wider text-sm"><RefreshCw size={18} /> Revancha</button>
-          <button onClick={() => { setEstadoJuego('derrota'); setDialogo("Una sabia decisión. Rendirse es mejor que sufrir."); }} className="py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all border border-zinc-700 uppercase tracking-wider text-sm"><Flag size={18} /> Rendirse</button>
+  if (estaInicializando) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-zinc-200">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/70 px-8 py-6 text-center">
+          <p className="text-sm uppercase tracking-[0.24em] text-zinc-500">Chess Club</p>
+          <h1 className="mt-4 text-3xl font-semibold">Preparando la mesa</h1>
+          <p className="mt-3 text-sm text-zinc-400">Estamos sincronizando tu sesión y el perfil del rival.</p>
         </div>
       </div>
-      <div className="w-full md:w-2/3 flex items-center justify-center bg-zinc-950 p-4 md:p-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-zinc-950"></div>
-        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/wood-pattern.png")' }}></div>
-        <div className="w-full max-w-[650px] aspect-square shadow-2xl shadow-black rounded-lg overflow-hidden border-[12px] border-zinc-800 relative z-10 bg-zinc-800">
-          <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation="white" customDarkSquareStyle={{ backgroundColor: '#52525b' }} customLightSquareStyle={{ backgroundColor: '#a1a1aa' }} animationDuration={200} customBoardStyle={{ borderRadius: '2px', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)' }} />
-        </div>
+    );
+  }
+
+  if (!usuario || !bot) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="mx-auto grid min-h-screen max-w-[1500px] gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <aside className="border-r border-zinc-800 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_45%),linear-gradient(180deg,rgba(24,24,27,0.98),rgba(10,10,12,0.98))] p-8">
+          <Link
+            href="/chess"
+            className="inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 transition-colors hover:text-white"
+          >
+            <ArrowLeft size={16} /> Volver al club
+          </Link>
+
+          <div className="mt-10 flex items-center gap-5">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-5xl shadow-2xl">
+              {bot.avatar}
+            </div>
+            <div>
+              <h1 className="text-3xl font-semibold">{bot.nombre}</h1>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-400">
+                  {bot.titulo}
+                </span>
+                <span className="rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-xs text-zinc-500">
+                  ELO {bot.elo}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 rounded-[28px] border border-zinc-800 bg-zinc-900/60 p-6">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-zinc-500">
+              <Brain size={14} />
+              <span>Perfil mental</span>
+            </div>
+            <p className="mt-4 text-lg font-medium text-zinc-100">{bot.personalidad.etiqueta}</p>
+            <p className="mt-3 text-sm leading-7 text-zinc-400">{bot.personalidad.resumen}</p>
+            <p className="mt-4 text-sm leading-7 text-zinc-500">{bot.descripcion}</p>
+          </div>
+
+          <div className="mt-6 rounded-[28px] border border-zinc-800 bg-zinc-950/70 p-6">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-zinc-500">
+              <Swords size={14} />
+              <span>Lectura actual</span>
+            </div>
+            <p className="mt-4 text-lg font-medium text-zinc-100">{describePosition(evaluation)}</p>
+            <p className="mt-2 text-sm text-zinc-400">{lecturaPosicional}</p>
+          </div>
+
+          <div className="mt-6 min-h-[180px] rounded-[32px] border border-zinc-800 bg-zinc-900/70 p-6">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-zinc-500">
+              <Shield size={14} />
+              <span>Chat del rival</span>
+            </div>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={dialogo}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-5 text-xl italic leading-relaxed text-zinc-200"
+              >
+                “{dialogo}”
+              </motion.p>
+            </AnimatePresence>
+            {pensando ? (
+              <div className="mt-5 flex gap-2 opacity-60">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400" style={{ animationDelay: "0ms" }} />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400" style={{ animationDelay: "140ms" }} />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400" style={{ animationDelay: "280ms" }} />
+              </div>
+            ) : null}
+          </div>
+
+          {estadoJuego !== "jugando" ? (
+            <motion.div
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className={`mt-6 rounded-[28px] border p-6 text-center ${
+                estadoJuego === "victoria"
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                  : estadoJuego === "derrota"
+                    ? "border-red-500/40 bg-red-500/10 text-red-300"
+                    : "border-amber-500/40 bg-amber-500/10 text-amber-300"
+              }`}
+            >
+              {estadoJuego === "victoria" ? <Trophy className="mx-auto h-10 w-10" /> : null}
+              {estadoJuego === "derrota" ? <XCircle className="mx-auto h-10 w-10" /> : null}
+              <h2 className="mt-4 text-2xl font-semibold">
+                {estadoJuego === "victoria" ? "Victoria" : estadoJuego === "derrota" ? "Derrota" : "Tablas"}
+              </h2>
+              <p className="mt-2 text-sm opacity-80">
+                {estadoJuego === "victoria"
+                  ? "Has superado el duelo y desbloqueado progreso contra bots."
+                  : estadoJuego === "derrota"
+                    ? "Revisa la secuencia crítica y vuelve a por la revancha."
+                    : "Partida equilibrada. Puedes intentarlo de nuevo al instante."}
+              </p>
+            </motion.div>
+          ) : null}
+
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <button
+              onClick={resetMatch}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 py-4 text-sm font-semibold text-zinc-950 transition-colors hover:bg-white"
+            >
+              <RefreshCw size={16} /> Revancha
+            </button>
+            <button
+              onClick={() => {
+                setEstadoJuego("derrota");
+                setPensando(false);
+                setDialogo("Retirada registrada. La próxima vez intenta resistir un poco más.");
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-4 text-sm font-semibold text-zinc-300 transition-colors hover:bg-zinc-800"
+            >
+              <Flag size={16} /> Rendirse
+            </button>
+          </div>
+        </aside>
+
+        <section className="relative flex items-center justify-center overflow-hidden p-4 sm:p-8 xl:p-12">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.14),_transparent_32%),radial-gradient(circle_at_bottom,_rgba(244,114,182,0.08),_transparent_26%)] opacity-90" />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(24,24,27,0.85),rgba(9,9,11,1))]" />
+
+          <div className="relative z-10 w-full max-w-[860px]">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-zinc-800 bg-zinc-900/70 px-5 py-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Duelo privado</p>
+                <p className="mt-2 text-sm text-zinc-300">
+                  Juegas con blancas. {pensando ? `${bot.nombre} está calculando.` : "Tu turno o espera según el tablero."}
+                </p>
+              </div>
+              <div className="rounded-full border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs font-medium text-zinc-400">
+                {describePosition(evaluation)}
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-[36px] border border-zinc-800 bg-zinc-900/70 p-3 shadow-[0_30px_80px_rgba(0,0,0,0.45)] sm:p-5">
+              <div className="rounded-[28px] border border-zinc-800 bg-zinc-950 p-2 sm:p-4">
+                <Chessboard
+                  position={fen}
+                  onPieceDrop={onDrop}
+                  boardOrientation="white"
+                  customDarkSquareStyle={{ backgroundColor: "#475569" }}
+                  customLightSquareStyle={{ backgroundColor: "#d6d3d1" }}
+                  animationDuration={220}
+                  customBoardStyle={{
+                    borderRadius: "20px",
+                    boxShadow: "inset 0 0 28px rgba(0,0,0,0.35)",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
 };
 
-// --- Multiplayer Logic ---
-const Chat = ({ gameId, supabase, user }: { gameId: string, supabase: any, user: any }) => {
-  const [messages, setMessages] = useState<any[]>([]);
+const Chat = ({ gameId, supabase, user }: { gameId: string; supabase: ReturnType<typeof createClient>; user: { id: string } }) => {
+  const [messages, setMessages] = useState<Array<{ id: string; senderId: string; content: string }>>([]);
   const [newMessage, setNewMessage] = useState("");
 
   useEffect(() => {
     const fetchMessages = async () => {
-      const { data } = await supabase.from("messages").select("*").eq("gameId", gameId).order("createdAt", { ascending: true });
-      setMessages(data || []);
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("gameId", gameId)
+        .order("createdAt", { ascending: true });
+      setMessages((data as Array<{ id: string; senderId: string; content: string }>) ?? []);
     };
-    fetchMessages();
-    const channel = supabase.channel(`chat:${gameId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `gameId=eq.${gameId}` }, (payload: any) => { setMessages((prev: any) => [...prev, payload.new]); }).subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    void fetchMessages();
+
+    const channel = supabase
+      .channel(`chat:${gameId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `gameId=eq.${gameId}` },
+        (payload: { new: { id: string; senderId: string; content: string } }) => {
+          setMessages((prev) => [...prev, payload.new]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, [gameId, supabase]);
 
-  const handleSendMessage = async (e: any) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim() === "") return;
+
+    if (newMessage.trim() === "") {
+      return;
+    }
+
     await supabase.from("messages").insert({ gameId, content: newMessage, senderId: user.id });
     setNewMessage("");
   };
 
   return (
-    <div className="w-full max-w-md mt-4">
-      <div className="border rounded-lg p-4 h-64 overflow-y-auto">
-        {messages.map((msg) => (<div key={msg.id} className={`chat ${msg.senderId === user.id ? "chat-end" : "chat-start"}`}><div className="chat-bubble">{msg.content}</div></div>))}
+    <div className="mt-4 w-full max-w-md">
+      <div className="h-64 overflow-y-auto rounded-lg border p-4">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`chat ${msg.senderId === user.id ? "chat-end" : "chat-start"}`}>
+            <div className="chat-bubble">{msg.content}</div>
+          </div>
+        ))}
       </div>
-      <form onSubmit={handleSendMessage} className="flex mt-2">
-        <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} className="input input-bordered flex-grow" placeholder="Type a message..." />
-        <button type="submit" className="btn btn-primary ml-2">Send</button>
+      <form onSubmit={handleSendMessage} className="mt-2 flex">
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          className="input input-bordered flex-grow"
+          placeholder="Type a message..."
+        />
+        <button type="submit" className="btn btn-primary ml-2">
+          Send
+        </button>
       </form>
     </div>
   );
@@ -186,64 +484,98 @@ const MultiplayerGame = ({ gameId }: { gameId: string }) => {
   const router = useRouter();
   const [game, setGame] = useState(new Chess());
   const [fen, setFen] = useState("start");
-  const [user, setUser] = useState<any>(null);
-  const [playerColor, setPlayerColor] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [playerColor, setPlayerColor] = useState<"w" | "b" | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
+      setUser(currentUser ? { id: currentUser.id } : null);
     };
-    getUser();
+
+    void getUser();
   }, [supabase]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
+
     const fetchGame = async () => {
       const { data, error } = await supabase.from("ChessGame").select("*").eq("id", gameId).single();
+
       if (error || !data) {
         router.push("/chess");
         return;
       }
-      const newGame = new Chess(data.fen || undefined);
-      setGame(newGame);
-      setFen(newGame.fen());
-      if (user.id === data.whitePlayerId) setPlayerColor("w");
-      else if (user.id === data.blackPlayerId) setPlayerColor("b");
-    };
-    fetchGame();
-    const channel = supabase.channel(`game:${gameId}`).on("postgres_changes", { event: "UPDATE", schema: "public", table: "ChessGame", filter: `id=eq.${gameId}` }, (payload: any) => {
-      const newFen = payload.new.fen;
-      const newGame = new Chess(newFen);
-      setGame(newGame);
-      setFen(newFen);
-    }).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [gameId, supabase, router, user]);
 
-  function onDrop(sourceSquare: any, targetSquare: any) {
-    if (game.turn() !== playerColor) return false;
-    const move = game.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
-    if (move === null) return false;
-    const newFen = game.fen();
+      const nextGame = new Chess(data.fen || undefined);
+      setGame(nextGame);
+      setFen(nextGame.fen());
+
+      if (user.id === data.whitePlayerId) {
+        setPlayerColor("w");
+      } else if (user.id === data.blackPlayerId) {
+        setPlayerColor("b");
+      }
+    };
+
+    void fetchGame();
+
+    const channel = supabase
+      .channel(`game:${gameId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "ChessGame", filter: `id=eq.${gameId}` },
+        (payload: { new: { fen: string } }) => {
+          const newFen = payload.new.fen;
+          const nextGame = new Chess(newFen);
+          setGame(nextGame);
+          setFen(newFen);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [gameId, router, supabase, user]);
+
+  function onDrop(sourceSquare: string, targetSquare: string) {
+    if (game.turn() !== playerColor) {
+      return false;
+    }
+
+    const nextGame = new Chess(fen);
+    const move = nextGame.move({ from: sourceSquare, to: targetSquare, promotion: "q" });
+
+    if (move === null) {
+      return false;
+    }
+
+    const newFen = nextGame.fen();
+    setGame(nextGame);
     setFen(newFen);
-    supabase.from("ChessGame").update({ fen: newFen, moves: game.pgn() }).eq("id", gameId).then();
+    void supabase.from("ChessGame").update({ fen: newFen, moves: nextGame.pgn() }).eq("id", gameId);
     return true;
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <h1 className="text-4xl font-bold mb-4">Game {gameId}</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <h1 className="mb-4 text-4xl font-bold">Game {gameId}</h1>
       <Chessboard position={fen} onPieceDrop={onDrop} boardOrientation={playerColor === "b" ? "black" : "white"} />
-      {user && <Chat gameId={gameId} supabase={supabase} user={user} />}
+      {user ? <Chat gameId={gameId} supabase={supabase} user={user} /> : null}
     </div>
   );
 };
 
 export default function GamePage() {
   const { gameId } = useParams();
-  const id = Array.isArray(gameId) ? gameId[0] : gameId as string;
-  const isBotGame = BOTS.some(b => b.id === id);
+  const id = Array.isArray(gameId) ? gameId[0] : (gameId as string);
+  const isBotGame = BOTS.some((bot) => bot.id === id);
 
   if (isBotGame) {
     return <BotGame botId={id} />;
