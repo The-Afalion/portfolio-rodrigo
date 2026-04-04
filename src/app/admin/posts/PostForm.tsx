@@ -5,13 +5,14 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useFormState } from 'react-dom';
 import toast from 'react-hot-toast';
-import { createPost, emptyAdminPostFormState } from './actions';
+import { createPost } from './actions';
 import FormButton from './FormButton';
 
 const MarkdownEditor = dynamic(() => import('./MarkdownEditor'), { ssr: false });
+const initialState = { message: null, errors: {}, status: 'idle' as const };
 
 export default function PostForm() {
-  const [state, dispatch] = useFormState(createPost, emptyAdminPostFormState);
+  const [state, dispatch] = useFormState(createPost, initialState);
   const [content, setContent] = useState('');
   const [published, setPublished] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);

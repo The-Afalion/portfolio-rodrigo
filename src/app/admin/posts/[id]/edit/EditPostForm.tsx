@@ -5,10 +5,11 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useFormState } from 'react-dom';
 import toast from 'react-hot-toast';
-import { updatePost, emptyAdminPostFormState } from '../../actions';
+import { updatePost } from '../../actions';
 import FormButton from '../../FormButton';
 
 const MarkdownEditor = dynamic(() => import('../../MarkdownEditor'), { ssr: false });
+const initialState = { message: null, errors: {}, status: 'idle' as const };
 
 type EditablePost = {
   id: string;
@@ -21,7 +22,7 @@ type EditablePost = {
 };
 
 export default function EditPostForm({ post }: { post: EditablePost }) {
-  const [state, dispatch] = useFormState(updatePost, emptyAdminPostFormState);
+  const [state, dispatch] = useFormState(updatePost, initialState);
   const [content, setContent] = useState(post.content);
   const [published, setPublished] = useState(post.published);
   const router = useRouter();

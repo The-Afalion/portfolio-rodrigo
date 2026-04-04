@@ -43,12 +43,6 @@ export type AdminPostFormState = {
   slug?: string;
 };
 
-export const emptyAdminPostFormState: AdminPostFormState = {
-  message: null,
-  errors: {},
-  status: 'idle',
-};
-
 function normalizeTags(tags: string) {
   return [...new Set(tags.split(',').map((tag) => tag.trim()).filter(Boolean))];
 }
