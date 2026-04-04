@@ -250,20 +250,36 @@ export function evaluarTablero(partida: Chess): number {
   return score;
 }
 
-function getSearchDepth(elo: number, partida: Chess) {
-  if (elo >= 1850) {
-    return partida.moves().length <= 18 || isEndgame(partida) ? 4 : 3;
+function getReplyWindow(elo: number) {
+  if (elo >= 1800) {
+    return 7;
   }
 
-  if (elo >= 1350) {
-    return 3;
+  if (elo >= 1300) {
+    return 5;
   }
 
-  if (elo >= 750) {
-    return 2;
+  if (elo >= 800) {
+    return 4;
   }
 
-  return 1;
+  return 2;
+}
+
+function getCandidateWindow(elo: number) {
+  if (elo >= 1800) {
+    return 10;
+  }
+
+  if (elo >= 1300) {
+    return 8;
+  }
+
+  if (elo >= 800) {
+    return 6;
+  }
+
+  return 5;
 }
 
 function getTemperature(elo: number, estilo: EstiloIA) {
@@ -352,45 +368,32 @@ function orderMoves(moves: ChessMoveLike[]) {
   return [...moves].sort((left, right) => scoreMoveOrdering(right) - scoreMoveOrdering(left));
 }
 
-function alphaBeta(partida: Chess, depth: number, alpha: number, beta: number): number {
-  if (depth === 0 || partida.isGameOver()) {
+function evaluateAfterBestReply(partida: Chess, moverIsWhite: boolean, replyWindow: number) {
+  if (partida.isGameOver()) {
     return evaluarTablero(partida);
   }
 
-  const moves = orderMoves(partida.moves({ verbose: true }) as ChessMoveLike[]);
-  const maximizing = partida.turn() === "w";
+  const replies = orderMoves((partida.moves({ verbose: true }) as ChessMoveLike[]).slice(0, 24)).slice(0, replyWindow);
 
-  if (maximizing) {
-    let value = -INFINITY_SCORE;
-
-    for (const move of moves) {
-      partida.move(move);
-      value = Math.max(value, alphaBeta(partida, depth - 1, alpha, beta));
-      partida.undo();
-      alpha = Math.max(alpha, value);
-
-      if (alpha >= beta) {
-        break;
-      }
-    }
-
-    return value;
+  if (replies.length === 0) {
+    return evaluarTablero(partida);
   }
 
-  let value = INFINITY_SCORE;
+  let bestReplyScore = partida.turn() === "w" ? -INFINITY_SCORE : INFINITY_SCORE;
 
-  for (const move of moves) {
-    partida.move(move);
-    value = Math.min(value, alphaBeta(partida, depth - 1, alpha, beta));
+  for (const reply of replies) {
+    partida.move(reply);
+    const score = evaluarTablero(partida);
     partida.undo();
-    beta = Math.min(beta, value);
 
-    if (alpha >= beta) {
-      break;
+    if (partida.turn() === "w") {
+      bestReplyScore = Math.max(bestReplyScore, score);
+    } else {
+      bestReplyScore = Math.min(bestReplyScore, score);
     }
   }
 
-  return value;
+  return moverIsWhite ? bestReplyScore : -bestReplyScore;
 }
 
 function getStyleBonus(move: ChessMoveLike, estilo: EstiloIA) {
@@ -453,18 +456,24 @@ export function analizarMovimientoIA(partida: Chess, elo: number, estilo: Estilo
   }
 
   const moverIsWhite = partida.turn() === "w";
-  const depth = getSearchDepth(elo, partida);
-  const moveEvaluations = orderMoves(moves).map((move) => {
+  const orderedMoves = orderMoves(moves);
+  const candidateWindow = Math.min(orderedMoves.length, getCandidateWindow(elo));
+  const replyWindow = getReplyWindow(elo);
+  const moveEvaluations = orderedMoves.slice(0, candidateWindow).map((move) => {
     partida.move(move);
-    const boardScore = alphaBeta(partida, Math.max(0, depth - 1), -INFINITY_SCORE, INFINITY_SCORE);
+    const immediateScore = evaluarTablero(partida);
+    const replyAdjustedScore = evaluateAfterBestReply(partida, moverIsWhite, replyWindow);
     partida.undo();
 
-    const sideAdjustedScore = moverIsWhite ? boardScore : -boardScore;
+    const sideAdjustedImmediateScore = moverIsWhite ? immediateScore : -immediateScore;
+    const tacticalBlend = elo >= 1300 ? 0.72 : elo >= 800 ? 0.58 : 0.35;
+    const sideAdjustedScore =
+      sideAdjustedImmediateScore * (1 - tacticalBlend) + replyAdjustedScore * tacticalBlend;
     const quality = sideAdjustedScore + getStyleBonus(move, estilo);
 
     return {
       move,
-      score: boardScore,
+      score: immediateScore,
       quality,
       tags: {
         capture: Boolean(move.captured),
@@ -485,8 +494,8 @@ export function analizarMovimientoIA(partida: Chess, elo: number, estilo: Estilo
   if (Math.random() < blunderChance && rankedMoves.length > 2) {
     const offset = Math.max(1, Math.floor(rankedMoves.length * 0.45));
     candidatePool = rankedMoves.slice(offset);
-  } else if (elo <= 650 && rankedMoves.length > 5) {
-    candidatePool = rankedMoves.slice(0, 5);
+  } else if (elo <= 650 && rankedMoves.length > 4) {
+    candidatePool = rankedMoves.slice(0, 4);
   }
 
   const weights = candidatePool.map((entry, index) => {
