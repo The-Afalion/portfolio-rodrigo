@@ -1,12 +1,14 @@
 import prisma from '@/lib/prisma';
 import { Mail, Trash2 } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
+import { requireSuperAdminAccess } from '@/lib/editor-access';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 async function markAsRead(id: string) {
   "use server";
+  await requireSuperAdminAccess();
   await prisma.contactMessage.update({
     where: { id },
     data: { read: true },
@@ -16,6 +18,7 @@ async function markAsRead(id: string) {
 
 async function deleteMessage(id: string) {
   "use server";
+  await requireSuperAdminAccess();
   await prisma.contactMessage.delete({
     where: { id },
   });
@@ -23,13 +26,33 @@ async function deleteMessage(id: string) {
 }
 
 export default async function AdminMessagesPage() {
+  await requireSuperAdminAccess();
+
   const messages = await prisma.contactMessage.findMany({
     orderBy: { createdAt: 'desc' },
   });
+  const unreadMessages = messages.filter((message) => !message.read).length;
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">Bandeja de Entrada</h1>
+    <div className="space-y-8">
+      <section className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Mensajes</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Bandeja de entrada</h1>
+        <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
+          Consulta mensajes de contacto, detecta pendientes y procesa el buzón desde un único lugar.
+        </p>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-[28px] border border-border bg-secondary/50 p-6">
+          <p className="text-sm font-medium text-muted-foreground">Mensajes totales</p>
+          <p className="mt-3 text-4xl font-semibold text-foreground">{messages.length}</p>
+        </div>
+        <div className="rounded-[28px] border border-border bg-secondary/50 p-6">
+          <p className="text-sm font-medium text-muted-foreground">Sin leer</p>
+          <p className="mt-3 text-4xl font-semibold text-foreground">{unreadMessages}</p>
+        </div>
+      </section>
 
       <div className="space-y-4">
         {messages.map((message: any) => (

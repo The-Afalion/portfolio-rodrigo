@@ -1,16 +1,30 @@
 import prisma from '@/lib/prisma';
+import { requireSuperAdminAccess } from '@/lib/editor-access';
 
 export const dynamic = 'force-dynamic'; // Forzar renderizado dinámico
 export const runtime = 'nodejs';
 
 export default async function AdminSubscribersPage() {
+  await requireSuperAdminAccess();
+
   const subscribers = await prisma.subscriber.findMany({
     orderBy: { createdAt: 'desc' },
   });
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">Suscriptores de la Newsletter</h1>
+    <div className="space-y-8">
+      <section className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Newsletter</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground">Suscriptores</h1>
+        <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
+          Vista consolidada del listado de suscripción con acceso restringido a superadministradores.
+        </p>
+      </section>
+
+      <section className="rounded-[28px] border border-border bg-secondary/50 p-6">
+        <p className="text-sm font-medium text-muted-foreground">Total de suscriptores</p>
+        <p className="mt-3 text-4xl font-semibold text-foreground">{subscribers.length}</p>
+      </section>
 
       <div className="bg-secondary border border-border rounded-lg">
         <table className="w-full text-left">

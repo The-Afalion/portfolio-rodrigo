@@ -104,3 +104,13 @@ export async function requireEditorAccess() {
 
   return access;
 }
+
+export async function requireSuperAdminAccess() {
+  const access = await requireEditorAccess();
+
+  if (!access.isSuperAdmin) {
+    redirect('/admin');
+  }
+
+  return access;
+}

@@ -2,16 +2,22 @@
 
 import { useFormStatus } from 'react-dom';
 
-export default function FormButton() {
+export default function FormButton({
+  idleLabel,
+  pendingLabel,
+}: {
+  idleLabel: string;
+  pendingLabel: string;
+}) {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
       disabled={pending}
-      className="px-4 py-2 bg-foreground text-background rounded hover:opacity-80 transition-opacity self-start disabled:opacity-50 disabled:cursor-not-allowed"
+      className="rounded-2xl bg-foreground px-5 py-3 text-sm font-semibold text-background transition-opacity hover:opacity-85 self-start disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {pending ? 'Creando...' : 'Crear Post'}
+      {pending ? pendingLabel : idleLabel}
     </button>
   );
 }

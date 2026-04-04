@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Users, Swords, Home, AlertTriangle, Inbox } from 'lucide-react';
+import { BookOpen, Users, Swords, Home, AlertTriangle, Inbox, ShieldCheck } from 'lucide-react';
 import { requireEditorAccess } from '@/lib/editor-access';
 import AdminSignOutButton from './AdminSignOutButton';
 
@@ -54,6 +54,10 @@ export default async function AdminLayout({
               <Link href="/admin/chess" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
                 <Swords size={20} />
                 <span>Partidas Ajedrez</span>
+              </Link>
+              <Link href="/admin/team" className="flex items-center gap-3 p-2 rounded hover:bg-muted transition-colors">
+                <ShieldCheck size={20} />
+                <span>Equipo</span>
               </Link>
             </>
           )}

@@ -9,14 +9,14 @@ export default function PostActions({ post }: { post: { id: string; published: b
   return (
     <div className="flex gap-2">
       <button 
-        className="text-xs px-3 py-1 border rounded hover:bg-muted disabled:opacity-50"
+        className="rounded-2xl border border-border/70 px-4 py-2 text-sm font-medium hover:bg-background disabled:opacity-50"
         disabled={isPending}
         onClick={() => startTransition(() => togglePublish(post.id, !post.published))}
       >
-        {isPending ? '...' : (post.published ? 'Despublicar' : 'Publicar')}
+        {isPending ? 'Actualizando...' : (post.published ? 'Pasar a borrador' : 'Publicar')}
       </button>
       <button 
-        className="text-xs px-3 py-1 border border-red-900 text-red-500 hover:bg-red-900/20 disabled:opacity-50"
+        className="rounded-2xl border border-red-500/30 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/10 disabled:opacity-50"
         disabled={isPending}
         onClick={() => {
           if (confirm('¿Estás seguro de que quieres eliminar este post?')) {
@@ -24,7 +24,7 @@ export default function PostActions({ post }: { post: { id: string; published: b
           }
         }}
       >
-        {isPending ? '...' : 'Eliminar'}
+        {isPending ? 'Eliminando...' : 'Eliminar'}
       </button>
     </div>
   );
