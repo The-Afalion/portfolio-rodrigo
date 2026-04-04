@@ -1,13 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ResetPasswordPage() {
-  const supabase = useMemo(() => createClient(), []);
+  const [supabase] = useState(() => createClient());
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

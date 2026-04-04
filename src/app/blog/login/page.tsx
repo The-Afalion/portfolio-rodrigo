@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -23,10 +23,7 @@ function BlogLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const nextPath = useMemo(
-    () => getSafeNextPath(searchParams.get('next')),
-    [searchParams]
-  );
+  const nextPath = getSafeNextPath(searchParams.get('next'));
 
   useEffect(() => {
     let mounted = true;

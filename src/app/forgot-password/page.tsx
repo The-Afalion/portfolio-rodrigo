@@ -1,12 +1,12 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ForgotPasswordPage() {
-  const supabase = useMemo(() => createClient(), []);
+  const [supabase] = useState(() => createClient());
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

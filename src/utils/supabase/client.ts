@@ -1,7 +1,11 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { createMissingSupabaseClient, getSupabaseBrowserEnv } from "@/lib/supabase-env";
 
-let browserClient: ReturnType<typeof createBrowserClient> | null = null;
+declare global {
+  interface Window {
+    __supabaseBrowserClient?: ReturnType<typeof createBrowserClient>;
+  }
+}
 
 export function createClient() {
   const env = getSupabaseBrowserEnv();
@@ -12,9 +16,13 @@ export function createClient() {
     );
   }
 
-  if (!browserClient) {
-    browserClient = createBrowserClient(env.url, env.key);
+  if (typeof window === "undefined") {
+    return createBrowserClient(env.url, env.key);
   }
 
-  return browserClient;
+  if (!window.__supabaseBrowserClient) {
+    window.__supabaseBrowserClient = createBrowserClient(env.url, env.key);
+  }
+
+  return window.__supabaseBrowserClient;
 }
