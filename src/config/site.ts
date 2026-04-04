@@ -81,12 +81,14 @@ function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
-const chromeHiddenPrefixes = ['/admin', '/login', '/signup', '/blog/login'] as const;
-const footerHiddenPrefixes = ['/admin', '/login', '/signup', '/blog/login', '/nexus'] as const;
+const chromeHiddenPrefixes = ['/admin', '/login', '/signup', '/forgot-password', '/reset-password', '/blog/login'] as const;
+const footerHiddenPrefixes = ['/admin', '/login', '/signup', '/forgot-password', '/reset-password', '/blog/login', '/nexus'] as const;
 const newsletterHiddenPrefixes = [
   '/admin',
   '/login',
   '/signup',
+  '/forgot-password',
+  '/reset-password',
   '/blog/login',
   '/chess',
   '/nexus',

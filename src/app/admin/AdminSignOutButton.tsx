@@ -3,6 +3,7 @@
 import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { buildLoginPath } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/client';
 
 export default function AdminSignOutButton() {
@@ -15,7 +16,7 @@ export default function AdminSignOutButton() {
     const supabase = createClient();
     await supabase.auth.signOut();
 
-    router.replace('/blog/login');
+    router.replace(buildLoginPath('editor', '/admin'));
     router.refresh();
   };
 

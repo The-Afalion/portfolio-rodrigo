@@ -1,6 +1,7 @@
 import 'server-only';
 
 import prisma from '@/lib/prisma';
+import { buildLoginPath, buildPath } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -88,11 +89,17 @@ export async function requireEditorAccess() {
   const access = await getEditorAccess();
 
   if (!access.user) {
-    redirect('/blog/login?next=/admin');
+    redirect(buildLoginPath('editor', '/admin'));
   }
 
   if (!access.isEditor) {
-    redirect('/blog/login?error=not_editor');
+    redirect(
+      buildPath('/login', {
+        audience: 'editor',
+        next: '/admin',
+        error: 'not_editor',
+      })
+    );
   }
 
   return access;

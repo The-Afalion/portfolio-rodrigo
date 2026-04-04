@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase-client';
+import { supabase } from '@/lib/supabase';
 
 interface UsuarioChess {
   id: string;
@@ -14,13 +14,10 @@ interface UsuarioChess {
 
 interface ContextoChessProps {
   usuario: UsuarioChess | null;
-  iniciarSesion: (email: string, password: string) => Promise<void>;
-  registrarse: (email: string, password: string) => Promise<void>;
   cerrarSesion: () => Promise<void>;
   registrarVictoria: (botId: string) => Promise<void>;
   error: string | null;
-  mensaje: string | null;
-  cargando: boolean;
+  estaInicializando: boolean;
 }
 
 const ContextoChess = createContext<ContextoChessProps | undefined>(undefined);
@@ -82,14 +79,14 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(
     supabase ? null : 'Las variables publicas de Supabase no estan configuradas.'
   );
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [cargando, setCargando] = useState(false);
+  const [estaInicializando, setEstaInicializando] = useState(Boolean(supabase));
   const router = useRouter();
 
   useEffect(() => {
     const client = supabase;
 
     if (!client) {
+      setEstaInicializando(false);
       return;
     }
 
@@ -100,6 +97,7 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
 
       if (!session?.user) {
         setUsuario(null);
+        setEstaInicializando(false);
         return;
       }
 
@@ -109,6 +107,8 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
       } catch (syncError) {
         console.error('Error cargando perfil global:', syncError);
         setError('No se pudo cargar tu perfil compartido.');
+      } finally {
+        setEstaInicializando(false);
       }
     };
 
@@ -117,6 +117,8 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((_event, session) => {
+      setEstaInicializando(false);
+
       if (!session?.user) {
         setUsuario(null);
         return;
@@ -137,88 +139,16 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const iniciarSesion = async (email: string, password: string) => {
-    if (!supabase) {
-      setError('Configura Supabase antes de usar el area de ajedrez.');
-      return;
-    }
-
-    setCargando(true);
-    setError(null);
-    setMensaje(null);
-
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
-
-      if (signInError) {
-        throw new Error(signInError.message);
-      }
-
-      const currentUser = await ensureProfileAndLoadUser();
-      setUsuario(currentUser);
-    } catch (authError) {
-      const message = authError instanceof Error ? authError.message : 'Error desconocido.';
-      setError(message === 'Invalid login credentials' ? 'Credenciales incorrectas.' : message);
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const registrarse = async (email: string, password: string) => {
-    if (!supabase) {
-      setError('Configura Supabase antes de usar el area de ajedrez.');
-      return;
-    }
-
-    setCargando(true);
-    setError(null);
-    setMensaje(null);
-
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          data: {
-            display_name: normalizedEmail.split('@')[0],
-          },
-        },
-      });
-
-      if (signUpError) {
-        throw new Error(signUpError.message);
-      }
-
-      if (data.session) {
-        const currentUser = await ensureProfileAndLoadUser();
-        setUsuario(currentUser);
-        setMensaje('Cuenta creada correctamente. Ya puedes usar el mismo usuario en toda la web.');
-      } else {
-        setMensaje('Cuenta creada. Si tu proyecto exige confirmacion por correo, revisa tu email para activarla.');
-      }
-    } catch (authError) {
-      const message = authError instanceof Error ? authError.message : 'Error desconocido.';
-      setError(message === 'User already registered' ? 'Ese correo ya esta registrado.' : message);
-    } finally {
-      setCargando(false);
-    }
-  };
-
   const cerrarSesion = async () => {
     if (!supabase) {
       return;
     }
 
     await supabase.auth.signOut();
-    setMensaje(null);
     setError(null);
     setUsuario(null);
     router.push('/chess');
+    router.refresh();
   };
 
   const registrarVictoria = async (botId: string) => {
@@ -267,13 +197,10 @@ export function ProveedorContextoChess({ children }: { children: ReactNode }) {
     <ContextoChess.Provider
       value={{
         usuario,
-        iniciarSesion,
-        registrarse,
         cerrarSesion,
         registrarVictoria,
         error,
-        mensaje,
-        cargando,
+        estaInicializando,
       }}
     >
       {children}

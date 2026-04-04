@@ -1,139 +1,19 @@
-"use client";
+import { AuthFormCard } from '@/components/auth/AuthFormCard';
+import { AuthShell } from '@/components/auth/AuthShell';
+import { getAuthErrorMessage, getFirstQueryValue, parseAuthAudience, resolveNextPath } from '@/lib/auth';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { signUp } from './actions';
-import { useRouter } from 'next/navigation';
-
-export default function SignupPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setMessage(null);
-
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
-      return;
-    }
-
-    setLoading(true);
-
-    const result = await signUp(email, password, confirmPassword);
-
-    setLoading(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-
-    if (result.needsEmailConfirmation) {
-      setMessage('Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.');
-      return;
-    }
-
-    router.push('/chess');
-  };
+export default function SignupPage({
+  searchParams,
+}: {
+  searchParams?: { audience?: string | string[]; error?: string | string[]; next?: string | string[] };
+}) {
+  const audience = parseAuthAudience(getFirstQueryValue(searchParams?.audience));
+  const nextPath = resolveNextPath(audience, getFirstQueryValue(searchParams?.next));
+  const initialError = getAuthErrorMessage(getFirstQueryValue(searchParams?.error), audience);
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-sm">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-4xl font-bold font-serif text-white">CREAR CUENTA</h1>
-          <p className="text-zinc-500">Un solo usuario para el blog, chess y las futuras zonas de la web.</p>
-        </motion.div>
-
-        <motion.form
-          onSubmit={handleSubmit}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { delay: 0.2 } }}
-          className="flex flex-col gap-4"
-        >
-          <div className="flex flex-col">
-            <label className="text-zinc-400 text-sm mb-1">Correo electrónico</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              required
-              className="bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:outline-none focus:border-green-500 transition-colors"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-zinc-400 text-sm mb-1">Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimo 8 caracteres"
-              minLength={8}
-              required
-              className="bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:outline-none focus:border-green-500 transition-colors"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-zinc-400 text-sm mb-1">Repite la contraseña</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repite tu contraseña"
-              minLength={8}
-              required
-              className="bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:outline-none focus:border-green-500 transition-colors"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-green-600 text-black p-3 rounded-md font-bold hover:bg-green-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-          >
-            {loading ? 'Creando...' : 'Crear Cuenta'}
-          </button>
-        </motion.form>
-
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 text-red-400 bg-red-900/30 p-3 border border-red-700 rounded-md text-center"
-          >
-            <p>{error}</p>
-          </motion.div>
-        )}
-
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 text-emerald-300 bg-emerald-900/20 p-3 border border-emerald-700 rounded-md text-center"
-          >
-            <p>{message}</p>
-          </motion.div>
-        )}
-
-        <div className="text-center mt-8">
-          <p className="text-zinc-500">
-            ¿Ya tienes cuenta?{' '}
-            <a href="/login" className="text-green-500 hover:underline">
-              Inicia sesión
-            </a>
-          </p>
-        </div>
-      </div>
-    </main>
+    <AuthShell audience={audience}>
+      <AuthFormCard audience={audience} initialError={initialError} mode="signup" nextPath={nextPath} />
+    </AuthShell>
   );
 }
