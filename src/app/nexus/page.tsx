@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import dynamicImport from 'next/dynamic';
 import ErrorDisplay from '@/components/ErrorDisplay';
+import { createClient } from '@/utils/supabase/server';
 
 // Cargamos el cliente del Nexus de forma dinámica
 const NexusClient = dynamicImport(() => import('./NexusClient'), {
@@ -13,11 +14,15 @@ export const dynamic = 'force-dynamic';
 
 export default async function NexusPage() {
   const playerEmailCookie = cookies().get('player-email');
+  const supabase = createClient(cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const playerEmail = user?.email ?? playerEmailCookie?.value ?? null;
 
   // Si el usuario no está identificado, no puede entrar al Nexus.
-  if (!playerEmailCookie?.value) {
-    // Lo redirigimos al registro del ajedrez comunitario, que sirve como registro global.
-    redirect('/chess/community/register');
+  if (!playerEmail) {
+    redirect('/chess');
   }
 
   try {
@@ -28,7 +33,7 @@ export default async function NexusPage() {
     // Por ahora, solo pasamos el email, la autenticación la manejaremos en el cliente.
     return (
       <NexusClient 
-        playerEmail={playerEmailCookie.value}
+        playerEmail={playerEmail}
       />
     );
   } catch (error: any) {

@@ -41,6 +41,7 @@ model Profile {
   id                  String           @id // Coincide con el ID de `auth.users`
   elo                 Int              @default(1000)
   role                String           @default("USER") // "USER" | "ADMIN"
+  communitySide       String?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   gamesAsWhite        ChessGame[]      @relation("GamesAsWhite")
@@ -179,5 +180,11 @@ model CommunityVote {
   game      CommunityChessGame @relation(fields: [gameId], references: [id])
   move      String
   userId    String?
+  isFake    Boolean  @default(false)
+  syntheticKey String?
   createdAt DateTime @default(now())
+
+  @@unique([gameId, userId])
+  @@unique([gameId, syntheticKey])
+  @@index([gameId, move])
 }

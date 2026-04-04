@@ -30,6 +30,7 @@ export async function POST() {
     profile: {
       elo: profile.elo,
       role: profile.role,
+      communitySide: profile.communitySide,
     },
   });
 }

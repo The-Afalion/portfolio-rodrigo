@@ -3,6 +3,8 @@ import 'server-only';
 import type { User } from '@supabase/supabase-js';
 import prisma from '@/lib/prisma';
 
+export type CommunitySide = 'WHITE' | 'BLACK';
+
 function normalizeEmail(email?: string | null) {
   return email?.trim().toLowerCase() ?? '';
 }
@@ -55,14 +57,34 @@ function isMissingProfileTableError(error: unknown) {
   );
 }
 
+function getRandomCommunitySide(): CommunitySide {
+  return Math.random() < 0.5 ? 'WHITE' : 'BLACK';
+}
+
 export async function ensureProfileForUser(user: Pick<User, 'id' | 'email'>) {
   const role = isAdminEmail(user.email) ? 'ADMIN' : undefined;
-
-  return prisma.profile.upsert({
+  const existingProfile = await prisma.profile.findUnique({
     where: { id: user.id },
-    update: role ? { role } : {},
-    create: {
+  });
+
+  if (existingProfile) {
+    if (!existingProfile.communitySide || (role && existingProfile.role !== role)) {
+      return prisma.profile.update({
+        where: { id: user.id },
+        data: {
+          ...(role ? { role } : {}),
+          ...(existingProfile.communitySide ? {} : { communitySide: getRandomCommunitySide() }),
+        },
+      });
+    }
+
+    return existingProfile;
+  }
+
+  return prisma.profile.create({
+    data: {
       id: user.id,
+      communitySide: getRandomCommunitySide(),
       ...(role ? { role } : {}),
     },
   });
@@ -78,6 +100,7 @@ export async function ensureProfileForUserSafely(user: Pick<User, 'id' | 'email'
         id: user.id,
         elo: 1000,
         role: isAdminEmail(user.email) ? 'ADMIN' : 'USER',
+        communitySide: getRandomCommunitySide(),
         createdAt: new Date(),
         updatedAt: new Date(),
       };

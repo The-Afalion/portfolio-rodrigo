@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Users, X, Send, Gamepad2 } from 'lucide-react';
 
 export default function ChatRealtime() {
-  const { usuariosOnline, mensajes, enviarMensaje, invitarJugador } = useRealtime();
+  const { usuariosOnline, mensajes, enviarMensaje, invitarJugador, invitacionesEntrantes } = useRealtime();
   const { usuario } = useChess();
   const [isOpen, setIsOpen] = useState(false);
   const [mensajeInput, setMensajeInput] = useState('');
@@ -39,7 +39,7 @@ export default function ChatRealtime() {
       >
         <MessageSquare size={24} />
         <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full absolute -top-2 -right-2 border-2 border-zinc-900">
-          {usuariosOnline.length}
+          {invitacionesEntrantes.length || usuariosOnline.length}
         </span>
       </motion.button>
 
@@ -75,7 +75,7 @@ export default function ChatRealtime() {
                   {/* Menú de Invitación (Hover) */}
                   <div className="absolute top-10 left-0 w-32 bg-zinc-800 border border-zinc-700 rounded p-2 hidden group-hover:flex flex-col gap-1 z-10 shadow-xl">
                     <button 
-                      onClick={() => invitarJugador(u.userId, 'chess')}
+                      onClick={() => void invitarJugador(u.userId)}
                       className="text-xs text-left px-2 py-1 hover:bg-zinc-700 rounded flex items-center gap-2"
                     >
                       <Gamepad2 size={12} /> Retar a Ajedrez

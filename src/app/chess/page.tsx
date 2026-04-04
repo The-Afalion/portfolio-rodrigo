@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useChess } from '@/context/ContextoChess';
 import { BOTS } from '@/datos/bots';
 import { buildForgotPasswordPath, buildLoginPath, buildSignupPath } from '@/lib/auth';
+import ChessLobby from './ChessLobby';
 
 function LoadingScreen() {
   return (
@@ -182,9 +183,19 @@ function Dashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <div className="mb-16 text-center">
-          <h2 className="mb-6 text-4xl font-semibold md:text-5xl">La Arena</h2>
+          <h2 className="mb-6 text-4xl font-semibold md:text-5xl">Chess Club</h2>
           <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            Enfréntate a nuestras IAs personalizadas. Cada victoria te acerca más al título de Gran Maestro.
+            Entra al lobby global, reta a jugadores conectados en tiempo real y después sigue afinando tu nivel contra nuestras IAs.
+          </p>
+        </div>
+
+        <ChessLobby />
+
+        <div className="mb-10 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Modo individual</p>
+          <h3 className="mt-4 text-3xl font-semibold md:text-4xl">La Arena contra bots</h3>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
+            Cuando no haya nadie conectado, puedes seguir escalando el club derrotando a cada rival artificial.
           </p>
         </div>
 

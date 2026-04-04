@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { executeMostVotedMove } from '@/app/chess/community/actions';
+import { executeCommunityRound } from '@/lib/community-chess';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,13 +19,13 @@ export async function GET(request: Request) {
 
   // 2. Ejecutar la lógica del movimiento
   try {
-    const result = await executeMostVotedMove();
+    const result = await executeCommunityRound();
     if (result.error) {
       console.error('Cron Job Error:', result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
-    console.log('Cron Job Success:', result.success || result.message);
-    return NextResponse.json({ success: true, message: result.success || result.message });
+    console.log('Cron Job Success:', result.message);
+    return NextResponse.json({ success: true, message: result.message, move: result.move ?? null });
   } catch (error: any) {
     console.error('Cron Job Failed:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });

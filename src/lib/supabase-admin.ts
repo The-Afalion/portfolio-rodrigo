@@ -51,3 +51,13 @@ export async function findSupabaseUserByEmail(email: string) {
   const users = await listAllSupabaseUsers();
   return users.find((user) => user.email?.trim().toLowerCase() === normalizedEmail) ?? null;
 }
+
+export async function listSupabaseUsersByIds(userIds: string[]) {
+  if (userIds.length === 0) {
+    return [];
+  }
+
+  const wantedIds = new Set(userIds);
+  const users = await listAllSupabaseUsers();
+  return users.filter((user) => wantedIds.has(user.id));
+}

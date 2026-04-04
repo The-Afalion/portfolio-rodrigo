@@ -35,7 +35,7 @@ export default function ChessHubSection() {
             href="/chess/community"
             icon={Users}
             title="Ajedrez Comunitario"
-            description="Únete a un bando y vota por el próximo movimiento en una partida global que dura semanas."
+            description="Te asignamos blancas o negras al crear tu cuenta y cada 24 horas se ejecuta el movimiento más votado."
           />
           <GameModeCard 
             href="/chess/ai-battle"
