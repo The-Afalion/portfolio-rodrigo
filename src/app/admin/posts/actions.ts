@@ -30,7 +30,7 @@ const PostSchema = z.object({
   published: z.boolean().default(false),
 });
 
-export type AdminPostFormState = {
+type AdminPostFormState = {
   message: string | null;
   errors: {
     title?: string[];

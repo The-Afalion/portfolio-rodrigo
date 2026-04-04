@@ -6,7 +6,7 @@ import { getBaseSiteUrl } from '@/lib/auth';
 import { isSuperAdminEmail, requireSuperAdminAccess } from '@/lib/editor-access';
 import { findSupabaseUserByEmail, getSupabaseAdminClient, listAllSupabaseUsers } from '@/lib/supabase-admin';
 
-export type ManageEditorResult = {
+type ManageEditorResult = {
   error?: string;
   success?: string;
 };
