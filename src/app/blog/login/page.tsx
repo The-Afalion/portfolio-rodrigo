@@ -1,15 +1,15 @@
 "use client";
 
 import { Suspense, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { Lock, Mail, Loader2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 
 function getSafeNextPath(next: string | null) {
   if (!next || !next.startsWith('/') || next.startsWith('//')) {
     return '/admin';
   }
-
   return next;
 }
 
@@ -29,13 +29,9 @@ function BlogLoginContent() {
     let mounted = true;
 
     async function checkSession() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       if (user) {
         router.replace(nextPath);
@@ -45,9 +41,9 @@ function BlogLoginContent() {
 
       const errorParam = searchParams.get('error');
       if (errorParam === 'not_editor') {
-        setError('Tu cuenta existe, pero todavia no tiene permisos de editor del blog.');
+        setError('Tu cuenta existe, pero no tiene permisos editoriales asignados.');
       } else if (errorParam === 'auth_callback' || errorParam === 'auth_verify') {
-        setError('No se pudo completar el acceso desde el enlace de Supabase. Intenta iniciar sesion otra vez.');
+        setError('Enlace inválido o expirado. Por favor, intenta iniciar sesión de nuevo.');
       }
 
       setCheckingSession(false);
@@ -55,9 +51,7 @@ function BlogLoginContent() {
 
     checkSession();
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [nextPath, router, searchParams, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,7 +66,7 @@ function BlogLoginContent() {
 
     if (error) {
       setLoading(false);
-      setError('No se pudo iniciar sesion. Revisa el correo, la contrasena y que la invitacion del editor este aceptada.');
+      setError('Credenciales inválidas o invitación pendiente de aceptación.');
       return;
     }
 
@@ -81,80 +75,124 @@ function BlogLoginContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] text-slate-800 flex items-center justify-center p-4 font-sans relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-50/50 rounded-full blur-3xl pointer-events-none" />
+    <main className="relative min-h-screen flex items-center justify-center p-4 sm:p-8 overflow-hidden bg-background">
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[10%] left-[15%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full bg-[var(--theme-glow-1)] blur-[100px] opacity-70" />
+        <div className="absolute bottom-[10%] right-[15%] w-[45vw] h-[45vw] max-w-[600px] max-h-[600px] rounded-full bg-[var(--theme-glow-2)] blur-[120px] opacity-70" />
+      </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="w-full max-w-md relative z-10"
+        initial={{ opacity: 0, scale: 0.96, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[420px] relative z-10"
       >
-        <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-3xl p-8 sm:p-12">
-          <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-blue-100">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-serif font-bold text-slate-900 mb-2">Nexus de Editores</h1>
-            <p className="text-sm text-slate-500 font-medium">Acceso al panel editorial del blog</p>
-          </div>
+         <div className="surface-panel p-8 sm:p-12 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Correo Electronico</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="editor@rodocodes.dev"
-                required
-                className="bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all font-medium text-sm"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Contrasena</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                required
-                className="bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all font-medium text-sm tracking-widest"
-              />
+            <div className="text-center mb-10 relative">
+              <motion.div 
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.1, type: "spring", bounce: 0.4 }}
+                className="mx-auto w-16 h-16 bg-surface-elevated border border-border/80 rounded-2xl flex items-center justify-center mb-6 shadow-sm relative"
+              >
+                <div className="absolute inset-0 rounded-2xl bg-foreground/5 blur-xl"></div>
+                <ShieldCheck className="w-8 h-8 text-foreground/80 relative z-10" strokeWidth={1.5} />
+              </motion.div>
+              
+              <h1 className="text-3xl font-display font-semibold tracking-tight text-foreground mb-3">
+                Nexus de Editores
+              </h1>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Acceso restringido al centro de control. Verifica tu identidad para continuar.
+              </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || checkingSession}
-              className="mt-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {checkingSession ? 'Comprobando acceso...' : loading ? 'Autenticando...' : 'Entrar al panel'}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5 relative z-10">
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground ml-1">
+                  Identificador
+                </label>
+                <div className="relative group/input">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within/input:text-foreground transition-colors" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="editor@rodocodes.dev"
+                    required
+                    className="w-full bg-background/50 border border-border/80 rounded-xl py-3.5 pl-11 pr-4 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground/30 focus:ring-1 focus:ring-foreground/20 transition-all font-medium text-sm backdrop-blur-sm shadow-sm"
+                  />
+                </div>
+              </div>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-6 text-[13px] font-medium text-red-600 bg-red-50 p-4 border border-red-100 rounded-xl text-center"
-            >
-              <p>{error}</p>
-            </motion.div>
-          )}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    Código de Acceso
+                  </label>
+                </div>
+                <div className="relative group/input">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within/input:text-foreground transition-colors" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    required
+                    className="w-full bg-background/50 border border-border/80 rounded-xl py-3.5 pl-11 pr-4 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground/30 focus:ring-1 focus:ring-foreground/20 transition-all font-medium text-sm tracking-widest backdrop-blur-sm shadow-sm"
+                  />
+                </div>
+              </div>
 
-          <div className="mt-8 text-center text-xs text-slate-400 font-medium border-t border-slate-100 pt-6 space-y-2">
-            <p>Solo pueden acceder usuarios invitados como editores en Supabase Auth.</p>
-            <p>Si recibiste un correo de invitacion, acepta el enlace primero y crea tu contrasena.</p>
-            <p>
-              <a href="/forgot-password" className="text-blue-500 hover:underline">
-                Recuperar contraseña
+              <button
+                type="submit"
+                disabled={loading || checkingSession}
+                className="group mt-4 relative w-full flex items-center justify-center gap-2 bg-foreground text-background py-4 px-6 rounded-xl font-semibold overflow-hidden transition-all hover:bg-foreground/90 disabled:opacity-70 disabled:cursor-not-allowed border border-transparent shadow-sm"
+              >
+                {checkingSession ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-background" />
+                ) : (
+                  <>
+                    <span>Establecer Conexión</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, y: -10 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-6"
+                >
+                  <div className="flex items-start gap-3 p-4 rounded-xl border bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400 shadow-sm backdrop-blur-sm">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <p className="text-sm font-medium leading-relaxed">{error}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="mt-10 pt-6 surface-divider flex flex-col items-center gap-3 text-center">
+              <p className="text-xs text-muted-foreground/80 font-medium">
+                Acceso exclusivo mediante autorización.
+              </p>
+              <a 
+                href="/forgot-password" 
+                className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors underline decoration-border underline-offset-4 hover:decoration-foreground/50"
+              >
+                ¿Necesitas recuperar tu código de acceso?
               </a>
-            </p>
-          </div>
-        </div>
+            </div>
+         </div>
       </motion.div>
     </main>
   );
@@ -162,7 +200,7 @@ function BlogLoginContent() {
 
 export default function BlogLoginPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-[#f8fafc]" />}>
+    <Suspense fallback={<main className="min-h-screen bg-background" />}>
       <BlogLoginContent />
     </Suspense>
   );
