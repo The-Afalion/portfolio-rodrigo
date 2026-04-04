@@ -118,10 +118,10 @@ const BotGame = ({ botId }: { botId: string }) => {
   const evaluation = useMemo(() => evaluarTablero(game), [game]);
 
   useEffect(() => {
-    if (!estaInicializando && (!usuario || !bot)) {
+    if (!estaInicializando && !bot) {
       router.push("/chess");
     }
-  }, [bot, estaInicializando, router, usuario]);
+  }, [bot, estaInicializando, router]);
 
   useEffect(() => {
     if (!bot) {
@@ -220,7 +220,9 @@ const BotGame = ({ botId }: { botId: string }) => {
       if (nextGame.isCheckmate()) {
         setEstadoJuego("victoria");
         setDialogo(pickRandom(bot.dialogos.derrota));
-        void registrarVictoria(bot.id);
+        if (usuario) {
+          void registrarVictoria(bot.id);
+        }
         return true;
       }
 
@@ -237,7 +239,7 @@ const BotGame = ({ botId }: { botId: string }) => {
     }
   }
 
-  if (estaInicializando) {
+  if (estaInicializando && !bot) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-zinc-200">
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900/70 px-8 py-6 text-center">
@@ -249,7 +251,7 @@ const BotGame = ({ botId }: { botId: string }) => {
     );
   }
 
-  if (!usuario || !bot) {
+  if (!bot) {
     return null;
   }
 
@@ -370,6 +372,12 @@ const BotGame = ({ botId }: { botId: string }) => {
               <Flag size={16} /> Rendirse
             </button>
           </div>
+
+          {!usuario ? (
+            <div className="mt-6 rounded-[24px] border border-zinc-800 bg-zinc-950/70 p-4 text-sm text-zinc-400">
+              Estás jugando en modo invitado. Puedes probar todos los bots, pero las victorias no se guardarán hasta iniciar sesión.
+            </div>
+          ) : null}
         </aside>
 
         <section className="relative flex items-center justify-center overflow-hidden p-4 sm:p-8 xl:p-12">
