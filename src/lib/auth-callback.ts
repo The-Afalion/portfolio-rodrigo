@@ -18,6 +18,15 @@ function getSafeNextPath(next: string | null) {
   return next;
 }
 
+function getSuccessRedirectPath(type: EmailOtpType | null, next: string | null) {
+  if (type === 'recovery') {
+    return '/reset-password';
+  }
+
+  const safeNext = getSafeNextPath(next);
+  return safeNext === '/' ? '/chess' : safeNext;
+}
+
 function getAuthErrorRedirectPath(nextPath: string) {
   if (nextPath.startsWith('/admin') || nextPath.startsWith('/blog')) {
     return '/blog/login';
@@ -31,7 +40,7 @@ export async function handleAuthCallback(request: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const tokenHash = requestUrl.searchParams.get('token_hash');
   const type = requestUrl.searchParams.get('type') as EmailOtpType | null;
-  const nextPath = getSafeNextPath(requestUrl.searchParams.get('next'));
+  const nextPath = getSuccessRedirectPath(type, requestUrl.searchParams.get('next'));
   const authErrorRedirectPath = getAuthErrorRedirectPath(nextPath);
 
   let response = NextResponse.redirect(new URL(nextPath, requestUrl.origin));

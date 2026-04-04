@@ -127,6 +127,11 @@ export default function LoginPage() {
               Regístrate gratis
             </a>
           </p>
+          <p className="text-zinc-500 mt-2">
+            <a href="/forgot-password" className="text-green-500 hover:underline">
+              He olvidado mi contraseña
+            </a>
+          </p>
         </div>
       </div>
     </main>

@@ -151,6 +151,11 @@ function BlogLoginContent() {
           <div className="mt-8 text-center text-xs text-slate-400 font-medium border-t border-slate-100 pt-6 space-y-2">
             <p>Solo pueden acceder usuarios invitados como editores en Supabase Auth.</p>
             <p>Si recibiste un correo de invitacion, acepta el enlace primero y crea tu contrasena.</p>
+            <p>
+              <a href="/forgot-password" className="text-blue-500 hover:underline">
+                Recuperar contraseña
+              </a>
+            </p>
           </div>
         </div>
       </motion.div>
