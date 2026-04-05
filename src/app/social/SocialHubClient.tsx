@@ -11,9 +11,7 @@ export default function SocialHubClient({ currentUser, initialMessages, initialF
   const [friendSearch, setFriendSearch] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // Auto-scroll eliminado por disrupción de UI
 
   // Polling simple
   useEffect(() => {

@@ -18,7 +18,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Falta gameKey" }, { status: 400 });
     }
 
-    // Limpiar colas viejas o cancelar
+    // Purgar colas viejas (más de 2 minutos) para evitar partidas fantasma
+    const twoMinutesAgo = new Date(Date.now() - 120000);
+    await prisma.arcadeQueue.deleteMany({
+      where: { joinedAt: { lt: twoMinutesAgo } }
+    });
+
+    // Limpiar colas viejas de este usuario o cancelar
     if (action === "leave") {
       await prisma.arcadeQueue.deleteMany({
         where: { userId: user.id }
