@@ -39,6 +39,15 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        neon: {
+          purple: "hsl(var(--neon-purple))",
+          cyan: "hsl(var(--neon-cyan))",
+          pink: "hsl(var(--neon-pink))",
+        }
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'glass-gradient': 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -50,6 +59,20 @@ const config: Config = {
         display: ["var(--font-display)", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
+      animation: {
+        'shimmer': 'shimmer 8s infinite linear',
+        'float': 'float 6s ease-in-out infinite',
+      },
+      keyframes: {
+        shimmer: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
+      }
     },
   },
   plugins: [

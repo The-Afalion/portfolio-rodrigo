@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
-import { FEATURED_PROJECTS, type ProyectoCore } from "@/datos/proyectos";
+import { motion } from "framer-motion";
+import { ArrowUpRight, Github, Linkedin, Mail, ArrowRight, Code2, Cpu, Globe, Box } from "lucide-react";
+import { FEATURED_PROJECTS } from "@/datos/proyectos";
 import { siteConfig } from "@/config/site";
-import { useRef } from "react";
 
 const selectedProjects = FEATURED_PROJECTS.slice(0, 4);
 
@@ -13,258 +12,162 @@ const hubs = [
   {
     title: "Laboratorios",
     href: "/engineering",
-    description: "Atlas espacial con motores, simulaciones y prototipos interactivos.",
+    description: "Espacio de pruebas, motores físicos y experimentos Next.js.",
+    icon: <Cpu className="text-neon-cyan mb-4" size={32} />,
+    color: "from-cyan-500/20 to-blue-500/5",
+    colSpan: "lg:col-span-2",
   },
   {
     title: "Chess",
     href: "/chess",
-    description: "Lobby, bots y modos colectivos dentro del mismo producto.",
+    description: "Plataforma multiplayer con matchmaking y bots integrados.",
+    icon: <Globe className="text-neon-purple mb-4" size={32} />,
+    color: "from-purple-500/20 to-fuchsia-500/5",
+    colSpan: "lg:col-span-1",
   },
   {
     title: "Blog",
     href: "/blog",
-    description: "Notas técnicas, decisiones de producto y proceso.",
+    description: "Documentación técnica, artículos y procesos estructurales.",
+    icon: <Code2 className="text-neon-pink mb-4" size={32} />,
+    color: "from-pink-500/20 to-rose-500/5",
+    colSpan: "lg:col-span-1",
   },
   {
-    title: "3D",
+    title: "3D & Modelos",
     href: "/modelos",
-    description: "Piezas y estudios tridimensionales con control directo.",
+    description: "Estudios espaciales renderizados en tiempo real.",
+    icon: <Box className="text-white mb-4" size={32} />,
+    color: "from-white/10 to-gray-500/5",
+    colSpan: "lg:col-span-2",
   },
-] as const;
+];
 
-const studioFacts = [
-  ["Rol", siteConfig.role],
-  ["Foco", "Producto, interacción y sistema"],
-  ["Trabajo", "Web, tiempo real e IA aplicada"],
-] as const;
+// Variantes de Framer Motion
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+  },
+};
 
-function ProjectItem({ project, index }: { project: ProyectoCore; index: number }) {
-  return (
-    <Link
-      href={`/proyectos/${project.id}`}
-      className="group grid gap-5 py-7 md:grid-cols-[72px,minmax(0,1fr),auto] md:items-start md:gap-8"
-    >
-      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-        {String(index + 1).padStart(2, "0")}
-      </p>
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: project.color }} />
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{project.title}</h2>
-        </div>
-        <p className="max-w-2xl text-sm leading-7 text-muted-foreground">{project.description}</p>
-      </div>
-
-      <ArrowUpRight
-        size={18}
-        className="hidden text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block"
-      />
-    </Link>
-  );
-}
-
-function HubItem({
-  title,
-  href,
-  description,
-}: {
-  title: string;
-  href: string;
-  description: string;
-}) {
-  return (
-    <Link href={href} className="group grid gap-4 py-6 md:grid-cols-[minmax(0,1fr),auto] md:items-start md:gap-8">
-      <div className="space-y-2">
-        <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h3>
-        <p className="max-w-xl text-sm leading-7 text-muted-foreground">{description}</p>
-      </div>
-      <ArrowUpRight
-        size={18}
-        className="mt-1 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-      />
-    </Link>
-  );
-}
+const cardVariant = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 15 }
+  },
+};
 
 export default function StudioHome() {
-  const heroRef = useRef<HTMLElement>(null);
-  const hubsRef = useRef<HTMLElement>(null);
-  const reduceMotion = useReducedMotion();
-
-  const { scrollYProgress: heroProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const { scrollYProgress: hubsProgress } = useScroll({
-    target: hubsRef,
-    offset: ["start end", "end start"],
-  });
-
-  const heroBlockY = useTransform(heroProgress, [0, 1], [0, reduceMotion ? 0 : 140]);
-  const heroSmallBlockY = useTransform(heroProgress, [0, 1], [0, reduceMotion ? 0 : 70]);
-  const heroWordX = useTransform(heroProgress, [0, 1], [0, reduceMotion ? 0 : 80]);
-  const hubBlockY = useTransform(hubsProgress, [0, 1], [reduceMotion ? 0 : 40, reduceMotion ? 0 : -60]);
-  const hubWordY = useTransform(hubsProgress, [0, 1], [reduceMotion ? 0 : 10, reduceMotion ? 0 : -100]);
-
   return (
-    <main className="relative">
-      <section ref={heroRef} className="relative min-h-[100svh] overflow-hidden border-b border-border/80">
-        <motion.div
-          aria-hidden="true"
-          style={{ y: heroBlockY }}
-          className="absolute right-[4%] top-[15%] hidden h-[60vh] min-h-[360px] w-[32vw] min-w-[320px] bg-secondary lg:block"
-        />
-        <motion.div
-          aria-hidden="true"
-          style={{ y: heroSmallBlockY }}
-          className="absolute bottom-[18%] right-[24%] hidden h-[20vh] min-h-[120px] w-[14vw] min-w-[170px] bg-accent/70 lg:block"
-        />
-        <motion.p
-          aria-hidden="true"
-          style={{ x: heroWordX }}
-          className="absolute bottom-[8%] right-[4%] hidden font-display text-[11vw] font-semibold leading-none tracking-[-0.08em] text-foreground/[0.05] lg:block"
+    <main className="relative min-h-screen overflow-hidden bg-background">
+      {/* Background Glowing Orbs */}
+      <div className="glow-blob bg-neon-purple w-[600px] h-[600px] top-[-100px] right-[-100px]" />
+      <div className="glow-blob bg-neon-cyan w-[500px] h-[500px] top-[40%] left-[-200px]" />
+      <div className="glow-blob bg-neon-pink w-[400px] h-[400px] bottom-[-50px] right-[20%]" />
+
+      <div className="page-container relative z-10 pt-32 pb-24">
+        <motion.div 
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          STUDIO
-        </motion.p>
-
-        <div className="page-container relative flex min-h-[100svh] flex-col justify-end pb-16 pt-24">
-          <div className="grid gap-12 lg:grid-cols-[1.05fr_0.8fr] lg:items-end">
-            <div className="space-y-7">
-              <p className="page-eyebrow">Rodrigo Alonso</p>
-              <div className="space-y-4">
-                <h1 className="max-w-5xl text-5xl font-semibold leading-[0.9] tracking-[-0.06em] sm:text-6xl lg:text-[6.4rem]">
-                  Software claro. Interacción precisa.
-                </h1>
-                <p className="max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
-                  Diseño y construyo producto digital, sistemas interactivos y experiencias técnicas con una ejecución sobria y bien ordenada.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="#work"
-                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
-                >
-                  Ver trabajo
-                  <ArrowRight size={16} />
-                </Link>
-                <Link href="/contact" className="action-pill">
-                  Contacto
-                </Link>
-              </div>
-            </div>
-
-            <div className="border-t border-border/80 lg:border-t-0 lg:border-l lg:pl-10">
-              {studioFacts.map(([label, value], index) => (
-                <div
-                  key={label}
-                  className={`grid gap-2 py-5 sm:grid-cols-[96px,minmax(0,1fr)] ${
-                    index !== studioFacts.length - 1 ? "border-b border-border/80" : ""
-                  }`}
-                >
-                  <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
-                    {label}
-                  </p>
-                  <p className="text-sm leading-7 text-foreground">{value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="work" className="border-b border-border/80 py-20 md:py-24">
-        <div className="page-container grid gap-12 lg:grid-cols-[300px,minmax(0,1fr)]">
-          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-            <p className="page-eyebrow">Trabajo</p>
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Proyectos principales</h2>
-            <p className="max-w-sm text-base leading-8 text-muted-foreground">
-              Selección breve de piezas donde se cruzan producto, sistema y ejecución visual.
+          {/* Hero Main Block (Col-span 4 for a banner, or Col-span 2x2) */}
+          <motion.div variants={cardVariant} className="bento-card p-10 lg:col-span-4 lg:row-span-1 flex flex-col justify-center min-h-[40vh] border-l-4 border-l-neon-cyan">
+            <p className="page-eyebrow mb-4">Rodrigo Alonso</p>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter mb-6">
+              Software <span className="gradient-text animate-pulse">claro</span>.<br/> 
+              Interacción precisa.
+            </h1>
+            <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl font-light">
+              Diseño y construyo producto digital, sistemas interactivos y experiencias técnicas con una ejecución vanguardista.
             </p>
-          </div>
-
-          <div className="divide-y divide-border/80 border-y border-border/80">
-            {selectedProjects.map((project, index) => (
-              <ProjectItem key={project.id} project={project} index={index} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section ref={hubsRef} className="relative min-h-[118svh] border-b border-border/80">
-        <div className="sticky top-0 flex min-h-[100svh] items-center overflow-hidden">
-          <motion.div
-            aria-hidden="true"
-            style={{ y: hubBlockY }}
-            className="absolute right-[6%] top-[16%] hidden h-[62vh] min-h-[420px] w-[26vw] min-w-[260px] bg-secondary lg:block"
-          />
-          <motion.p
-            aria-hidden="true"
-            style={{ y: hubWordY }}
-            className="absolute left-[4%] top-[14%] hidden font-display text-[10vw] font-semibold leading-none tracking-[-0.08em] text-foreground/[0.05] lg:block"
-          >
-            INDEX
-          </motion.p>
-
-          <div className="page-container relative z-10 grid gap-12 lg:grid-cols-[300px,minmax(0,1fr)]">
-            <div className="space-y-4">
-              <p className="page-eyebrow">Índice</p>
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Cada área tiene su propio hub.</h2>
-              <p className="max-w-sm text-base leading-8 text-muted-foreground">
-                El portfolio principal se mantiene limpio y el resto del trabajo se organiza en entradas específicas.
-              </p>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link href="#work" className="action-pill bg-white/10 text-white font-bold border-white/20">
+                Ver Proyectos <ArrowRight size={18} />
+              </Link>
+              <Link href="/contact" className="action-pill text-muted-foreground">
+                Hablemos
+              </Link>
             </div>
+          </motion.div>
 
-            <div className="divide-y divide-border/80 border-y border-border/80">
-              {hubs.map((hub) => (
-                <HubItem
-                  key={hub.href}
-                  title={hub.title}
-                  href={hub.href}
-                  description={hub.description}
-                />
+          {/* Contact / Links Small Block */}
+          <motion.div variants={cardVariant} className="bento-card p-8 lg:col-span-1 flex flex-col justify-between bg-gradient-to-br from-white/5 to-transparent">
+            <div>
+              <h3 className="text-xl font-semibold mb-2">Conecta</h3>
+              <p className="text-sm text-muted-foreground mb-6">Disponibilidad para retos complejos y diseño de sistemas.</p>
+            </div>
+            <div className="flex gap-3">
+               <a href={`mailto:${siteConfig.email}`} className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                 <Mail size={20} className="text-neon-cyan" />
+               </a>
+               <a href={siteConfig.github} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                 <Github size={20} className="text-white" />
+               </a>
+               <a href={siteConfig.linkedin} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                 <Linkedin size={20} className="text-neon-purple" />
+               </a>
+            </div>
+          </motion.div>
+
+          {/* Featured Projects List */}
+          <motion.div variants={cardVariant} className="bento-card p-8 lg:col-span-3 flex flex-col">
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <p className="page-eyebrow mb-2">Portfolio</p>
+                <h2 className="text-3xl font-bold">Trabajos Destacados</h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+              {selectedProjects.map((project, i) => (
+                <Link
+                  key={project.id}
+                  href={`/proyectos/${project.id}`}
+                  className="group relative overflow-hidden rounded-2xl bg-black/40 border border-white/5 p-6 transition-all hover:bg-white/5 hover:border-white/20 flex flex-col justify-between"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundImage: `radial-gradient(circle, ${project.color}40 0%, transparent 70%)`}} />
+                  <div>
+                     <div className="flex items-center gap-3 mb-3">
+                       <span className="w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]" style={{ backgroundColor: project.color, color: project.color }} />
+                       <h3 className="text-xl font-bold">{project.title}</h3>
+                     </div>
+                     <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+                  </div>
+                  <div className="mt-6 flex justify-between items-center text-sm font-medium text-white/50 group-hover:text-white transition-colors">
+                     <span>Ver proyecto</span>
+                     <ArrowUpRight size={18} className="transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </div>
+                </Link>
               ))}
             </div>
+          </motion.div>
+
+          {/* Hubs / Index Blocks */}
+          <div className="lg:col-span-4 mt-4 mb-2" id="work">
+            <h2 className="text-2xl font-bold font-display ml-2">Explora los Hubs</h2>
           </div>
-        </div>
-      </section>
-
-      <section className="py-20 md:py-24">
-        <div className="page-container">
-          <div className="grid gap-10 border-t border-border/80 pt-10 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div className="space-y-4">
-              <p className="page-eyebrow">Contacto</p>
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Si la idea merece cuidado, hablemos.</h2>
-              <p className="max-w-xl text-base leading-8 text-muted-foreground">
-                Trabajo mejor con objetivos claros, ambición técnica y margen para hacer las cosas bien.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
-              >
-                Abrir contacto
-                <ArrowRight size={16} />
+          
+          {hubs.map((hub, i) => (
+            <motion.div key={hub.href} variants={cardVariant} className={`bento-card lg:${hub.colSpan} md:col-span-2 col-span-1`}>
+              <Link href={hub.href} className={`block h-full p-8 bg-gradient-to-br ${hub.color} hover:bg-white/5 transition-colors group`}>
+                <div className="flex justify-between items-start">
+                  {hub.icon}
+                  <ArrowUpRight size={24} className="text-white/20 group-hover:text-white transition-colors transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                </div>
+                <h3 className="text-2xl font-bold mt-4 mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/50 transition-all">{hub.title}</h3>
+                <p className="text-muted-foreground">{hub.description}</p>
               </Link>
-              <a href={`mailto:${siteConfig.email}`} className="action-pill">
-                <Mail size={16} />
-                Email
-              </a>
-              <a href={siteConfig.github} target="_blank" rel="noopener noreferrer" className="action-pill">
-                <Github size={16} />
-                GitHub
-              </a>
-              <a href={siteConfig.linkedin} target="_blank" rel="noopener noreferrer" className="action-pill">
-                <Linkedin size={16} />
-                LinkedIn
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+            </motion.div>
+          ))}
+
+        </motion.div>
+      </div>
     </main>
   );
 }
