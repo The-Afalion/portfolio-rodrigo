@@ -83,15 +83,10 @@ function matchesPrefix(pathname: string, prefixes: readonly string[]) {
 }
 
 const immersivePrefixes = [
+  '/engineering',
   '/nexus',
   '/slalom',
   '/chess/play',
-  '/engineering/aetheria',
-  '/engineering/ecosystem',
-  '/engineering/lumina',
-  '/engineering/neural-racing',
-  '/engineering/sandbox',
-  '/engineering/swarm',
 ] as const;
 const chromeHiddenPrefixes = [
   '/admin',

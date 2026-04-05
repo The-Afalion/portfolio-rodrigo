@@ -1,190 +1,44 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Atom, Cpu, Network } from "lucide-react";
-import { PROYECTOS_CORE, type ProyectoCore } from "@/datos/proyectos";
-import { PageHero, PageShell, SectionInset, SectionPanel } from "@/components/shell/PagePrimitives";
+import { ArrowLeft } from "lucide-react";
 
-export const metadata = {
-  title: "Laboratorios | Rodrigo Alonso",
-  description: "Colección de laboratorios interactivos, simulaciones y motores experimentales.",
-};
-
-const coreLabs = PROYECTOS_CORE.filter((project) => project.link.startsWith("/engineering/"));
-
-const additionalLabs = [
-  {
-    title: "Algo Vision",
-    href: "/algorithms",
-    description: "Visualizador de algoritmos de ordenación.",
-    tech: ["React", "Algorithms", "Visualization"],
-  },
-  {
-    title: "Galton Physics",
-    href: "/physics",
-    description: "Tablero de Galton y distribución normal.",
-    tech: ["Matter.js", "Canvas API", "Physics"],
-  },
-  {
-    title: "Sonic Canvas",
-    href: "/sonic",
-    description: "Sintetizador visual controlado desde un lienzo.",
-    tech: ["Web Audio", "Canvas", "DSP"],
-  },
-  {
-    title: "Urban Pulse",
-    href: "/urban",
-    description: "Escena 3D para tráfico, energía y red.",
-    tech: ["Three.js", "Data Viz", "WebGL"],
-  },
-  {
-    title: "Chrono Dasher",
-    href: "/chrono-dasher",
-    description: "Runner 3D con generación procedural.",
-    tech: ["R3F", "Gameplay", "Rendering"],
-  },
-  {
-    title: "Pi Vault",
-    href: "/pi-vault",
-    description: "Experimento criptográfico con clave derivada de pi.",
-    tech: ["TypeScript", "Crypto", "Utilities"],
-  },
-] as const;
-
-const tracks = [
-  {
-    title: "Simulación",
-    description: "Sistemas con comportamiento emergente, física, tráfico y agentes.",
-    icon: Atom,
-  },
-  {
-    title: "IA aplicada",
-    description: "Motores heurísticos, evolución genética y aprendizaje sobre interfaz real.",
-    icon: Cpu,
-  },
-  {
-    title: "Visualización",
-    description: "Formas de hacer visible la lógica técnica sin perder legibilidad.",
-    icon: Network,
-  },
-] as const;
-
-function LabCard({ project }: { project: ProyectoCore }) {
-  return (
-    <Link
-      href={project.link}
-      className="group surface-panel flex h-full flex-col justify-between gap-6 p-6 transition-transform duration-200 hover:-translate-y-1"
-    >
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <span className="eyebrow-chip">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color }} />
-            {project.tech[0]}
-          </span>
-          <ArrowUpRight size={17} className="text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">{project.title}</h2>
-          <p className="text-sm leading-7 text-muted-foreground">{project.description}</p>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {project.tech.slice(0, 3).map((tag) => (
-          <span key={tag} className="rounded-full border border-border/80 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
-            {tag}
-          </span>
-        ))}
-      </div>
-    </Link>
-  );
-}
+const GalaxyScene = dynamic(() => import("./GalaxyScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-screen items-center justify-center bg-black font-mono text-white">
+      Inicializando atlas estelar...
+    </div>
+  ),
+});
 
 export default function EngineeringPage() {
   return (
-    <PageShell>
-      <PageHero
-        eyebrow="Laboratorios"
-        title="Simulaciones, motores y prototipos construidos para explorar ideas técnicas."
-        description="Esta sección agrupa mis experimentos más densos: inteligencia artificial, sistemas generativos, visualización y herramientas interactivas."
-        actions={
-          <Link href="/contact" className="action-pill">
-            Proponer proyecto
-            <ArrowRight size={16} />
-          </Link>
-        }
-        aside={
-          <SectionPanel className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Uso</p>
-            <p className="text-sm leading-7 text-muted-foreground">
-              Cada laboratorio tiene su propia interfaz y contexto. Aquí están ordenados como un catálogo, no como una lista de demos sueltas.
-            </p>
-          </SectionPanel>
-        }
-      />
+    <main className="relative h-screen w-screen overflow-hidden bg-black text-white">
+      <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_52%,rgba(0,0,0,0.42)_100%)]" />
 
-      <section className="space-y-6">
-        <div className="space-y-2">
-          <p className="page-eyebrow">Colección central</p>
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Experimentos principales</h2>
-        </div>
-        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-          {coreLabs.map((project) => (
-            <LabCard key={project.id} project={project} />
-          ))}
-        </div>
-      </section>
+      <div className="absolute left-5 top-5 z-30 md:left-6 md:top-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/35 px-4 py-2 font-mono text-xs uppercase tracking-[0.24em] text-white/72 backdrop-blur-md transition-colors hover:text-white"
+        >
+          <ArrowLeft size={14} />
+          Exit
+        </Link>
+      </div>
 
-      <section className="mt-12 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="space-y-4">
-          {tracks.map((track) => {
-            const Icon = track.icon;
+      <div className="pointer-events-none absolute bottom-5 left-5 z-30 max-w-[320px] rounded-[1.8rem] border border-white/12 bg-black/28 p-5 backdrop-blur-md md:bottom-6 md:left-6 md:max-w-[420px]">
+        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.32em] text-white/48">Engineering Atlas</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-white md:text-4xl">Explora el espacio de proyectos.</h1>
+        <p className="mt-3 text-sm leading-7 text-white/62">
+          Orbita libremente, activa la nave y entra en una esfera para saltar por hiperespacio al laboratorio.
+        </p>
+      </div>
 
-            return (
-              <SectionInset key={track.title}>
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[1.1rem] border border-border/80 bg-background/80 text-foreground">
-                    <Icon size={18} />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-foreground">{track.title}</h3>
-                    <p className="text-sm leading-7 text-muted-foreground">{track.description}</p>
-                  </div>
-                </div>
-              </SectionInset>
-            );
-          })}
-        </div>
-
-        <SectionPanel className="space-y-5">
-          <div className="space-y-2">
-            <p className="page-eyebrow">Más laboratorios</p>
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Herramientas y demos públicas</h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {additionalLabs.map((lab) => (
-              <Link
-                key={lab.href}
-                href={lab.href}
-                className="group rounded-[1.5rem] border border-border/80 bg-background/70 p-5 transition-colors hover:bg-secondary"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-foreground">{lab.title}</h3>
-                    <p className="text-sm leading-7 text-muted-foreground">{lab.description}</p>
-                  </div>
-                  <ArrowUpRight size={16} className="shrink-0 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {lab.tech.map((tag) => (
-                    <span key={tag} className="rounded-full border border-border/80 bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </SectionPanel>
-      </section>
-    </PageShell>
+      <div className="absolute inset-0 z-10">
+        <GalaxyScene />
+      </div>
+    </main>
   );
 }
