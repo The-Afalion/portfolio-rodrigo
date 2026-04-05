@@ -23,6 +23,10 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ gameKey, action: "join" })
         });
+        if (!res.ok) {
+           setStatus("Servidor no disponible. Cancelando...");
+           return;
+        }
         const data = await res.json();
         
         if (data.matched) {
@@ -44,6 +48,11 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ gameKey, action: "join" })
         });
+        if (!res.ok) {
+           clearInterval(pollingInterval);
+           setStatus("Conexión perdida. Escaneo abortado.");
+           return;
+        }
         const data = await res.json();
         if (data.matched) {
           clearInterval(pollingInterval);

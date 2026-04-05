@@ -60,26 +60,31 @@ export default async function SocialHubPage() {
   });
 
   return (
-    <div className="page-shell min-h-screen">
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-        <Link
-          href="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-white/50 transition-colors hover:text-white"
-        >
-          <ArrowLeft size={16} />
-          Volver a Inicio
-        </Link>
-
-        <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-white md:text-5xl mb-2 flex items-center gap-4">
-            <Gamepad2 className="text-neon-cyan w-10 h-10" />
-            Nexus Social
-          </h1>
-          <p className="text-white/60 mb-10 max-w-2xl">
-            Bienvenido al nodo central, <strong className="text-neon-pink">{getUserDisplayName(user)}</strong>. Chatea globalmente, expande tu lista de contactos o invita a jugar.
-          </p>
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[#010103] selection:bg-neon-cyan/30 selection:text-neon-cyan">
+      <main className="flex-1 flex flex-col w-full max-w-[1600px] mx-auto p-4 sm:p-6 overflow-hidden">
+        
+        {/* HEADER COMPACTO */}
+        <div className="flex items-center justify-between shrink-0 mb-6">
+          <div className="flex items-center gap-6">
+             <Link
+               href="/"
+               className="inline-flex items-center gap-2 text-sm font-medium text-white/50 transition-colors hover:text-white bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:border-white/30"
+             >
+               <ArrowLeft size={16} />
+               <span>Volver</span>
+             </Link>
+             <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
+               <Gamepad2 className="text-neon-cyan w-6 h-6" />
+               Nexus Social
+             </h1>
+          </div>
+          <div className="text-right">
+             <p className="text-xs text-white/40 uppercase tracking-widest font-mono">Conectado como</p>
+             <p className="text-sm font-bold text-neon-pink">{getUserDisplayName(user)}</p>
+          </div>
         </div>
 
+        {/* HUB CLIENTE (GRID) */}
         <SocialHubClient
            currentUser={{
              id: user.id,
