@@ -197,21 +197,21 @@
    FLAT UI THEME (Hubs) 
    ======================================================== */
 .flat-theme {
-  --background: 210 20% 98%;      /* Crema/Blanco muy suave */
-  --foreground: 220 10% 20%;      /* Azul Pizarra súper oscuro */
-  --card: 0 0% 100%;
-  --card-foreground: 220 10% 20%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 220 10% 20%;
-  --border: 220 10% 90%;
-  --surface-elevated: 0 0% 100%;
+  --background: 40 50% 95%;      /* #F9F5EC Crema pergamino */
+  --foreground: 25 30% 25%;      /* #524239 Café oscuro para texto */
+  --card: 40 40% 92%;            /* Papel más oscuro */
+  --card-foreground: 25 30% 25%;
+  --popover: 40 40% 92%;
+  --popover-foreground: 25 30% 25%;
+  --border: 35 25% 82%;          /* Bordes arena/beige oscuro */
+  --surface-elevated: 40 50% 98%;
   
-  /* Destruir neones y reemplazarlos por pasteles/planos */
-  --neon-cyan: 210 50% 50%;       /* Azul corporativo */
-  --neon-pink: 350 40% 60%;       /* Salmón plano */
-  --neon-purple: 250 30% 50%;     /* Púrpura apagado mate */
+  /* Destruir neones y reemplazarlos por pasteles/planos organicos */
+  --neon-cyan: 15 50% 50%;       /* Terracota cálido */
+  --neon-pink: 120 15% 55%;      /* Verde Salvia apagado */
+  --neon-purple: 40 50% 55%;     /* Mostaza viejo orgánico */
   
-  --radius: 0.5rem;
+  --radius: 1rem;
   
   background-image: none !important;
   background-color: hsl(var(--background)) !important;

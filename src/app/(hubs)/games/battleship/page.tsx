@@ -113,37 +113,38 @@ export default function BattleshipGame() {
   };
 
   return (
-    <div className="page-shell min-h-screen py-10 px-4">
+    <div className="page-shell min-h-screen py-10 px-4 bg-[#cce3eb] font-serif">
       <div className="max-w-6xl mx-auto">
-        <Link href="/social" className="mb-6 inline-flex items-center gap-2 text-sm text-neon-cyan hover:text-white transition-colors">
-          <ArrowLeft size={16} /> Volver al Hub
+        <Link href="/social" className="mb-6 inline-flex items-center gap-2 text-sm text-[#3c5a6b] font-bold hover:text-[#1e2a33] transition-colors">
+          <ArrowLeft size={16} /> Volver a la Tavera
         </Link>
         <div className="text-center mb-8">
-           <h1 className="text-4xl font-bold text-white tracking-tight flex justify-center items-center gap-3">
-             <Target className="text-neon-cyan" size={32}/> Batalla Naval <span className="text-neon-cyan">Neón</span>
+           <h1 className="text-4xl font-bold font-serif text-[#1e2a33] tracking-tight flex justify-center items-center gap-3">
+             <Target className="text-[#3c5a6b]" size={32}/> Batalla <span className="text-[#5e6642]">Naval</span>
            </h1>
-           <p className="text-white/60 mt-2">{message}</p>
+           <p className="text-[#3c5a6b] font-medium italic mt-2">{message}</p>
         </div>
 
         {phase === "menu" && (
-           <div className="surface-panel p-10 flex flex-col gap-4 text-center mt-10 rounded-[2rem] w-full max-w-md mx-auto border border-neon-cyan/30">
-              <h2 className="text-2xl font-bold text-white mb-6">Elige el Modo de Juego</h2>
+           <div className="bg-[#fcfaf4] p-10 flex flex-col gap-4 text-center mt-10 rounded-sm w-full max-w-md mx-auto border border-[#9fbcce] shadow-[5px_8px_15px_rgba(60,90,107,0.15)] relative transform -rotate-1">
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#668c99] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#4d6c7a]" />
+              <h2 className="text-2xl font-serif font-bold text-[#1e2a33] mb-6 mt-2">Modalidad de Partida</h2>
               <button 
                 onClick={() => { setGameMode("bot"); setPhase("playing"); }} 
-                className="action-pill w-full bg-white/5 border-white/10 text-white font-bold py-4 justify-center hover:bg-neon-cyan hover:text-black hover:border-neon-cyan"
+                className="w-full bg-[#e6f1f5] border border-[#9fbcce] text-[#2e404d] font-bold font-serif py-4 justify-center hover:bg-[#3c5a6b] hover:text-[#fcfaf4] shadow-sm transition-colors"
               >
-                 Jugar Offline (Vs IA)
+                 Jugar en Solitario (Vs IA)
               </button>
-              <div className="flex items-center gap-4 text-white/30 my-2">
-                 <div className="flex-1 border-t border-white/10"></div>
-                 <span className="text-xs uppercase">Conexión Remota</span>
-                 <div className="flex-1 border-t border-white/10"></div>
+              <div className="flex items-center gap-4 text-[#7b9ba8] my-2">
+                 <div className="flex-1 border-t border-dashed border-[#9fbcce]"></div>
+                 <span className="text-xs uppercase font-mono tracking-widest">Conexión Postal</span>
+                 <div className="flex-1 border-t border-dashed border-[#9fbcce]"></div>
               </div>
               <button 
                 onClick={() => setPhase("queue")} 
-                className="action-pill w-full bg-neon-cyan/20 border-neon-cyan/50 text-neon-cyan font-bold py-4 justify-center hover:bg-neon-cyan hover:text-black"
+                className="w-full bg-[#3c5a6b] text-[#fcfaf4] font-bold font-serif py-4 justify-center hover:bg-[#1e2a33] shadow-sm transition-colors"
               >
-                 Buscar Partida Online
+                 Enviar Telegrama de Reto
               </button>
            </div>
         )}
@@ -164,31 +165,34 @@ export default function BattleshipGame() {
         )}
 
         {(phase === "playing" || phase === "gameover") && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative">
+            
             {/* Jugador */}
-            <div className="surface-panel p-6 rounded-[2rem]">
-              <h2 className="text-xl text-center text-white font-bold mb-4">TU FLOTA</h2>
-              <div className="grid grid-cols-10 gap-1 aspect-square bg-black/50 p-2 rounded-xl">
+            <div className="bg-[#fcfaf4] p-6 border border-[#d6c4a5] shadow-[4px_6px_10px_rgba(60,90,107,0.15)] relative transform rotate-[0.5deg]">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-20 pointer-events-none mix-blend-multiply" />
+              <h2 className="text-xl text-center text-[#1e2a33] font-bold mb-4 font-serif">TU FLOTA (TINTA AZUL)</h2>
+              <div className="grid grid-cols-10 gap-0 aspect-square bg-transparent border-2 border-[#7b9ba8] relative z-10 w-full"
+                   style={{backgroundImage: "linear-gradient(#9fbcce 1px, transparent 1px), linear-gradient(90deg, #9fbcce 1px, transparent 1px)", backgroundSize: "10% 10%"}}>
                 {playerGrid.map((row, r) => row.map((cell, c) => (
-                  <div key={`p-${r}-${c}`} className={`w-full h-full rounded-sm border border-white/5 transition-colors
-                    ${cell === 0 ? "bg-cyan-950/20" : ""}
-                    ${cell === 1 ? "bg-neon-cyan shadow-[0_0_10px_#0ff]" : ""}
-                    ${cell === 2 ? "bg-white/20 flex items-center justify-center after:content-[''] after:w-2 after:h-2 after:bg-white after:rounded-full" : ""}
-                    ${cell === 3 ? "bg-red-500 shadow-[0_0_15px_#f00] flex items-center justify-center after:content-['✕'] after:text-white after:font-bold" : ""}
+                  <div key={`p-${r}-${c}`} className={`w-full h-full border border-[#9fbcce]/50 transition-colors relative
+                    ${cell === 1 ? "bg-[#3c5a6b]" : ""}
+                    ${cell === 2 ? "bg-transparent flex items-center justify-center after:content-[''] after:w-3 after:h-3 after:bg-[#fcfaf4] after:border-2 after:border-[#3c5a6b] after:rounded-full" : ""}
+                    ${cell === 3 ? "bg-[#8c4030]/20 flex items-center justify-center after:content-['✕'] after:text-[#8c4030] after:font-black after:text-xl" : ""}
                   `} />
                 )))}
               </div>
             </div>
 
             {/* Enemigo */}
-            <div className={`surface-panel p-6 rounded-[2rem] transition-all ${turn === "player" ? "border-neon-pink shadow-[0_0_20px_rgba(255,0,255,0.15)]" : "opacity-50 pointer-events-none"}`}>
-              <h2 className="text-xl text-center text-neon-pink font-bold mb-4">RADAR ENEMIGO</h2>
-              <div className="grid grid-cols-10 gap-1 aspect-square bg-black/50 p-2 rounded-xl cursor-crosshair">
+            <div className={`bg-[#fcfaf4] p-6 border border-[#d6c4a5] shadow-[4px_6px_10px_rgba(60,90,107,0.15)] relative transform rotate-[-0.5deg] transition-all ${turn === "player" ? "border-2 border-[#8c4030]" : "opacity-70 pointer-events-none"}`}>
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-20 pointer-events-none mix-blend-multiply" />
+              <h2 className="text-xl text-center text-[#8c4030] font-bold mb-4 font-serif">MAR ENEMIGO (TINTA ROJA)</h2>
+              <div className="grid grid-cols-10 gap-0 aspect-square bg-transparent border-2 border-[#d4bd9a] relative z-10 w-full cursor-crosshair"
+                   style={{backgroundImage: "linear-gradient(#e3d7c5 1px, transparent 1px), linear-gradient(90deg, #e3d7c5 1px, transparent 1px)", backgroundSize: "10% 10%"}}>
                 {enemyGrid.map((row, r) => row.map((cell, c) => (
-                  <div key={`e-${r}-${c}`} onClick={() => handleFire(r, c)} className={`w-full h-full rounded-sm border border-pink-500/20 hover:border-neon-pink transition-colors
-                    ${cell < 2 ? "bg-pink-950/20" : ""}
-                    ${cell === 2 ? "bg-white/20 flex items-center justify-center after:content-[''] after:w-2 after:h-2 after:bg-white after:rounded-full" : ""}
-                    ${cell === 3 ? "bg-neon-pink shadow-[0_0_15px_#f0f] flex items-center justify-center after:content-['✕'] after:text-white after:font-bold" : ""}
+                  <div key={`e-${r}-${c}`} onClick={() => handleFire(r, c)} className={`w-full h-full border border-[#e3d7c5] hover:bg-[#8c4030]/10 transition-colors relative
+                    ${cell === 2 ? "bg-transparent flex items-center justify-center after:content-[''] after:w-3 after:h-3 after:bg-[#fcfaf4] after:border-2 after:border-[#8c4030] after:rounded-full cursor-auto" : ""}
+                    ${cell === 3 ? "bg-[#8c4030] flex items-center justify-center after:content-['✕'] after:text-[#fcfaf4] after:font-black after:text-xl cursor-auto" : ""}
                   `} />
                 )))}
               </div>

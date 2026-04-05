@@ -295,15 +295,15 @@ export default function GalaxyScene() {
               }
             }
           }}
-          className="px-6 py-2 bg-black/40 backdrop-blur-md border border-white/20 text-white font-mono text-sm uppercase tracking-wider rounded-md hover:bg-white hover:text-black hover:border-white transition-all duration-300"
+          className="px-6 py-2 bg-[#1a120e]/70 backdrop-blur-md border border-[#8c673d]/40 text-[#e8dcc4] font-serif font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-[#8c673d] hover:text-[#fdfbf7] shadow-sm transition-all duration-300"
         >
-          {isShipMode ? "Desactivar Nave" : "Pilotar Nave (Gyro en Móvil)"}
+          {isShipMode ? "Desmontar Nave" : "Tomar el Timón"}
         </button>
       </div>
 
       <Canvas style={{ touchAction: 'none' }} camera={{ fov: 60, position: [0, 15, 35] }}>
-        <color attach="background" args={["#010103"]} />
-        <ambientLight intensity={0.2} />
+        <color attach="background" args={["#1a120e"]} />
+        <ambientLight intensity={0.5} />
 
         <Stars radius={150} depth={50} count={10000} factor={6} saturation={1} fade speed={isWarping ? 5 : 1} />
 
@@ -346,17 +346,17 @@ export default function GalaxyScene() {
       </Canvas>
 
       {isShipMode && !isWarping && (
-        <div className="absolute bottom-20 right-6 z-40 text-white/40 font-mono text-[10px] text-right pointer-events-none animate-fade-in shadow-black drop-shadow-md">
-          <p className="font-bold text-white/80 mb-1">INTERFAZ DE VUELO ACTIVA</p>
+        <div className="absolute bottom-20 right-6 z-40 text-[#a68659] font-mono text-[10px] text-right pointer-events-none animate-fade-in drop-shadow-md bg-[#1a120e]/50 p-4 border border-[#8c673d]/30">
+          <p className="font-bold text-[#e8dcc4] mb-1">INTERFAZ DE VUELO ACTIVA</p>
           <p>[W] ACELERAR   |   [S] FRENAR</p>
           <p>[A] Babor     |   [D] Estribor</p>
-          <p className="mt-1 text-red-500 font-bold">ESTADO DE VUELO EXPERIMENTAL (6-DOF)</p>
-          <p className="mt-2 text-white/50">INTERSECTAR CON EL PROYECTO PARA ENTRAR</p>
+          <p className="mt-1 text-[#cc6640] font-bold">ESTADO DE VUELO EXPERIMENTAL (6-DOF)</p>
+          <p className="mt-2 text-[#b8a991]">COLISIONE CON EL ORBE PARA ENTRAR</p>
         </div>
       )}
 
       <div
-        className={`absolute inset-0 pointer-events-none z-[100] transition-colors duration-1000 ease-in-out ${isWarping ? (warpType === "wormhole" ? "bg-[#0f0022]/95" : "bg-white") : "bg-transparent"}`}
+        className={`absolute inset-0 pointer-events-none z-[100] transition-colors duration-1000 ease-in-out ${isWarping ? (warpType === "wormhole" ? "bg-[#3e2b22]/95" : "bg-[#fcfaf4]") : "bg-transparent"}`}
         style={{ opacity: isWarping ? 1 : 0 }}
       />
     </>

@@ -29,8 +29,8 @@ export default function ArtilleryGame() {
   // Refs de estado del juego sin forzar re-renders constantes en React
   const gameRef = useRef({
     terrain: [] as number[],
-    p1: { x: 100, y: 0, color: "#0ff", alive: true } as Player,
-    p2: { x: 700, y: 0, color: "#f0f", alive: true } as Player,
+    p1: { x: 100, y: 0, color: "#8c4030", alive: true } as Player,
+    p2: { x: 700, y: 0, color: "#2e404d", alive: true } as Player,
     projectile: null as { x: number, y: number, vx: number, vy: number, active: boolean, color: string } | null,
     width: 800,
     height: 400
@@ -58,14 +58,14 @@ export default function ArtilleryGame() {
     // Posicionar jugadores
     const p1x = 100;
     const p2x = 700;
-    gameRef.current.p1 = { x: p1x, y: t[p1x], color: "#0ff", alive: true };
-    gameRef.current.p2 = { x: p2x, y: t[p2x], color: "#f0f", alive: true };
+    gameRef.current.p1 = { x: p1x, y: t[p1x], color: "#8c4030", alive: true };
+    gameRef.current.p2 = { x: p2x, y: t[p2x], color: "#2e404d", alive: true };
     gameRef.current.projectile = null;
     gameRef.current.width = W;
     gameRef.current.height = H;
     
     setTurn(1);
-    setMessage("Partida Iniciada. Turno del Jugador 1 (Cyan)");
+    setMessage("Partida Iniciada. Turno de Tinta Roja (Jugador 1)");
     drawFrame();
   };
 
@@ -78,39 +78,33 @@ export default function ArtilleryGame() {
     
     ctx.clearRect(0, 0, w, h);
     
-    // Dibujar cielo oscuro
-    ctx.fillStyle = "#010103";
+    // Dibujar cielo oscuro -> pergamino
+    ctx.fillStyle = "#fcfaf4";
     ctx.fillRect(0, 0, w, h);
 
-    // Dibujar terreno (wireframe/neon)
+    // Dibujar terreno (tinta vintage)
     ctx.beginPath();
     ctx.moveTo(0, h);
     for (let x = 0; x < w; x++) {
       ctx.lineTo(x, gameRef.current.terrain[x]);
     }
     ctx.lineTo(w, h);
-    ctx.fillStyle = "rgba(10, 10, 30, 0.8)";
+    ctx.fillStyle = "rgba(140, 103, 61, 0.1)";
     ctx.fill();
-    ctx.strokeStyle = "#4ade80";
+    ctx.strokeStyle = "#8c673d";
     ctx.lineWidth = 2;
     ctx.stroke();
 
     // Dibujar P1
     if (gameRef.current.p1.alive) {
       ctx.fillStyle = gameRef.current.p1.color;
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = gameRef.current.p1.color;
       ctx.fillRect(gameRef.current.p1.x - 10, gameRef.current.p1.y - 20, 20, 20);
-      ctx.shadowBlur = 0;
     }
 
     // Dibujar P2
     if (gameRef.current.p2.alive) {
       ctx.fillStyle = gameRef.current.p2.color;
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = gameRef.current.p2.color;
       ctx.fillRect(gameRef.current.p2.x - 10, gameRef.current.p2.y - 20, 20, 20);
-      ctx.shadowBlur = 0;
     }
 
     // Dibujar proyectil
@@ -192,7 +186,7 @@ export default function ArtilleryGame() {
          gameRef.current.p1.alive = false;
          proj.active = false;
          hit = true;
-         setMessage("¡JUGADOR 2 (MAGENTA) GANA!");
+         setMessage("¡TINTA AZUL (2) GANA!");
       }
 
       // Hit Player 2
@@ -200,7 +194,7 @@ export default function ArtilleryGame() {
          gameRef.current.p2.alive = false;
          proj.active = false;
          hit = true;
-         setMessage("¡JUGADOR 1 (CYAN) GANA!");
+         setMessage("¡TINTA ROJA (1) GANA!");
       }
 
       drawFrame();
@@ -219,34 +213,35 @@ export default function ArtilleryGame() {
   };
 
   return (
-    <div className="page-shell min-h-screen py-10 px-4">
+    <div className="page-shell min-h-screen py-10 px-4 bg-[#f4ead5] font-serif">
       <div className="max-w-4xl mx-auto flex flex-col items-center">
-         <Link href="/social" className="mb-6 self-start inline-flex items-center gap-2 text-sm text-neon-purple hover:text-white transition-colors">
-          <ArrowLeft size={16} /> Volver al Hub
+         <Link href="/social" className="mb-6 self-start inline-flex items-center gap-2 text-sm text-[#8c673d] hover:text-[#3e2b22] font-bold transition-colors">
+          <ArrowLeft size={16} /> Volver a la Tavera
         </Link>
         <div className="text-center mb-6">
-           <h1 className="text-4xl font-bold text-white tracking-tight flex justify-center items-center gap-3">
-             <Rocket className="text-neon-purple" size={32}/> Artillería <span className="text-neon-purple">Neón</span>
+           <h1 className="text-4xl font-black text-[#3e2b22] tracking-tight flex justify-center items-center gap-3">
+             <Rocket className="text-[#a64020]" size={32}/> Artillería <span className="text-[#a64020]">Clásica</span>
            </h1>
-           {phase === "playing" && <p className="text-white/60 mt-2">{message}</p>}
+           {phase === "playing" && <p className="text-[#8a765f] italic mt-2 font-medium">{message}</p>}
         </div>
 
         {phase === "menu" && (
-           <div className="surface-panel p-10 flex flex-col gap-4 text-center mt-10 rounded-[2rem] w-full max-w-md border border-neon-purple/30">
-              <h2 className="text-2xl font-bold text-white mb-6">Elige el Modo de Juego</h2>
-              <button onClick={() => { setGameMode("hotseat"); setPhase("playing"); }} className="action-pill w-full bg-white/5 border-white/10 text-white font-bold py-4 justify-center hover:bg-neon-purple hover:text-black hover:border-neon-purple">
-                 Jugar Hot-Seat (Local)
+           <div className="bg-[#fcfaf4] p-10 flex flex-col gap-4 text-center mt-10 rounded-sm w-full max-w-md mx-auto border border-[#d6c4a5] shadow-[5px_8px_15px_rgba(100,70,40,0.15)] relative transform rotate-1">
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#cc6640] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#a64020]" />
+              <h2 className="text-2xl font-serif font-bold text-[#3e3024] mb-6 mt-2">Modalidad de Partida</h2>
+              <button onClick={() => { setGameMode("hotseat"); setPhase("playing"); }} className="w-full bg-[#f4ead5] border border-[#d6c4a5] text-[#453628] font-bold font-serif py-4 justify-center hover:bg-[#8c4030] hover:text-[#fdfbf7] shadow-sm transition-colors">
+                 Jugar en Persona (Local)
               </button>
-              <div className="flex items-center gap-4 text-white/30 my-2">
-                 <div className="flex-1 border-t border-white/10"></div>
-                 <span className="text-xs uppercase">Conexión Remota</span>
-                 <div className="flex-1 border-t border-white/10"></div>
+              <div className="flex items-center gap-4 text-[#a6967c] my-2">
+                 <div className="flex-1 border-t border-dashed border-[#d6c4a5]"></div>
+                 <span className="text-xs uppercase font-mono tracking-widest">Conexión Postal</span>
+                 <div className="flex-1 border-t border-dashed border-[#d6c4a5]"></div>
               </div>
-              <button onClick={() => setPhase("queue")} className="action-pill w-full bg-neon-purple/20 border-neon-purple/50 text-neon-purple font-bold py-4 justify-center hover:bg-neon-purple hover:text-black">
-                 Buscar Partida Online
-              </button>
-              <button className="action-pill w-full bg-white/5 border-white/10 text-white/50 font-bold py-4 justify-center mt-2 cursor-not-allowed">
-                 Enviar Invitación a Amigo
+              <button 
+                onClick={() => setPhase("queue")} 
+                className="w-full bg-[#8c4030] text-[#fdfbf7] font-bold font-serif py-4 justify-center hover:bg-[#453628] shadow-sm transition-colors"
+               >
+                 Enviar Telegrama de Reto
               </button>
            </div>
         )}
@@ -267,60 +262,57 @@ export default function ArtilleryGame() {
 
         {phase === "playing" && (
         <div className="w-full flex flex-col items-center">
-           <div className="surface-panel p-4 rounded-3xl shrink-0 w-[800px] h-[440px] mb-8 relative border-neon-purple overflow-hidden">
+           <div className="bg-[#fcfaf4] p-4 shrink-0 w-[820px] h-[460px] mb-8 relative border-[12px] border-[#3e3024] shadow-[10px_15px_30px_rgba(60,40,30,0.3)]">
              <canvas
                ref={canvasRef}
                width={800}
                height={400}
-               className="bg-black rounded-2xl mx-auto shadow-inner"
+               className="bg-[#fcfaf4] mx-auto opacity-90"
              />
+             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-20 pointer-events-none mix-blend-multiply" />
            {(!gameRef.current.p1.alive || !gameRef.current.p2.alive) && (
-               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col justify-center items-center rounded-3xl">
-                  <h2 className="text-5xl font-bold text-white mb-6">GAME OVER</h2>
-                  <button onClick={initGame} className="px-8 py-4 rounded-full bg-neon-purple font-bold text-black border border-white hover:bg-white transition-colors">
-                    REINICIAR PARTIDA
+               <div className="absolute inset-0 bg-[#3e3024]/80 backdrop-blur-sm flex flex-col justify-center items-center">
+                  <h2 className="text-5xl font-black text-[#e8dcc4] mb-6 tracking-widest">FIN DEL COMBATE</h2>
+                  <button onClick={initGame} className="px-8 py-4 bg-[#8c4030] font-bold text-[#fdfbf7] border-2 border-[#d6c4a5] hover:bg-[#a64020] transition-colors shadow-lg">
+                    DIBUJAR NUEVO TERRENO
                   </button>
                </div>
            )}
         </div>
 
-        <div className="surface-panel w-full p-6 rounded-[2rem] flex justify-between items-center bg-black/50">
-           <div className={`p-4 rounded-xl flex-1 text-center transition-opacity ${turn === 1 ? "bg-neon-cyan/20 border border-neon-cyan shadow-[0_0_15px_rgba(0,255,255,0.2)] opacity-100" : "opacity-30 border border-white/10"}`}>
-             <h3 className="font-bold text-neon-cyan mb-2">JUGADOR 1</h3>
+        <div className="w-[820px] p-6 bg-[#fcfaf4] shadow-md border-y border-[#d6c4a5] flex justify-between items-center relative transform rotate-[0.5deg]">
+           <div className={`p-4 flex-1 text-center font-bold font-serif transition-colors border-2 ${turn === 1 ? "bg-[#f4ead5] border-[#8c4030] text-[#8c4030]" : "border-transparent text-[#b5a38a]"}`}>
+             <h3 className="mb-2">JUGADOR 1 (TINTA ROJA)</h3>
              {turn === 1 && !isAnimating && (
-               <div className="text-white space-y-4">
-                 <div>
-                   <label className="text-xs text-white/50 block mb-1">ÁNGULO (0-90)</label>
-                   <input type="range" min="0" max="90" value={angle} onChange={e => setAngle(Number(e.target.value))} className="w-full accent-neon-cyan"/>
-                   <span className="text-sm font-mono">{angle}°</span>
+               <div className="text-[#3e3024] space-y-4 font-mono text-xs">
+                 <div className="flex flex-col items-center">
+                   <label className="block mb-1">ÁNGULO ({angle}°)</label>
+                   <input type="range" min="0" max="90" value={angle} onChange={e => setAngle(Number(e.target.value))} className="w-full accent-[#8c4030]"/>
                  </div>
-                 <div>
-                   <label className="text-xs text-white/50 block mb-1">POTENCIA (1-100)</label>
-                   <input type="range" min="1" max="100" value={power} onChange={e => setPower(Number(e.target.value))} className="w-full accent-neon-cyan"/>
-                   <span className="text-sm font-mono">{power}</span>
+                 <div className="flex flex-col items-center">
+                   <label className="block mb-1">PÓLVORA ({power})</label>
+                   <input type="range" min="1" max="100" value={power} onChange={e => setPower(Number(e.target.value))} className="w-full accent-[#8c4030]"/>
                  </div>
-                 <button onClick={fireProjectile} className="w-full bg-neon-cyan text-black font-bold py-2 rounded-lg mt-2 hover:bg-white transition-colors">DISPARAR</button>
+                 <button onClick={fireProjectile} className="w-full bg-[#8c4030] text-[#fdfbf7] font-bold font-serif py-2 mt-2 hover:bg-[#a64020] transition-colors shadow-sm">DISPARAR</button>
                </div>
              )}
            </div>
 
-           <div className="w-8 shrink-0 text-center text-white/20 font-bold text-2xl">VS</div>
+           <div className="w-12 shrink-0 text-center text-[#8a765f] font-serif italic text-2xl px-2">VS</div>
 
-           <div className={`p-4 rounded-xl flex-1 text-center transition-opacity ${turn === 2 ? "bg-neon-pink/20 border border-neon-pink shadow-[0_0_15px_rgba(255,0,255,0.2)] opacity-100" : "opacity-30 border border-white/10"}`}>
-             <h3 className="font-bold text-neon-pink mb-2">JUGADOR 2</h3>
+           <div className={`p-4 flex-1 text-center font-bold font-serif transition-colors border-2 ${turn === 2 ? "bg-[#e8dcc4] border-[#2e404d] text-[#2e404d]" : "border-transparent text-[#b5a38a]"}`}>
+             <h3 className="mb-2">JUGADOR 2 (TINTA AZUL)</h3>
              {turn === 2 && !isAnimating && (
-               <div className="text-white space-y-4">
-                 <div>
-                   <label className="text-xs text-white/50 block mb-1">ÁNGULO (0-90)</label>
-                   <input type="range" min="0" max="90" value={angle} onChange={e => setAngle(Number(e.target.value))} className="w-full accent-neon-pink"/>
-                   <span className="text-sm font-mono">{angle}°</span>
+               <div className="text-[#3e3024] space-y-4 font-mono text-xs">
+                 <div className="flex flex-col items-center">
+                   <label className="block mb-1">ÁNGULO ({angle}°)</label>
+                   <input type="range" min="0" max="90" value={angle} onChange={e => setAngle(Number(e.target.value))} className="w-full accent-[#2e404d]"/>
                  </div>
-                 <div>
-                   <label className="text-xs text-white/50 block mb-1">POTENCIA (1-100)</label>
-                   <input type="range" min="1" max="100" value={power} onChange={e => setPower(Number(e.target.value))} className="w-full accent-neon-pink"/>
-                   <span className="text-sm font-mono">{power}</span>
+                 <div className="flex flex-col items-center">
+                   <label className="block mb-1">PÓLVORA ({power})</label>
+                   <input type="range" min="1" max="100" value={power} onChange={e => setPower(Number(e.target.value))} className="w-full accent-[#2e404d]"/>
                  </div>
-                 <button onClick={fireProjectile} className="w-full bg-neon-pink text-black font-bold py-2 rounded-lg mt-2 hover:bg-white transition-colors">DISPARAR</button>
+                 <button onClick={fireProjectile} className="w-full bg-[#2e404d] text-[#fdfbf7] font-bold font-serif py-2 mt-2 hover:bg-[#3c5a6b] transition-colors shadow-sm">DISPARAR</button>
                </div>
              )}
            </div>

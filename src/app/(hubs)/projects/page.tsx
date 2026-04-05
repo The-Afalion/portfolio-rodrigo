@@ -15,24 +15,26 @@ const GalaxyScene = dynamic(() => import("./GalaxyScene"), {
 
 export default function EngineeringPage() {
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-black text-white">
-      <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_52%,rgba(0,0,0,0.42)_100%)]" />
+    <main className="relative h-screen w-screen overflow-hidden bg-[#1a120e] text-[#e8dcc4] font-serif">
+      <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_50%,rgba(26,18,14,0.7)_100%)]" />
 
       <div className="absolute left-5 top-5 z-30 md:left-6 md:top-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-lg transition-transform hover:scale-105"
+          className="inline-flex items-center gap-3 bg-[#fdfbf7] px-6 py-3 text-sm font-bold text-[#453628] shadow-[2px_4px_0px_#a68659] border-2 border-[#8c673d] transition-transform hover:-translate-y-1 hover:shadow-[2px_6px_0px_#a68659] active:translate-y-1 active:shadow-none"
         >
-          <ArrowLeft size={16} />
-          Nexus Principal
+          <ArrowLeft size={16} className="text-[#8c673d]" />
+          RETIRARSE
         </Link>
       </div>
 
-      <div className="pointer-events-none absolute bottom-5 left-5 z-30 max-w-[320px] rounded-[1.5rem] bg-white p-7 shadow-2xl md:bottom-8 md:left-8 md:max-w-[400px]">
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Hub de Proyectos</p>
-        <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">Atlas de Desarrollo</h1>
-        <p className="mt-3 text-sm leading-6 text-gray-600 font-medium">
-          Orbita libremente y colisiona con cualquier esfera para revisar la documentación de ingeniería.
+      <div className="pointer-events-none absolute bottom-5 left-5 z-30 max-w-[320px] bg-[#fcfaf4] border-2 border-[#8c673d] shadow-[8px_12px_20px_rgba(60,40,30,0.4)] p-7 md:bottom-8 md:left-8 md:max-w-[420px] relative">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#cc6640] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#a64020]" />
+        
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#a68659] mt-3">Cartografía de Proyectos</p>
+        <h1 className="text-2xl font-black tracking-tight text-[#3e2b22] md:text-3xl uppercase">Atlas de Desarrollo</h1>
+        <p className="mt-3 text-sm leading-relaxed text-[#5c4033] font-medium border-t-2 border-dashed border-[#e3d5b8] pt-3">
+          Orbita libremente. Colisione su nave de madera contra cualquier orbe para examinar los documentos de la expedición técnica.
         </p>
       </div>
 

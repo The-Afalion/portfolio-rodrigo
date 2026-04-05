@@ -97,29 +97,30 @@ export default function CheckersGame() {
           <ArrowLeft size={16} /> Volver al Hub
         </Link>
         <div className="text-center mb-8">
-           <h1 className="text-4xl font-bold text-white tracking-tight">Damas <span className="text-neon-pink">Neón</span></h1>
-           {phase === "playing" && <p className="text-white/50 text-sm mt-2">Partida en Curso</p>}
+           <h1 className="text-4xl font-bold font-serif text-[#3e3024] tracking-tight">Damas <span className="text-[#8c4030]">Clásicas</span></h1>
+           {phase === "playing" && <p className="text-[#8a765f] font-mono uppercase tracking-widest text-sm mt-2">Mesa de Juego</p>}
         </div>
 
         {phase === "menu" && (
-           <div className="surface-panel p-10 flex flex-col gap-4 text-center mt-10 rounded-[2rem] w-full max-w-md mx-auto border border-neon-pink/30">
-              <h2 className="text-2xl font-bold text-white mb-6">Elige el Modo de Juego</h2>
+           <div className="bg-[#fcfaf4] p-10 flex flex-col gap-4 text-center mt-10 rounded-sm w-full max-w-md mx-auto border border-[#d6c4a5] shadow-[5px_8px_15px_rgba(100,70,40,0.15)] relative transform rotate-1">
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#cc6640] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#a64020]" />
+              <h2 className="text-2xl font-serif font-bold text-[#3e3024] mb-6 mt-2">Modalidad de Partida</h2>
               <button 
                 onClick={() => { setGameMode("bot"); setPhase("playing"); }} 
-                className="action-pill w-full bg-white/5 border-white/10 text-white font-bold py-4 justify-center hover:bg-neon-pink hover:text-black hover:border-neon-pink"
+                className="w-full bg-[#f4ead5] border border-[#d6c4a5] text-[#453628] font-bold font-serif py-4 justify-center hover:bg-[#8c4030] hover:text-[#fdfbf7] shadow-sm transition-colors"
               >
-                 Jugar Hot-Seat (Local)
+                 Jugar en Persona (Local)
               </button>
-              <div className="flex items-center gap-4 text-white/30 my-2">
-                 <div className="flex-1 border-t border-white/10"></div>
-                 <span className="text-xs uppercase">Conexión Remota</span>
-                 <div className="flex-1 border-t border-white/10"></div>
+              <div className="flex items-center gap-4 text-[#a6967c] my-2">
+                 <div className="flex-1 border-t border-dashed border-[#d6c4a5]"></div>
+                 <span className="text-xs uppercase font-mono tracking-widest">Conexión Postal</span>
+                 <div className="flex-1 border-t border-dashed border-[#d6c4a5]"></div>
               </div>
               <button 
                 onClick={() => setPhase("queue")} 
-                className="action-pill w-full bg-neon-pink/20 border-neon-pink/50 text-neon-pink font-bold py-4 justify-center hover:bg-neon-pink hover:text-black"
+                className="w-full bg-[#8c4030] text-[#fdfbf7] font-bold font-serif py-4 justify-center hover:bg-[#453628] shadow-sm transition-colors"
               >
-                 Buscar Partida Online
+                 Enviar Telegrama de Reto
               </button>
            </div>
         )}
@@ -139,13 +140,14 @@ export default function CheckersGame() {
         )}
 
         {phase === "playing" && (
-        <div className="surface-panel p-8 max-w-2xl mx-auto flex flex-col items-center">
-          <div className="mb-6 flex gap-4 w-full justify-between items-center px-4">
-            <div className={`px-4 py-2 rounded-lg font-bold border ${turn === 1 ? "bg-neon-cyan/20 border-neon-cyan text-neon-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]" : "border-white/10 text-white/40"}`}>TU TURNO: CIAN (1)</div>
-            <div className={`px-4 py-2 rounded-lg font-bold border ${turn === 2 ? "bg-neon-pink/20 border-neon-pink text-neon-pink shadow-[0_0_15px_rgba(255,0,255,0.3)]" : "border-white/10 text-white/40"}`}>TU TURNO: MAGENTA (2)</div>
+        <div className="bg-[#fcfaf4] border-8 border-[#3e3024] p-8 max-w-2xl mx-auto flex flex-col items-center shadow-[10px_15px_30px_rgba(60,40,30,0.3)]">
+          <div className="mb-6 flex gap-4 w-full justify-between items-center px-4 font-serif">
+            <div className={`px-4 py-2 font-bold border-2 ${turn === 1 ? "bg-[#f4ead5] border-[#a68659] text-[#3e3024]" : "border-transparent text-[#b5a38a]"}`}>TURNO: MARFIL (1)</div>
+            <div className={`px-4 py-2 font-bold border-2 ${turn === 2 ? "bg-[#e8dcc4] border-[#8c4030] text-[#8c4030]" : "border-transparent text-[#b5a38a]"}`}>TURNO: PINTEA (2)</div>
           </div>
 
-          <div className="grid grid-cols-8 border-4 border-white/10 rounded-lg overflow-hidden shadow-2xl">
+          <div className="grid grid-cols-8 border-8 border-[#2e2017] overflow-hidden shadow-2xl relative">
+            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] z-10" />
             {board.map((row, r) => 
               row.map((piece, c) => {
                 const isDark = (r + c) % 2 === 1;
@@ -154,17 +156,18 @@ export default function CheckersGame() {
                   <div 
                     key={`${r}-${c}`} 
                     onClick={() => handleSquareClick(r, c)}
-                    className={`w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center transition-colors cursor-pointer
-                      ${isDark ? "bg-gray-900" : "bg-gray-800"} 
-                      ${isSelected ? "bg-white/20" : ""}
+                    className={`w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center transition-colors cursor-pointer relative z-0
+                      ${isDark ? "bg-[#2e2017]" : "bg-[#a68659]"} 
+                      ${isSelected ? "bg-[#cc6640] opacity-80" : ""}
                     `}
                   >
                     {piece !== 0 && (
-                      <div className={`w-[80%] h-[80%] rounded-full shadow-inner flex items-center justify-center
-                        ${piece === 1 || piece === 3 ? "bg-neon-cyan shadow-[0_0_10px_#0ff]" : "bg-neon-pink shadow-[0_0_10px_#f0f]"}
-                        ${piece > 2 ? "border-4 border-white/80" : ""}
+                      <div className={`w-[80%] h-[80%] rounded-full shadow-[2px_4px_6px_rgba(0,0,0,0.5)] flex items-center justify-center
+                        ${piece === 1 || piece === 3 ? "bg-[#fdfbf7] border-2 border-[#d6c4a5]" : "bg-[#5c4033] border-2 border-[#2e2017]"}
+                        ${piece > 2 ? "border-[6px] border-[#ccaa40]" : ""}
                       `}>
-                        {piece > 2 && <div className="w-2 h-2 bg-yellow-400 rounded-full" />}
+                        <div className="w-[60%] h-[60%] rounded-full opacity-30 border border-current" />
+                        {piece > 2 && <div className="absolute w-2 h-2 bg-[#ccaa40] rounded-full shadow-sm" />}
                       </div>
                     )}
                   </div>
