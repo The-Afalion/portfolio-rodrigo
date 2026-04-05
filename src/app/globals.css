@@ -118,6 +118,30 @@
                 inset 0 0 20px -10px rgba(255, 255, 255, 0.05);
   }
 
+  /* Clases Base Restauradas (Bento Variant) */
+  .surface-panel {
+    background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    @apply block rounded-[2rem] border border-white/5 transition-all duration-300;
+  }
+  
+  .surface-panel-muted {
+    background: transparent;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    @apply block rounded-[1.4rem] border border-white/5 transition-all duration-300;
+  }
+
+  .surface-divider {
+    @apply border-t border-white/5;
+  }
+
+  .interactive-frame {
+    background: rgba(0, 0, 0, 0.4);
+    @apply block overflow-hidden rounded-[2rem] border border-white/10 touch-none; 
+  }
+
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan via-white to-neon-purple;
   }

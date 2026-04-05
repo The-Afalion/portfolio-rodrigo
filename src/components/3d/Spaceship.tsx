@@ -36,6 +36,8 @@ export const Spaceship = forwardRef<THREE.Group, SpaceshipProps>(
 
     const [keys, setKeys] = useState<Record<string, boolean>>({});
     const { camera } = useThree();
+    const isMobileRef = useRef(false);
+    const gyro = useRef({ beta: 45, gamma: 0 });
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -45,13 +47,39 @@ export const Spaceship = forwardRef<THREE.Group, SpaceshipProps>(
       const handleKeyUp = (event: KeyboardEvent) => {
         setKeys((prev) => ({ ...prev, [event.code]: false }));
       };
+      
+      const handlePointerDown = () => setKeys((prev) => ({ ...prev, KeyW: true }));
+      const handlePointerUp = () => setKeys((prev) => ({ ...prev, KeyW: false }));
+
+      const handleOrientation = (event: DeviceOrientationEvent) => {
+        if (event.beta !== null) gyro.current.beta = event.beta;
+        if (event.gamma !== null) gyro.current.gamma = event.gamma;
+      };
+
+      isMobileRef.current = /Mobi|Android/i.test(navigator.userAgent);
 
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('keyup', handleKeyUp);
+      
+      if (isMobileRef.current) {
+        window.addEventListener('pointerdown', handlePointerDown);
+        window.addEventListener('pointerup', handlePointerUp);
+        if (window.DeviceOrientationEvent) {
+          window.addEventListener('deviceorientation', handleOrientation);
+        }
+      }
 
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
         window.removeEventListener('keyup', handleKeyUp);
+        
+        if (isMobileRef.current) {
+          window.removeEventListener('pointerdown', handlePointerDown);
+          window.removeEventListener('pointerup', handlePointerUp);
+          if (window.DeviceOrientationEvent) {
+            window.removeEventListener('deviceorientation', handleOrientation);
+          }
+        }
       };
     }, []);
 
@@ -73,6 +101,16 @@ export const Spaceship = forwardRef<THREE.Group, SpaceshipProps>(
         if (keys.ArrowRight) meshRef.current.rotateY(-rotSpeed);
         if (keys.KeyA) meshRef.current.rotateZ(rotSpeed);
         if (keys.KeyD) meshRef.current.rotateZ(-rotSpeed);
+        
+        if (isMobileRef.current) {
+          const { beta, gamma } = gyro.current;
+          // Beta is pitch [-180, 180]. Natural holding ~ 45 deg.
+          if (beta < 30) meshRef.current.rotateX(-rotSpeed * 0.8);
+          if (beta > 60) meshRef.current.rotateX(rotSpeed * 0.8);
+          // Gamma is roll [-90, 90]
+          if (gamma < -15) meshRef.current.rotateY(rotSpeed * 0.8);
+          if (gamma > 15) meshRef.current.rotateY(-rotSpeed * 0.8);
+        }
       }
 
       const isBoosting = controlsEnabled && (keys.ShiftLeft || keys.ShiftRight);

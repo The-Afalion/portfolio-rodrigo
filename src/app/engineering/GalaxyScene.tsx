@@ -57,7 +57,8 @@ function Comets() {
   }, []);
 
   useFrame((state, delta) => {
-    if (!meshRef.current) return;
+    const mesh = meshRef.current;
+    if (!mesh) return;
     data.forEach((comet, i) => {
       comet.pos.add(comet.vel.clone().multiplyScalar(delta));
       if (comet.pos.length() > 150) {
@@ -67,9 +68,9 @@ function Comets() {
       dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), comet.vel.clone().normalize());
       dummy.scale.set(comet.scale * 0.1, comet.scale * 4, comet.scale * 0.1);
       dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
+      mesh.setMatrixAt(i, dummy.matrix);
     });
-    meshRef.current.instanceMatrix.needsUpdate = true;
+    mesh.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -92,16 +93,17 @@ function AsteroidField({ asteroids }: { asteroids: Asteroid[] }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
   useFrame((state, delta) => {
-    if (!meshRef.current) return;
+    const mesh = meshRef.current;
+    if (!mesh) return;
     asteroids.forEach((ast, i) => {
       ast.rotation.add(ast.rotSpeed.clone().multiplyScalar(delta));
       dummy.position.copy(ast.pos);
       dummy.rotation.setFromVector3(ast.rotation);
       dummy.scale.setScalar(ast.scale);
       dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
+      mesh.setMatrixAt(i, dummy.matrix);
     });
-    meshRef.current.instanceMatrix.needsUpdate = true;
+    mesh.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -281,16 +283,25 @@ export default function GalaxyScene() {
     <>
       <div className="absolute top-6 right-6 z-50">
         <button
-          onClick={() => {
-            if (!isWarping) setIsShipMode(!isShipMode);
+          onClick={async () => {
+            if (!isWarping) {
+              setIsShipMode(!isShipMode);
+              if (!isShipMode && typeof (DeviceOrientationEvent as any)?.requestPermission === 'function') {
+                try {
+                  await (DeviceOrientationEvent as any).requestPermission();
+                } catch (err) {
+                  console.error("Permiso dispositivo denegado", err);
+                }
+              }
+            }
           }}
           className="px-6 py-2 bg-black/40 backdrop-blur-md border border-white/20 text-white font-mono text-sm uppercase tracking-wider rounded-md hover:bg-white hover:text-black hover:border-white transition-all duration-300"
         >
-          {isShipMode ? "Desactivar Nave" : "Pilotar Nave"}
+          {isShipMode ? "Desactivar Nave" : "Pilotar Nave (Gyro en Móvil)"}
         </button>
       </div>
 
-      <Canvas camera={{ fov: 60, position: [0, 15, 35] }}>
+      <Canvas style={{ touchAction: 'none' }} camera={{ fov: 60, position: [0, 15, 35] }}>
         <color attach="background" args={["#010103"]} />
         <ambientLight intensity={0.2} />
 
