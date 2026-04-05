@@ -1,6 +1,6 @@
 import ModelGallery from "@/components/ModelGallery";
 import { Cuboid, MousePointerClick, ScanLine } from "lucide-react";
-import { PageHero, PageShell, SectionPanel, SectionInset } from "@/components/shell/PagePrimitives";
+import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
 
 export const metadata = {
   title: "Galería 3D | Rodrigo Alonso",
@@ -15,21 +15,21 @@ export default function PaginaGaleria3D() {
         title="Galería 3D"
         description="Piezas y estudios tridimensionales para revisar forma, materiales y movimiento. Arrastra para rotar y usa la rueda para acercar."
         aside={
-          <SectionPanel className="space-y-4">
+          <SectionInset className="space-y-4">
             <div className="flex items-center gap-3">
               <Cuboid size={18} className="text-primary" />
               <p className="text-sm text-muted-foreground">El foco está en la pieza y en la lectura espacial, no en el marco alrededor.</p>
             </div>
-          </SectionPanel>
+          </SectionInset>
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="space-y-8">
         <div className="interactive-frame h-[640px] p-4 md:p-6">
           <ModelGallery />
         </div>
 
-        <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <SectionInset>
             <div className="flex items-center gap-3">
               <MousePointerClick size={18} className="text-primary" />

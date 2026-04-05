@@ -7,23 +7,23 @@ import { FEATURED_PROJECTS, type ProyectoCore } from "@/datos/proyectos";
 import { siteConfig } from "@/config/site";
 import { useRef } from "react";
 
-const selectedProjects = FEATURED_PROJECTS.slice(0, 5);
+const selectedProjects = FEATURED_PROJECTS.slice(0, 4);
 
-const hubIndex = [
+const hubs = [
   {
     title: "Laboratorios",
     href: "/engineering",
-    description: "Atlas interactivo con simulaciones, motores y prototipos.",
+    description: "Atlas espacial con motores, simulaciones y prototipos interactivos.",
   },
   {
     title: "Chess",
     href: "/chess",
-    description: "Lobby, bots y modos colectivos dentro del mismo hub.",
+    description: "Lobby, bots y modos colectivos dentro del mismo producto.",
   },
   {
     title: "Blog",
     href: "/blog",
-    description: "Notas técnicas, decisiones de producto y arquitectura.",
+    description: "Notas técnicas, decisiones de producto y proceso.",
   },
   {
     title: "3D",
@@ -32,13 +32,13 @@ const hubIndex = [
   },
 ] as const;
 
-const studioIndex = [
+const studioFacts = [
   ["Rol", siteConfig.role],
-  ["Base", "Producto, interacción, visualización"],
-  ["Ámbito", "Web, tiempo real, IA aplicada"],
+  ["Foco", "Producto, interacción y sistema"],
+  ["Trabajo", "Web, tiempo real e IA aplicada"],
 ] as const;
 
-function ProjectRow({ project, index }: { project: ProyectoCore; index: number }) {
+function ProjectItem({ project, index }: { project: ProyectoCore; index: number }) {
   return (
     <Link
       href={`/proyectos/${project.id}`}
@@ -48,35 +48,23 @@ function ProjectRow({ project, index }: { project: ProyectoCore; index: number }
         {String(index + 1).padStart(2, "0")}
       </p>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center gap-3">
           <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: project.color }} />
           <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{project.title}</h2>
         </div>
         <p className="max-w-2xl text-sm leading-7 text-muted-foreground">{project.description}</p>
-        <div className="flex flex-wrap gap-2">
-          {project.tech.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-border/80 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
       </div>
 
-      <div className="hidden pt-1 md:block">
-        <ArrowUpRight
-          size={18}
-          className="text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-        />
-      </div>
+      <ArrowUpRight
+        size={18}
+        className="hidden text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block"
+      />
     </Link>
   );
 }
 
-function HubRow({
+function HubItem({
   title,
   href,
   description,
@@ -86,10 +74,7 @@ function HubRow({
   description: string;
 }) {
   return (
-    <Link
-      href={href}
-      className="group grid gap-4 py-6 md:grid-cols-[minmax(0,1fr),auto] md:items-start md:gap-8"
-    >
+    <Link href={href} className="group grid gap-4 py-6 md:grid-cols-[minmax(0,1fr),auto] md:items-start md:gap-8">
       <div className="space-y-2">
         <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h3>
         <p className="max-w-xl text-sm leading-7 text-muted-foreground">{description}</p>
@@ -104,65 +89,56 @@ function HubRow({
 
 export default function StudioHome() {
   const heroRef = useRef<HTMLElement>(null);
-  const atlasRef = useRef<HTMLElement>(null);
-  const prefersReducedMotion = useReducedMotion();
+  const hubsRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
 
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
 
-  const { scrollYProgress: atlasProgress } = useScroll({
-    target: atlasRef,
+  const { scrollYProgress: hubsProgress } = useScroll({
+    target: hubsRef,
     offset: ["start end", "end start"],
   });
 
-  const heroPlaneY = useTransform(heroProgress, [0, 1], [0, prefersReducedMotion ? 0 : 150]);
-  const heroPlaneSecondaryY = useTransform(heroProgress, [0, 1], [0, prefersReducedMotion ? 0 : 90]);
-  const heroWordX = useTransform(heroProgress, [0, 1], [0, prefersReducedMotion ? 0 : 120]);
-  const heroContentY = useTransform(heroProgress, [0, 1], [0, prefersReducedMotion ? 0 : 40]);
-
-  const atlasPanelY = useTransform(atlasProgress, [0, 1], [prefersReducedMotion ? 0 : 60, prefersReducedMotion ? 0 : -60]);
-  const atlasWordY = useTransform(atlasProgress, [0, 1], [prefersReducedMotion ? 0 : 40, prefersReducedMotion ? 0 : -90]);
+  const heroBlockY = useTransform(heroProgress, [0, 1], [0, reduceMotion ? 0 : 140]);
+  const heroSmallBlockY = useTransform(heroProgress, [0, 1], [0, reduceMotion ? 0 : 70]);
+  const heroWordX = useTransform(heroProgress, [0, 1], [0, reduceMotion ? 0 : 80]);
+  const hubBlockY = useTransform(hubsProgress, [0, 1], [reduceMotion ? 0 : 40, reduceMotion ? 0 : -60]);
+  const hubWordY = useTransform(hubsProgress, [0, 1], [reduceMotion ? 0 : 10, reduceMotion ? 0 : -100]);
 
   return (
     <main className="relative">
       <section ref={heroRef} className="relative min-h-[100svh] overflow-hidden border-b border-border/80">
-        <div className="absolute inset-0">
-          <motion.div
-            aria-hidden="true"
-            style={{ y: heroPlaneY }}
-            className="absolute right-[6%] top-[18%] hidden h-[56vh] min-h-[360px] w-[38vw] min-w-[360px] rounded-[3rem] border border-border/80 bg-card/92 lg:block"
-          />
-          <motion.div
-            aria-hidden="true"
-            style={{ y: heroPlaneSecondaryY }}
-            className="absolute right-[17%] top-[28%] hidden h-[24vh] min-h-[180px] w-[24vw] min-w-[260px] rounded-[2.2rem] border border-border/80 bg-secondary/90 lg:block"
-          />
-          <motion.div
-            aria-hidden="true"
-            style={{ y: heroPlaneY }}
-            className="absolute left-[58%] top-[58%] hidden h-[16vh] min-h-[120px] w-[14vw] min-w-[180px] rounded-[1.8rem] border border-border/80 bg-background lg:block"
-          />
-          <motion.p
-            aria-hidden="true"
-            style={{ x: heroWordX }}
-            className="absolute bottom-[10%] right-[6%] hidden font-display text-[12vw] font-semibold leading-none tracking-[-0.08em] text-foreground/[0.05] lg:block"
-          >
-            SYSTEMS
-          </motion.p>
-        </div>
+        <motion.div
+          aria-hidden="true"
+          style={{ y: heroBlockY }}
+          className="absolute right-[4%] top-[15%] hidden h-[60vh] min-h-[360px] w-[32vw] min-w-[320px] bg-secondary lg:block"
+        />
+        <motion.div
+          aria-hidden="true"
+          style={{ y: heroSmallBlockY }}
+          className="absolute bottom-[18%] right-[24%] hidden h-[20vh] min-h-[120px] w-[14vw] min-w-[170px] bg-accent/70 lg:block"
+        />
+        <motion.p
+          aria-hidden="true"
+          style={{ x: heroWordX }}
+          className="absolute bottom-[8%] right-[4%] hidden font-display text-[11vw] font-semibold leading-none tracking-[-0.08em] text-foreground/[0.05] lg:block"
+        >
+          STUDIO
+        </motion.p>
 
-        <motion.div style={{ y: heroContentY }} className="page-container relative z-10 flex min-h-[100svh] flex-col justify-end pb-16 pt-28">
-          <div className="grid gap-12 lg:grid-cols-[1.05fr_0.75fr] lg:items-end">
+        <div className="page-container relative flex min-h-[100svh] flex-col justify-end pb-16 pt-24">
+          <div className="grid gap-12 lg:grid-cols-[1.05fr_0.8fr] lg:items-end">
             <div className="space-y-7">
               <p className="page-eyebrow">Rodrigo Alonso</p>
               <div className="space-y-4">
-                <h1 className="max-w-5xl text-5xl font-semibold leading-[0.9] tracking-[-0.06em] sm:text-6xl lg:text-[6.2rem]">
-                  Software con criterio visual.
+                <h1 className="max-w-5xl text-5xl font-semibold leading-[0.9] tracking-[-0.06em] sm:text-6xl lg:text-[6.4rem]">
+                  Software claro. Interacción precisa.
                 </h1>
                 <p className="max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
-                  Producto digital, interacción y sistemas técnicos construidos con orden, detalle y claridad.
+                  Diseño y construyo producto digital, sistemas interactivos y experiencias técnicas con una ejecución sobria y bien ordenada.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -173,18 +149,18 @@ export default function StudioHome() {
                   Ver trabajo
                   <ArrowRight size={16} />
                 </Link>
-                <Link href="/engineering" className="action-pill">
-                  Abrir atlas
+                <Link href="/contact" className="action-pill">
+                  Contacto
                 </Link>
               </div>
             </div>
 
-            <div className="border border-border/80 bg-background/82">
-              {studioIndex.map(([label, value], index) => (
+            <div className="border-t border-border/80 lg:border-t-0 lg:border-l lg:pl-10">
+              {studioFacts.map(([label, value], index) => (
                 <div
                   key={label}
-                  className={`grid gap-2 px-5 py-5 sm:grid-cols-[96px,minmax(0,1fr)] ${
-                    index !== studioIndex.length - 1 ? "border-b border-border/80" : ""
+                  className={`grid gap-2 py-5 sm:grid-cols-[96px,minmax(0,1fr)] ${
+                    index !== studioFacts.length - 1 ? "border-b border-border/80" : ""
                   }`}
                 >
                   <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
@@ -195,54 +171,54 @@ export default function StudioHome() {
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       <section id="work" className="border-b border-border/80 py-20 md:py-24">
-        <div className="page-container grid gap-12 lg:grid-cols-[0.68fr_1.32fr]">
-          <div className="space-y-4 lg:sticky lg:top-28 lg:self-start">
-            <p className="page-eyebrow">Selected Work</p>
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Trabajo principal</h2>
+        <div className="page-container grid gap-12 lg:grid-cols-[300px,minmax(0,1fr)]">
+          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            <p className="page-eyebrow">Trabajo</p>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Proyectos principales</h2>
             <p className="max-w-sm text-base leading-8 text-muted-foreground">
-              Una selección reducida de proyectos donde se cruza producto, interacción y sistema técnico.
+              Selección breve de piezas donde se cruzan producto, sistema y ejecución visual.
             </p>
           </div>
 
           <div className="divide-y divide-border/80 border-y border-border/80">
             {selectedProjects.map((project, index) => (
-              <ProjectRow key={project.id} project={project} index={index} />
+              <ProjectItem key={project.id} project={project} index={index} />
             ))}
           </div>
         </div>
       </section>
 
-      <section ref={atlasRef} className="relative h-[120svh] border-b border-border/80">
-        <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden bg-background">
+      <section ref={hubsRef} className="relative min-h-[118svh] border-b border-border/80">
+        <div className="sticky top-0 flex min-h-[100svh] items-center overflow-hidden">
           <motion.div
             aria-hidden="true"
-            style={{ y: atlasPanelY }}
-            className="absolute right-[6%] top-[16%] hidden h-[68vh] min-h-[460px] w-[30vw] min-w-[300px] rounded-[3rem] border border-border/80 bg-secondary/86 lg:block"
+            style={{ y: hubBlockY }}
+            className="absolute right-[6%] top-[16%] hidden h-[62vh] min-h-[420px] w-[26vw] min-w-[260px] bg-secondary lg:block"
           />
           <motion.p
             aria-hidden="true"
-            style={{ y: atlasWordY }}
+            style={{ y: hubWordY }}
             className="absolute left-[4%] top-[14%] hidden font-display text-[10vw] font-semibold leading-none tracking-[-0.08em] text-foreground/[0.05] lg:block"
           >
-            ATLAS
+            INDEX
           </motion.p>
 
-          <div className="page-container relative z-10 grid gap-12 lg:grid-cols-[0.7fr_1.3fr]">
+          <div className="page-container relative z-10 grid gap-12 lg:grid-cols-[300px,minmax(0,1fr)]">
             <div className="space-y-4">
               <p className="page-eyebrow">Índice</p>
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Entradas claras para cada área.</h2>
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Cada área tiene su propio hub.</h2>
               <p className="max-w-sm text-base leading-8 text-muted-foreground">
-                La web queda organizada como un estudio: un portfolio central y cuatro hubs con identidad propia.
+                El portfolio principal se mantiene limpio y el resto del trabajo se organiza en entradas específicas.
               </p>
             </div>
 
             <div className="divide-y divide-border/80 border-y border-border/80">
-              {hubIndex.map((hub) => (
-                <HubRow
+              {hubs.map((hub) => (
+                <HubItem
                   key={hub.href}
                   title={hub.title}
                   href={hub.href}
@@ -259,9 +235,9 @@ export default function StudioHome() {
           <div className="grid gap-10 border-t border-border/80 pt-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="space-y-4">
               <p className="page-eyebrow">Contacto</p>
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Si hay una idea buena, la construimos bien.</h2>
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Si la idea merece cuidado, hablemos.</h2>
               <p className="max-w-xl text-base leading-8 text-muted-foreground">
-                Trabajo mejor con objetivos claros, ambición técnica y margen para cuidar la ejecución.
+                Trabajo mejor con objetivos claros, ambición técnica y margen para hacer las cosas bien.
               </p>
             </div>
 

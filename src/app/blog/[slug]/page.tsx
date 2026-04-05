@@ -7,7 +7,7 @@ import { ArrowLeft, Eye } from "lucide-react";
 import { incrementViews } from "@/app/blog/actions";
 import LikeButton from "@/app/blog/LikeButton";
 import Image from "next/image";
-import { PageShell, SectionPanel, SectionInset } from "@/components/shell/PagePrimitives";
+import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -66,97 +66,71 @@ export default async function PostPage({ params }: Props) {
       <div className="mb-8">
         <Link href="/blog" className="action-pill">
           <ArrowLeft size={16} />
-          <span>Todos los artículos</span>
+          <span>Volver al blog</span>
         </Link>
       </div>
 
-      <section className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <SectionPanel className="overflow-hidden p-0">
-          <div className="border-b border-border/70 px-6 py-8 md:px-10 md:py-10">
-            <div className="mb-5 flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
-                <Link
-                  key={tag.id}
-                  href={`/blog/tags/${tag.name}`}
-                  className="rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {tag.name}
-                </Link>
-              ))}
-            </div>
-
-            <h1 className="max-w-4xl text-4xl font-semibold leading-tight sm:text-5xl">{post.title}</h1>
-
-            <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
-              <time dateTime={post.createdAt.toISOString()}>
-                {new Date(post.createdAt).toLocaleDateString("es-ES", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  timeZone: "UTC",
-                })}
-              </time>
-              <span className="inline-flex items-center gap-2">
-                <Eye size={16} />
-                {post.views.toLocaleString("es-ES")} vistas
-              </span>
-            </div>
-          </div>
-
-          <div className="px-6 py-8 md:px-10 md:py-10">
-            {post.coverImage ? (
-              <div className="mb-10 overflow-hidden rounded-[2rem] border border-border/70">
-                <Image
-                  src={post.coverImage}
-                  alt={post.title}
-                  width={1400}
-                  height={900}
-                  sizes="(min-width: 1280px) 900px, 100vw"
-                  className="h-auto max-h-[520px] w-full object-cover"
-                />
-              </div>
-            ) : null}
-
-            <div
-              className={`prose prose-lg max-w-none prose-headings:font-display prose-headings:text-foreground prose-p:text-foreground/85 prose-p:leading-8 prose-a:text-primary prose-a:no-underline hover:prose-a:text-foreground prose-strong:text-foreground prose-blockquote:border-l-primary prose-blockquote:bg-accent/20 prose-blockquote:py-2 prose-blockquote:pl-5 prose-blockquote:pr-4 prose-blockquote:text-foreground/80 prose-code:text-foreground prose-pre:rounded-[1.5rem] prose-pre:border prose-pre:border-border/80 prose-pre:bg-secondary/70 ${fontClass}`}
-              dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-            />
-
-            <div className="surface-divider mt-10 flex justify-center pt-8">
-              <div className="rounded-full border border-border/80 bg-background/85 p-2 backdrop-blur-xl">
-                <LikeButton slug={post.slug} initialLikes={post.likes} />
-              </div>
-            </div>
-          </div>
-        </SectionPanel>
-
-        <div className="space-y-4">
-          <SectionInset>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Publicado</p>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">
-              {new Date(post.createdAt).toLocaleDateString("es-ES", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                timeZone: "UTC",
-              })}
+      <PageHero
+        eyebrow="Artículo"
+        title={post.title}
+        description={new Date(post.createdAt).toLocaleDateString("es-ES", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          timeZone: "UTC",
+        })}
+        aside={
+          <SectionInset className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Lecturas</p>
+            <p className="inline-flex items-center gap-2 text-sm leading-7 text-muted-foreground">
+              <Eye size={16} />
+              {post.views.toLocaleString("es-ES")} vistas
             </p>
           </SectionInset>
-          <SectionInset>
+        }
+      />
+
+      <section className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <article className="space-y-10">
+          {post.coverImage ? (
+            <div className="overflow-hidden border border-border/80">
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                width={1400}
+                height={900}
+                sizes="(min-width: 1280px) 960px, 100vw"
+                className="h-auto max-h-[620px] w-full object-cover"
+              />
+            </div>
+          ) : null}
+
+          <div
+            className={`prose prose-lg max-w-none prose-headings:font-display prose-headings:text-foreground prose-p:text-foreground/85 prose-p:leading-8 prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 prose-strong:text-foreground prose-blockquote:border-l-border prose-blockquote:pl-5 prose-blockquote:text-foreground/80 prose-code:text-foreground prose-pre:border prose-pre:border-border/80 prose-pre:bg-secondary/70 ${fontClass}`}
+            dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+          />
+
+          <div className="border-t border-border/80 pt-8">
+            <LikeButton slug={post.slug} initialLikes={post.likes} />
+          </div>
+        </article>
+
+        <aside className="space-y-6 border-t border-border/80 pt-8 lg:pt-0 lg:border-t-0 lg:border-l lg:pl-8">
+          <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Etiquetas</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
                 <Link
                   key={tag.id}
                   href={`/blog/tags/${tag.name}`}
-                  className="rounded-full border border-border/80 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground"
+                  className="rounded-full border border-border/80 px-3 py-1 text-xs font-medium text-muted-foreground"
                 >
                   {tag.name}
                 </Link>
               ))}
             </div>
-          </SectionInset>
-        </div>
+          </div>
+        </aside>
       </section>
     </PageShell>
   );

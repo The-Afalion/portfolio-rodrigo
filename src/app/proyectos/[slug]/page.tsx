@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import DetalleProyecto from '@/components/DetalleProyecto';
 import { PROYECTOS_CORE as DATOS_PROYECTOS } from '@/datos/proyectos';
-import { PageHero, PageShell, SectionPanel } from '@/components/shell/PagePrimitives';
+import { PageHero, PageShell } from '@/components/shell/PagePrimitives';
 
 type PageProps = {
   params: { slug: string };
@@ -46,9 +46,7 @@ export default function PaginaProyecto({ params }: PageProps) {
         description={proyecto.description}
       />
 
-      <SectionPanel>
-          <DetalleProyecto proyecto={proyecto} />
-      </SectionPanel>
+      <DetalleProyecto proyecto={proyecto} />
     </PageShell>
   );
 }

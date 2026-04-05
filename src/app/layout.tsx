@@ -28,8 +28,8 @@ const fuenteMono = IBM_Plex_Mono({
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4efe6" },
-    { media: "(prefers-color-scheme: dark)", color: "#161a20" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f1ea" },
+    { media: "(prefers-color-scheme: dark)", color: "#171b21" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: ["Rodrigo Alonso", "Ingeniero Informático", "Desarrollador Web", "React", "Next.js", "Three.js", "IA", "Portafolio"],
+  keywords: ["Rodrigo Alonso", "Ingeniero de software", "Producto digital", "React", "Next.js", "Three.js", "IA", "Portfolio"],
   authors: [{ name: siteConfig.name }],
   creator: siteConfig.name,
   openGraph: {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     locale: "es_ES",
     url: siteConfig.siteUrl,
     title: siteConfig.title,
-    description: "Explora proyectos, laboratorios técnicos y experimentos inmersivos.",
+    description: "Portfolio de producto digital, sistemas interactivos e IA aplicada.",
     siteName: `${siteConfig.name} Portfolio`,
     images: [
       {

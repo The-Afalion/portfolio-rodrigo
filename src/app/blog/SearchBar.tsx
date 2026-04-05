@@ -26,7 +26,7 @@ export default function SearchBar() {
       </div>
       <input
         type="text"
-        className="block w-full rounded-full border border-border/85 bg-card py-3 pl-12 pr-4 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:border-foreground/20 focus:outline-none focus:ring-1 focus:ring-foreground/10"
+        className="block w-full border-b border-border/80 bg-transparent py-3 pl-12 pr-4 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
         placeholder="Buscar artículo"
         defaultValue={searchParams.get('q')?.toString()}
         onChange={(e) => handleSearch(e.target.value)}

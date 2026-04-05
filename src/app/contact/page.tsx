@@ -41,20 +41,20 @@ export default function ContactPage() {
     <PageShell>
       <PageHero
         eyebrow="Contacto"
-        title="Cuéntame el proyecto."
-        description="Si tienes una idea, una colaboración o una pieza de producto que necesita criterio técnico y visual, este es el punto de entrada."
+        title="Cuéntame la idea."
+        description="Si hay un proyecto que necesita criterio técnico, claridad visual y una ejecución cuidada, este es el punto de entrada."
         aside={
-          <SectionPanel className="space-y-3">
+          <SectionInset className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Qué ayuda</p>
             <p className="text-sm leading-7 text-muted-foreground">
               Contexto, objetivo, alcance y plazo. Con eso la conversación empieza mucho mejor.
             </p>
-          </SectionPanel>
+          </SectionInset>
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <SectionPanel>
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <section className="border-t border-border/80 pt-8">
           <form ref={formRef} action={dispatch} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
@@ -117,20 +117,20 @@ export default function ContactPage() {
 
             <SubmitButton />
           </form>
-        </SectionPanel>
+        </section>
 
-        <div className="space-y-4">
-          <SectionInset>
+        <aside className="space-y-4 border-t border-border/80 pt-8">
+          <SectionInset className="rounded-none border-x-0 border-t-0 px-0 py-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Ámbitos</p>
             <p className="mt-3 text-sm leading-7 text-muted-foreground">Frontend, producto interactivo, prototipos técnicos, IA aplicada y visualización.</p>
           </SectionInset>
-          <SectionInset>
+          <SectionInset className="rounded-none border-x-0 border-b-0 px-0 py-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Email</p>
             <a href="mailto:rodrigo@rodocodes.dev" className="mt-3 block text-sm font-medium text-foreground hover:text-muted-foreground">
               rodrigo@rodocodes.dev
             </a>
           </SectionInset>
-        </div>
+        </aside>
       </div>
     </PageShell>
   );

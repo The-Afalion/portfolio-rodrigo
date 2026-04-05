@@ -15,7 +15,7 @@ export const siteConfig = {
   role: 'Ingeniero de software',
   title: 'Rodrigo Alonso | Ingeniero de software',
   description:
-    'Portfolio de Rodrigo Alonso. Producto digital, sistemas interactivos, IA aplicada y prototipos técnicos.',
+    'Portfolio de Rodrigo Alonso. Producto digital, sistemas interactivos e IA aplicada.',
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || fallbackUrl,
   email: 'rodrigo@rodocodes.dev',
   github: 'https://github.com/The-Afalion',
@@ -24,7 +24,7 @@ export const siteConfig = {
 } as const;
 
 export const primaryNavigation: SiteLink[] = [
-  { label: 'Portfolio', href: '/' },
+  { label: 'Inicio', href: '/' },
   { label: 'Blog', href: '/blog' },
   { label: 'Laboratorios', href: '/engineering' },
   { label: 'Chess', href: '/chess' },
@@ -33,7 +33,7 @@ export const primaryNavigation: SiteLink[] = [
 ];
 
 export const footerNavigation: SiteLink[] = [
-  { label: 'Portfolio', href: '/' },
+  { label: 'Inicio', href: '/' },
   { label: 'Blog', href: '/blog' },
   { label: 'Laboratorios', href: '/engineering' },
   { label: 'Chess', href: '/chess' },
