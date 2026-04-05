@@ -11,7 +11,7 @@ const selectedProjects = FEATURED_PROJECTS.slice(0, 4);
 const hubs = [
   {
     title: "Laboratorios",
-    href: "/engineering",
+    href: "/projects",
     description: "Espacio de pruebas, motores físicos y experimentos Next.js.",
     icon: <Cpu className="text-neon-cyan mb-4" size={32} />,
     color: "from-cyan-500/20 to-blue-500/5",
@@ -171,3 +171,4 @@ export default function StudioHome() {
     </main>
   );
 }
+

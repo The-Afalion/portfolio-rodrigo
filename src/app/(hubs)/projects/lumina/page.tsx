@@ -95,7 +95,7 @@ export default function LuminaClient() {
             {showUI && (
                 <div className="absolute top-6 left-6 z-20 flex flex-col gap-4 animate-fade-in pointer-events-none">
                     <Link
-                        href="/engineering"
+                        href="/projects"
                         className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors text-xs font-bold tracking-widest uppercase pointer-events-auto bg-black/20 backdrop-blur-sm p-3 rounded"
                     >
                         <ArrowLeft size={16} /> Procedural AI Hub
@@ -136,3 +136,4 @@ export default function LuminaClient() {
         </main>
     );
 }
+

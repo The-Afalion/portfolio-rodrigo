@@ -99,7 +99,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['TypeScript', 'Neuroevolution', 'Canvas'],
     color: '#81d4b0',
     position: [8, 10, -4] as [number, number, number],
-    link: '/engineering/neural-racing'
+    link: '/projects/neural-racing'
   },
   {
     id: 'eco-engine',
@@ -108,7 +108,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['TypeScript', 'Artificial Life', 'ProcGen'],
     color: '#b39ddb',
     position: [-8, -10, -2] as [number, number, number],
-    link: '/engineering/ecosystem'
+    link: '/projects/ecosystem'
   },
   {
     id: 'neural-swarm',
@@ -117,7 +117,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['TypeScript', 'Genetic Algorithm', 'Raycasting'],
     color: '#e7cf82',
     position: [0, 8, 8] as [number, number, number],
-    link: '/engineering/swarm'
+    link: '/projects/swarm'
   },
   {
     id: 'lumina-flow',
@@ -126,7 +126,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['Flocking Math', 'Canvas', 'Generative'],
     color: '#7db9e8',
     position: [-15, 2, 8] as [number, number, number],
-    link: '/engineering/lumina'
+    link: '/projects/lumina'
   },
   {
     id: 'space-sandbox',
@@ -135,7 +135,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['R3F', 'Physics', 'RPG'],
     color: '#e5a6c6',
     position: [0, -10, 13] as [number, number, number],
-    link: '/engineering/sandbox'
+    link: '/projects/sandbox'
   },
   {
     id: 'aetheria',
@@ -144,7 +144,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['React', 'Framer Motion', 'Minimax AI'],
     color: '#d7b083',
     position: [12, 8, 12] as [number, number, number],
-        link: '/engineering/aetheria'
+        link: '/projects/aetheria'
   },
   {
     id: 'hub-social',
@@ -158,3 +158,4 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
 ];
 
 export const FEATURED_PROJECTS = PROYECTOS_CORE.filter((project) => project.featured);
+

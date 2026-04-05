@@ -21,18 +21,18 @@ export default function EngineeringPage() {
       <div className="absolute left-5 top-5 z-30 md:left-6 md:top-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/35 px-4 py-2 font-mono text-xs uppercase tracking-[0.24em] text-white/72 backdrop-blur-md transition-colors hover:text-white"
+          className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-lg transition-transform hover:scale-105"
         >
-          <ArrowLeft size={14} />
-          Exit
+          <ArrowLeft size={16} />
+          Nexus Principal
         </Link>
       </div>
 
-      <div className="pointer-events-none absolute bottom-5 left-5 z-30 max-w-[320px] rounded-[1.8rem] border border-white/12 bg-black/28 p-5 backdrop-blur-md md:bottom-6 md:left-6 md:max-w-[420px]">
-        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.32em] text-white/48">Engineering Atlas</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-white md:text-4xl">Explora el espacio de proyectos.</h1>
-        <p className="mt-3 text-sm leading-7 text-white/62">
-          Orbita libremente, activa la nave y entra en una esfera para saltar por hiperespacio al laboratorio.
+      <div className="pointer-events-none absolute bottom-5 left-5 z-30 max-w-[320px] rounded-[1.5rem] bg-white p-7 shadow-2xl md:bottom-8 md:left-8 md:max-w-[400px]">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Hub de Proyectos</p>
+        <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">Atlas de Desarrollo</h1>
+        <p className="mt-3 text-sm leading-6 text-gray-600 font-medium">
+          Orbita libremente y colisiona con cualquier esfera para revisar la documentación de ingeniería.
         </p>
       </div>
 

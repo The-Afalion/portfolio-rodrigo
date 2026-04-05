@@ -39,7 +39,7 @@ export default function LaboratoriosSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <Card
-              href="/engineering"
+              href="/projects"
               icon={<Cpu size={32} strokeWidth={1} />}
               title="Engineering Core"
               description="Un espacio para la experimentación técnica severa. Incluye simulaciones de físicas, algoritmos visuales e infraestructura."
@@ -68,3 +68,4 @@ export default function LaboratoriosSection() {
     </section>
   );
 }
+

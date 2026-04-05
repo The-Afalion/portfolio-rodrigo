@@ -4,63 +4,63 @@
 
 @layer base {
   :root {
-    /* Premium Dark Theme (Linear/Vercel style) */
-    --background: 0 0% 4%; /* Casi negro absoluto */
-    --foreground: 0 0% 95%; /* Blanco titanio */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
     
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 90%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
     
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 90%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
     
-    --primary: 0 0% 100%; /* Primario es Blanco */
-    --primary-foreground: 0 0% 0%;
+    --primary: 270 100% 65%;
+    --primary-foreground: 0 0% 98%;
     
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 90%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 0 0% 98%;
     
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 5% 65%;
     
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 0 0% 98%;
     
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 0% 100%;
+    --border: 240 14% 15%;
+    --input: 240 14% 15%;
+    --ring: 270 100% 65%;
     
-    --radius: 0.75rem; /* Bordes más afilados, menos infantiles */
+    --radius: 1.5rem;
     
-    --surface-elevated: 0 0% 8%;
-    --surface-strong: 0 0% 12%;
+    --surface-elevated: 240 10% 8%;
+    --surface-strong: 240 10% 12%;
     
-    /* Neon Tokens Hijacked to Sober/Elegant Colors */
-    --neon-purple: 220 20% 40%; /* Pizarra Azulada sutil */
-    --neon-cyan: 0 0% 100%;     /* Blanco Puro contrastado */
-    --neon-pink: 0 0% 40%;      /* Gris Medio metálico */
+    /* Neon Tokens */
+    --neon-purple: 270 100% 60%;
+    --neon-cyan: 190 100% 50%;
+    --neon-pink: 320 100% 60%;
   }
 
   .dark, .forest, .sepia {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 95%;
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 90%;
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 90%;
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 95%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 0% 100%;
-    --surface-elevated: 0 0% 8%;
-    --surface-strong: 0 0% 12%;
+    /* Mapear todo al nuevo Dark Premium para mantener compatibilidad con Theme toggles */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 270 100% 65%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 0 0% 98%;
+    --border: 240 14% 15%;
+    --input: 240 14% 15%;
+    --ring: 270 100% 65%;
+    --surface-elevated: 240 10% 8%;
+    --surface-strong: 240 10% 12%;
   }
 }
 
@@ -76,12 +76,14 @@
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100vh;
-    /* Fondo completamente sólido mate, sin gradientes extravagantes */
-    background: hsl(var(--background));
+    /* Efecto estelar sutil en el fondo global */
+    background-image: radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 100% 100%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4 {
-    @apply font-sans tracking-tight text-foreground font-semibold;
+    @apply font-display tracking-tight text-foreground;
   }
 
   p {
@@ -99,34 +101,36 @@
   }
 
   .page-eyebrow {
-    @apply inline-flex text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/50;
-    /* Sombras eliminadas por completo */
+    @apply inline-flex text-xs font-bold uppercase tracking-[0.3em] text-neon-cyan;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
   }
 
-  /* Bento Cards Minimalistas y Profesionales */
   .bento-card {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    @apply relative overflow-hidden rounded-[1rem] border border-white/10 transition-all duration-300;
+    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    @apply relative overflow-hidden rounded-[2rem] border border-white/5 transition-all duration-300;
   }
   
   .bento-card:hover {
-    @apply border-white/20;
-    box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.5);
-    transform: translateY(-2px);
+    @apply border-white/10;
+    box-shadow: 0 0 40px -10px rgba(138, 43, 226, 0.15), 
+                inset 0 0 20px -10px rgba(255, 255, 255, 0.05);
   }
 
+  /* Clases Base Restauradas (Bento Variant) */
   .surface-panel {
-    background: rgba(255,255,255, 0.01);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    @apply block rounded-[1rem] border border-white/5 transition-all duration-300;
+    background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    @apply block rounded-[2rem] border border-white/5 transition-all duration-300;
   }
   
   .surface-panel-muted {
     background: transparent;
-    @apply block rounded-[1rem] border border-white/5 transition-all duration-300;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    @apply block rounded-[1.4rem] border border-white/5 transition-all duration-300;
   }
 
   .surface-divider {
@@ -134,51 +138,141 @@
   }
 
   .interactive-frame {
-    background: rgba(0, 0, 0, 0.2);
-    @apply block overflow-hidden rounded-[1rem] border border-white/10 touch-none; 
+    background: rgba(0, 0, 0, 0.4);
+    @apply block overflow-hidden rounded-[2rem] border border-white/10 touch-none; 
   }
 
   .gradient-text {
-    /* Gradiente sobrio plata/blanco */
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-white/80 to-white/40;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan via-white to-neon-purple;
   }
 
-  /* Action Pill convertida en botón corporativo */
   .action-pill {
-    @apply relative inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-black transition-all duration-300;
-    background: #ffffff;
-    border: 1px solid rgba(255,255,255,1);
+    @apply relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-foreground transition-all duration-300 overflow-hidden;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
   }
 
+  .action-pill::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(45deg, rgba(0,255,255,0.1), rgba(138,43,226,0.1));
+  }
+
+  .action-pill:hover::before {
+    @apply opacity-100;
+  }
+  
   .action-pill:hover {
-    background: rgba(255,255,255, 0.9);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(255,255,255, 0.1);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 0 20px rgba(0,255,255,0.15);
   }
 
-  /* Eliminación estricta de blobs láser */
+  /* Neon Glow Backgrounds for Bento Items */
   .glow-blob {
-    display: none !important;
+    @apply absolute blur-[100px] rounded-full opacity-30 pointer-events-none;
   }
 }
 
 ::selection {
-  @apply bg-white/20 text-white;
+  @apply bg-neon-purple/30 text-white;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-transparent;
+  @apply bg-background;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/10 border-solid border-transparent bg-clip-padding rounded-full;
-  border-width: 2px;
+  @apply rounded-full bg-white/10;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-white/20;
+}
+
+/* ========================================================
+   FLAT UI THEME (Hubs) 
+   ======================================================== */
+.flat-theme {
+  --background: 210 20% 98%;      /* Crema/Blanco muy suave */
+  --foreground: 220 10% 20%;      /* Azul Pizarra súper oscuro */
+  --card: 0 0% 100%;
+  --card-foreground: 220 10% 20%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 10% 20%;
+  --border: 220 10% 90%;
+  --surface-elevated: 0 0% 100%;
+  
+  /* Destruir neones y reemplazarlos por pasteles/planos */
+  --neon-cyan: 210 50% 50%;       /* Azul corporativo */
+  --neon-pink: 350 40% 60%;       /* Salmón plano */
+  --neon-purple: 250 30% 50%;     /* Púrpura apagado mate */
+  
+  --radius: 0.5rem;
+  
+  background-image: none !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.flat-theme .bento-card,
+.flat-theme .surface-panel,
+.flat-theme .interactive-frame {
+  background: white !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0.5rem !important;
+}
+
+.flat-theme .bento-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
+
+.flat-theme .page-eyebrow,
+.flat-theme h1, .flat-theme h2, .flat-theme h3 {
+  text-shadow: none !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.flat-theme .gradient-text {
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+  color: hsl(var(--neon-cyan)) !important;
+}
+
+.flat-theme .action-pill {
+  background: hsl(var(--neon-cyan)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+.flat-theme .action-pill::before {
+  display: none !important;
+}
+
+.flat-theme .action-pill:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.flat-theme .glow-blob {
+  display: none !important;
+}
+
+/* Scrollbar para flat-theme */
+.flat-theme ::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.flat-theme ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1) !important;
+}
+.flat-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.2) !important;
 }

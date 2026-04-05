@@ -90,7 +90,7 @@ export default function Presentacion() {
             className="border-foreground bg-foreground text-background hover:bg-transparent hover:text-foreground"
           />
           <BotonAnimado
-            href="/engineering"
+            href="/projects"
             icono={Cpu}
             texto="Pensamiento"
             className="border-border bg-transparent text-foreground hover:border-foreground"
@@ -112,3 +112,4 @@ export default function Presentacion() {
     </section>
   );
 }
+

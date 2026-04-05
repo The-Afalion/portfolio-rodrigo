@@ -145,7 +145,7 @@ export default function SwarmClient() {
             <div className="w-[320px] flex flex-col justify-between p-6 z-20 border-r border-white/10 bg-[#050510] backdrop-blur-md">
 
                 <div className="overflow-y-auto custom-scrollbar pr-2 flex-col flex h-full">
-                    <Link href="/engineering" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors text-xs font-bold mb-6 tracking-widest uppercase">
+                    <Link href="/projects" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors text-xs font-bold mb-6 tracking-widest uppercase">
                         <ArrowLeft size={16} /> Procedural AI Hub
                     </Link>
                     <h1 className="text-2xl font-display font-black tracking-tighter uppercase text-amber-500 mb-1">Gen-Pathfinder</h1>
@@ -296,3 +296,4 @@ export default function SwarmClient() {
         </main>
     );
 }
+

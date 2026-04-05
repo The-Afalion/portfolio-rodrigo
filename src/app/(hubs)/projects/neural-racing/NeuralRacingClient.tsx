@@ -232,7 +232,7 @@ export default function NeuralRacingClient() {
             <div className="w-[350px] flex flex-col justify-between p-6 z-20 border-r border-white/10 bg-black/80 backdrop-blur-md">
 
                 <div>
-                    <Link href="/engineering" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors text-xs font-bold mb-10 tracking-widest uppercase">
+                    <Link href="/projects" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors text-xs font-bold mb-10 tracking-widest uppercase">
                         <ArrowLeft size={16} /> Engineering Core
                     </Link>
                     <h1 className="text-3xl font-display font-black tracking-tighter uppercase mb-2">Neuroevolution Lab</h1>
@@ -317,3 +317,4 @@ export default function NeuralRacingClient() {
         </main>
     );
 }
+

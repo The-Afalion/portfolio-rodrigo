@@ -923,7 +923,7 @@ export default function AetheriaPage() {
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-[1500px] flex-col px-6 py-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <Link href="/engineering" className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/50 px-4 py-2 text-sm text-slate-300 transition hover:text-white">
+          <Link href="/projects" className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/50 px-4 py-2 text-sm text-slate-300 transition hover:text-white">
             <ArrowLeft size={16} /> Volver al hub
           </Link>
           <div className="rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100">
@@ -1223,3 +1223,4 @@ export default function AetheriaPage() {
     </main>
   );
 }
+

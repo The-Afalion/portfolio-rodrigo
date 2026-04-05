@@ -26,7 +26,7 @@ export const siteConfig = {
 export const primaryNavigation: SiteLink[] = [
   { label: 'Inicio', href: '/' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Laboratorios', href: '/engineering' },
+  { label: 'Laboratorios', href: '/projects' },
   { label: 'Chess', href: '/chess' },
   { label: '3D', href: '/modelos' },
   { label: 'Contacto', href: '/contact' },
@@ -35,7 +35,7 @@ export const primaryNavigation: SiteLink[] = [
 export const footerNavigation: SiteLink[] = [
   { label: 'Inicio', href: '/' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Laboratorios', href: '/engineering' },
+  { label: 'Laboratorios', href: '/projects' },
   { label: 'Chess', href: '/chess' },
   { label: '3D', href: '/modelos' },
   { label: 'Contacto', href: '/contact' },
@@ -65,7 +65,7 @@ export const socialLinks: SocialLink[] = [
 export const sitemapRoutes = [
   '/',
   '/blog',
-  '/engineering',
+  '/projects',
   '/chess',
   '/algorithms',
   '/physics',
@@ -83,7 +83,7 @@ function matchesPrefix(pathname: string, prefixes: readonly string[]) {
 }
 
 const immersivePrefixes = [
-  '/engineering',
+  '/projects',
   '/nexus',
   '/slalom',
   '/chess/play',
@@ -146,3 +146,4 @@ export function shouldEnableHomeEffects(pathname: string) {
 export function shouldUsePlainShell(pathname: string) {
   return matchesPrefix(pathname, chromeHiddenPrefixes);
 }
+

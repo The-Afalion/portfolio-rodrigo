@@ -65,7 +65,7 @@ export default function SpaceSandboxPage() {
       <div className="absolute left-6 top-6 z-50">
         <div className="flex items-center gap-3">
           <Link
-            href="/engineering"
+            href="/projects"
             className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/55 px-4 py-2 text-sm text-white/70 backdrop-blur-md transition-colors hover:text-white"
           >
             <ArrowLeft size={16} /> Volver al hub
@@ -88,3 +88,4 @@ export default function SpaceSandboxPage() {
     </main>
   );
 }
+
