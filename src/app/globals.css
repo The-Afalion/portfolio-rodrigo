@@ -34,10 +34,10 @@
     --surface-elevated: 240 10% 8%;
     --surface-strong: 240 10% 12%;
     
-    /* Warm Tokens */
-    --warm-amber: 35 100% 55%;
-    --warm-peach: 15 100% 70%;
-    --warm-sunset: 10 100% 50%;
+    /* Neon Tokens */
+    --neon-purple: 270 100% 60%;
+    --neon-cyan: 190 100% 50%;
+    --neon-pink: 320 100% 60%;
   }
 
   .dark, .forest, .sepia {
@@ -76,10 +76,9 @@
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100vh;
-    /* Efecto hogareño sutil en el fondo global */
-    background-image: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 50%),
-                      radial-gradient(circle at 100% 100%, rgba(234, 88, 12, 0.05) 0%, transparent 50%);
-    background-color: #0b0806; /* Un marron casí oscuro extra elegante */
+    /* Efecto estelar sutil en el fondo global */
+    background-image: radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 100% 100%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
     background-attachment: fixed;
   }
 
@@ -102,8 +101,8 @@
   }
 
   .page-eyebrow {
-    @apply inline-flex text-xs font-bold uppercase tracking-[0.3em] text-warm-amber;
-    text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    @apply inline-flex text-xs font-bold uppercase tracking-[0.3em] text-neon-cyan;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
   }
 
   .bento-card {
@@ -115,7 +114,7 @@
   
   .bento-card:hover {
     @apply border-white/10;
-    box-shadow: 0 0 40px -10px rgba(245, 158, 11, 0.15), 
+    box-shadow: 0 0 40px -10px rgba(138, 43, 226, 0.15), 
                 inset 0 0 20px -10px rgba(255, 255, 255, 0.05);
   }
 
@@ -144,7 +143,7 @@
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-warm-amber via-warm-peach to-warm-sunset;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan via-white to-neon-purple;
   }
 
   .action-pill {
@@ -156,7 +155,7 @@
   .action-pill::before {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(45deg, rgba(245,158,11,0.1), rgba(234,88,12,0.1));
+    background: linear-gradient(45deg, rgba(0,255,255,0.1), rgba(138,43,226,0.1));
   }
 
   .action-pill:hover::before {
@@ -165,7 +164,7 @@
   
   .action-pill:hover {
     border-color: rgba(255,255,255,0.2);
-    box-shadow: 0 0 20px rgba(245,158,11,0.15);
+    box-shadow: 0 0 20px rgba(0,255,255,0.15);
   }
 
   /* Neon Glow Backgrounds for Bento Items */
@@ -175,7 +174,7 @@
 }
 
 ::selection {
-  @apply bg-warm-amber/30 text-white;
+  @apply bg-neon-purple/30 text-white;
 }
 
 ::-webkit-scrollbar {

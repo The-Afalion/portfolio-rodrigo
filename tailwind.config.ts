@@ -39,10 +39,10 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        warm: {
-          amber: "hsl(var(--warm-amber))",
-          peach: "hsl(var(--warm-peach))",
-          sunset: "hsl(var(--warm-sunset))",
+        neon: {
+          purple: "hsl(var(--neon-purple))",
+          cyan: "hsl(var(--neon-cyan))",
+          pink: "hsl(var(--neon-pink))",
         }
       },
       backgroundImage: {
