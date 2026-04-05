@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import MatchmakingLobby from "@/components/games/MatchmakingLobby";
 import { ArrowLeft, Target } from "lucide-react";
 
 // 0: empty, 1: ship, 2: miss, 3: hit
@@ -43,8 +44,11 @@ const placeShipsRandomly = (grid: number[][]) => {
 export default function BattleshipGame() {
   const [playerGrid, setPlayerGrid] = useState<number[][]>([]);
   const [enemyGrid, setEnemyGrid] = useState<number[][]>([]);
-  const [phase, setPhase] = useState("start"); // start, playing, gameover
+  const [phase, setPhase] = useState("menu"); // menu, queue, playing, gameover
   const [turn, setTurn] = useState("player");
+  const [gameMode, setGameMode] = useState<"bot"|"online">("bot");
+  const [onlineRole, setOnlineRole] = useState<"player1"|"player2"|null>(null);
+  const [matchId, setMatchId] = useState<string|null>(null);
   const [message, setMessage] = useState("Prepara tus misiles, Comandante.");
 
   useEffect(() => {
@@ -121,12 +125,42 @@ export default function BattleshipGame() {
            <p className="text-white/60 mt-2">{message}</p>
         </div>
 
-        {phase === "start" && (
-          <div className="text-center mt-12">
-             <button onClick={() => setPhase("playing")} className="px-8 py-4 bg-neon-cyan/20 border border-neon-cyan text-neon-cyan rounded-full font-bold hover:bg-neon-cyan hover:text-black transition-all">
-               INICIAR MODO COMBATE (Vs IA)
-             </button>
-          </div>
+        {phase === "menu" && (
+           <div className="surface-panel p-10 flex flex-col gap-4 text-center mt-10 rounded-[2rem] w-full max-w-md mx-auto border border-neon-cyan/30">
+              <h2 className="text-2xl font-bold text-white mb-6">Elige el Modo de Juego</h2>
+              <button 
+                onClick={() => { setGameMode("bot"); setPhase("playing"); }} 
+                className="action-pill w-full bg-white/5 border-white/10 text-white font-bold py-4 justify-center hover:bg-neon-cyan hover:text-black hover:border-neon-cyan"
+              >
+                 Jugar Offline (Vs IA)
+              </button>
+              <div className="flex items-center gap-4 text-white/30 my-2">
+                 <div className="flex-1 border-t border-white/10"></div>
+                 <span className="text-xs uppercase">Conexión Remota</span>
+                 <div className="flex-1 border-t border-white/10"></div>
+              </div>
+              <button 
+                onClick={() => setPhase("queue")} 
+                className="action-pill w-full bg-neon-cyan/20 border-neon-cyan/50 text-neon-cyan font-bold py-4 justify-center hover:bg-neon-cyan hover:text-black"
+              >
+                 Buscar Partida Online
+              </button>
+           </div>
+        )}
+
+        {phase === "queue" && (
+           <MatchmakingLobby 
+              gameKey="battleship" 
+              gameName="Batalla Naval Neón" 
+              onCancel={() => setPhase("menu")}
+              onMatchFound={(id, role) => {
+                 setMatchId(id);
+                 setOnlineRole(role as any);
+                 setGameMode("online");
+                 setPhase("playing");
+                 // Initialize multiplayer state if needed
+              }}
+           />
         )}
 
         {(phase === "playing" || phase === "gameover") && (

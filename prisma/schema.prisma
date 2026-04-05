@@ -52,6 +52,7 @@ model Profile {
   sentFriendRequests  Friendship[]     @relation("FriendRequestsSent")
   receivedFriendRequests Friendship[]  @relation("FriendRequestsReceived")
   sentFriendMessages  FriendDirectMessage[] @relation("FriendMessagesSent")
+  arcadeQueues        ArcadeQueue[]
   posts               Post[]
 }
 
@@ -256,4 +257,16 @@ model CommunityVote {
   @@unique([gameId, userId])
   @@unique([gameId, syntheticKey])
   @@index([gameId, move])
+}
+
+model ArcadeQueue {
+  id        String   @id @default(cuid())
+  userId    String
+  user      Profile  @relation(fields: [userId], references: [id])
+  gameKey   String   // "checkers", "battleship", "artillery"
+  joinedAt  DateTime @default(now())
+  matched   Boolean  @default(false)
+  matchId   String?
+  
+  @@index([gameKey, matched])
 }

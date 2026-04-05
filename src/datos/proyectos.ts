@@ -144,7 +144,16 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['React', 'Framer Motion', 'Minimax AI'],
     color: '#d7b083',
     position: [12, 8, 12] as [number, number, number],
-    link: '/engineering/aetheria'
+        link: '/engineering/aetheria'
+  },
+  {
+    id: 'hub-social',
+    title: 'Nexus Social',
+    description: 'Red de juego masiva, servidores dedicados y emparejamiento.',
+    tech: ['Prisma', 'Supabase', 'Serverless'],
+    color: '#ff00ff',
+    position: [0, 15, 0] as [number, number, number],
+    link: '/social'
   }
 ];
 

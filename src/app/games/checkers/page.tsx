@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import MatchmakingLobby from "@/components/games/MatchmakingLobby";
 import { ArrowLeft } from "lucide-react";
 
 // Representación básica: 0 = vacío, 1 = Blanca, 2 = Negra, 3 = Reina Blanca, 4 = Reina Negra
@@ -17,12 +18,17 @@ const INITIAL_BOARD = [
 ];
 
 export default function CheckersGame() {
+  const [phase, setPhase] = useState("menu"); // menu, queue, playing
   const [board, setBoard] = useState(INITIAL_BOARD);
   const [turn, setTurn] = useState(1); // 1 = Blancas, 2 = Negras
   const [selected, setSelected] = useState<{r: number, c: number} | null>(null);
+  const [gameMode, setGameMode] = useState<"bot"|"online">("bot");
+  const [onlineRole, setOnlineRole] = useState<"player1"|"player2"|null>(null);
+  const [matchId, setMatchId] = useState<string|null>(null);
 
   // Lógica de movimiento muy simplificada para MVP Hot-Seat
   const handleSquareClick = (r: number, c: number) => {
+    if (phase !== "playing") return;
     const piece = board[r][c];
 
     // Seleccionar pieza propia
@@ -92,9 +98,47 @@ export default function CheckersGame() {
         </Link>
         <div className="text-center mb-8">
            <h1 className="text-4xl font-bold text-white tracking-tight">Damas <span className="text-neon-pink">Neón</span></h1>
-           <p className="text-white/50 text-sm mt-2">Versión Hot-Seat (Pasa el control)</p>
+           {phase === "playing" && <p className="text-white/50 text-sm mt-2">Partida en Curso</p>}
         </div>
 
+        {phase === "menu" && (
+           <div className="surface-panel p-10 flex flex-col gap-4 text-center mt-10 rounded-[2rem] w-full max-w-md mx-auto border border-neon-pink/30">
+              <h2 className="text-2xl font-bold text-white mb-6">Elige el Modo de Juego</h2>
+              <button 
+                onClick={() => { setGameMode("bot"); setPhase("playing"); }} 
+                className="action-pill w-full bg-white/5 border-white/10 text-white font-bold py-4 justify-center hover:bg-neon-pink hover:text-black hover:border-neon-pink"
+              >
+                 Jugar Hot-Seat (Local)
+              </button>
+              <div className="flex items-center gap-4 text-white/30 my-2">
+                 <div className="flex-1 border-t border-white/10"></div>
+                 <span className="text-xs uppercase">Conexión Remota</span>
+                 <div className="flex-1 border-t border-white/10"></div>
+              </div>
+              <button 
+                onClick={() => setPhase("queue")} 
+                className="action-pill w-full bg-neon-pink/20 border-neon-pink/50 text-neon-pink font-bold py-4 justify-center hover:bg-neon-pink hover:text-black"
+              >
+                 Buscar Partida Online
+              </button>
+           </div>
+        )}
+
+        {phase === "queue" && (
+           <MatchmakingLobby 
+              gameKey="checkers" 
+              gameName="Damas Neón" 
+              onCancel={() => setPhase("menu")}
+              onMatchFound={(id, role) => {
+                 setMatchId(id);
+                 setOnlineRole(role as any);
+                 setGameMode("online");
+                 setPhase("playing");
+              }}
+           />
+        )}
+
+        {phase === "playing" && (
         <div className="surface-panel p-8 max-w-2xl mx-auto flex flex-col items-center">
           <div className="mb-6 flex gap-4 w-full justify-between items-center px-4">
             <div className={`px-4 py-2 rounded-lg font-bold border ${turn === 1 ? "bg-neon-cyan/20 border-neon-cyan text-neon-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]" : "border-white/10 text-white/40"}`}>TU TURNO: CIAN (1)</div>
@@ -129,6 +173,7 @@ export default function CheckersGame() {
             )}
           </div>
         </div>
+        )}
       </div>
     </div>
   );
