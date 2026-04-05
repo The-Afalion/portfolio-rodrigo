@@ -41,6 +41,7 @@ export default function ArtilleryGame() {
     if (phase === "playing") {
        initGame();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   const initGame = () => {

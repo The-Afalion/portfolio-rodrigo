@@ -87,7 +87,7 @@ export default function GamesHub() {
                     <p className="text-sm font-medium text-slate-500">{g.desc}</p>
                     
                     <div className="mt-auto flex items-center text-indigo-500 font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-500">
-                      Entrar al Sim ->
+                      Entrar al Sim -&gt;
                     </div>
                  </div>
 
