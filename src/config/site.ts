@@ -140,7 +140,7 @@ export function shouldShowChat(pathname: string) {
 }
 
 export function shouldEnableHomeEffects(pathname: string) {
-  return false;
+  return pathname === '/';
 }
 
 export function shouldUsePlainShell(pathname: string) {
