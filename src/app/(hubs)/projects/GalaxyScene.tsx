@@ -302,7 +302,7 @@ export default function GalaxyScene() {
       </div>
 
       <Canvas style={{ touchAction: 'none' }} camera={{ fov: 60, position: [0, 15, 35] }}>
-        <color attach="background" args={["#1a120e"]} />
+        <color attach="background" args={["#010103"]} />
         <ambientLight intensity={0.5} />
 
         <Stars radius={150} depth={50} count={10000} factor={6} saturation={1} fade speed={isWarping ? 5 : 1} />

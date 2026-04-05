@@ -17,20 +17,21 @@ export default async function SocialHubPage() {
 
   if (!user) {
     return (
-      <div className="page-shell flex min-h-screen items-center justify-center px-4">
-        <div className="surface-panel w-full max-w-2xl p-8 text-center bento-card">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-neon-cyan">Hub Social</p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white">
-            Identificación Requerida
+      <div className="page-shell flex h-screen pt-16 items-center justify-center px-4 bg-[#f4ead5] font-serif">
+        <div className="bg-[#fcfaf4] border border-[#d6c4a5] shadow-[5px_8px_15px_rgba(100,70,40,0.15)] w-full max-w-lg p-10 text-center rounded-sm transform rotate-1 relative">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#cc6640] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#a64020]" />
+          <p className="text-xs font-bold uppercase tracking-widest text-[#8a765f] mt-2">Tablón Comunal</p>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#3e3024]">
+            Identidad Postal Requerida
           </h1>
-          <p className="mt-4 text-sm leading-7 text-white/50">
-            Debes iniciar sesión para unirte al chat global, hacer amigos y retarlos a una partida.
+          <p className="mt-6 text-sm leading-7 text-[#5c4033] max-w-sm mx-auto">
+            Por favor, inicie sesión o deposite sus credenciales para acceder a la correspondencia global, firmar telegramas o retar a otros miembros de la sociedad.
           </p>
           <Link
             href="/blog/login?redirect=/social"
-            className="mt-8 inline-flex rounded-full bg-white px-5 py-3 text-sm font-medium text-black hover:bg-neon-cyan transition-colors"
+            className="mt-10 inline-flex items-center justify-center bg-[#8c4030] px-8 py-3 text-sm font-bold font-mono uppercase tracking-widest text-[#fdfbf7] hover:bg-[#a64020] transition-colors shadow-sm"
           >
-            Iniciar Sesión
+            Sellar Credenciales
           </Link>
         </div>
       </div>
@@ -60,35 +61,12 @@ export default async function SocialHubPage() {
   });
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[#010103] selection:bg-neon-cyan/30 selection:text-neon-cyan">
-      <main className="flex-1 flex flex-col w-full max-w-[1600px] mx-auto p-4 sm:p-6 overflow-hidden">
-        
-        {/* HEADER COMPACTO */}
-        <div className="flex items-center justify-between shrink-0 mb-6">
-          <div className="flex items-center gap-6">
-             <Link
-               href="/"
-               className="inline-flex items-center gap-2 text-sm font-medium text-white/50 transition-colors hover:text-white bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:border-white/30"
-             >
-               <ArrowLeft size={16} />
-               <span>Volver</span>
-             </Link>
-             <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-               <Gamepad2 className="text-neon-cyan w-6 h-6" />
-               Nexus Social
-             </h1>
-          </div>
-          <div className="text-right">
-             <p className="text-xs text-white/40 uppercase tracking-widest font-mono">Conectado como</p>
-             <p className="text-sm font-bold text-neon-pink">{getUserDisplayName(user)}</p>
-          </div>
-        </div>
-
-        {/* HUB CLIENTE (GRID) */}
+    <div className="h-screen pt-16 max-h-screen overflow-hidden flex flex-col bg-[#f4ead5] font-serif selection:bg-[#cc6640]/30 selection:text-[#3e3024]">
+      <main className="flex-1 min-h-0 flex flex-col w-full mx-auto overflow-hidden relative">
         <SocialHubClient
            currentUser={{
-             id: user.id,
-             name: getUserDisplayName(user),
+             id: user!.id,
+             name: getUserDisplayName(user!),
            }}
            initialMessages={lobbyMessages}
            initialFriendships={friendships}

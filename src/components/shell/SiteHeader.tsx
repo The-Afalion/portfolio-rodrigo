@@ -29,11 +29,17 @@ export default function SiteHeader() {
       initial={{ y: -18, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="fixed inset-x-0 top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-md"
+      className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-md ${
+        pathname === "/" 
+        ? "border-border/80 bg-background/88" 
+        : "border-[#d6c4a5]/60 bg-[#fdfbf7]/90 font-serif"
+      }`}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="min-w-0">
-          <p className="truncate font-display text-lg font-semibold tracking-tight text-foreground">{siteConfig.name}</p>
+          <p className={`truncate text-lg font-semibold tracking-tight ${pathname==="/" ? "font-display text-foreground" : "font-serif text-[#3e3024] font-bold"}`}>
+            {siteConfig.name}
+          </p>
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">
@@ -42,7 +48,9 @@ export default function SiteHeader() {
               key={item.href}
               href={item.href}
               className={`text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors ${
-                item.active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                pathname === "/" 
+                ? (item.active ? "text-foreground" : "text-muted-foreground hover:text-foreground")
+                : (item.active ? "text-[#8c4030]" : "text-[#8a765f] hover:text-[#3e3024]")
               }`}
             >
               {item.label}
@@ -53,7 +61,9 @@ export default function SiteHeader() {
         <div className="flex items-center gap-3">
           <a
             href={`mailto:${siteConfig.email}`}
-            className="hidden text-[11px] font-semibold uppercase tracking-[0.26em] text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
+            className={`hidden text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors lg:inline-flex ${
+              pathname === "/" ? "text-muted-foreground hover:text-foreground" : "text-[#8a765f] hover:text-[#3e3024]"
+            }`}
           >
             <span className="inline-flex items-center gap-2">
               <Mail size={14} />
@@ -64,7 +74,9 @@ export default function SiteHeader() {
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors lg:hidden ${
+              pathname === "/" ? "border-border/80 text-muted-foreground hover:text-foreground" : "border-[#d6c4a5] text-[#8a765f] hover:text-[#3e3024]"
+            }`}
             aria-label="Abrir navegación"
             aria-expanded={mobileOpen}
           >
@@ -74,20 +86,22 @@ export default function SiteHeader() {
       </div>
 
       {mobileOpen ? (
-        <div className="border-t border-border/80 bg-background lg:hidden">
+        <div className={`border-t lg:hidden ${pathname === "/" ? "border-border/80 bg-background" : "border-[#d6c4a5] bg-[#fdfbf7]"}`}>
           <div className="mx-auto grid max-w-7xl gap-2 px-4 py-4 sm:px-6">
             {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`py-3 text-sm font-medium ${
-                  item.active ? "text-foreground" : "text-muted-foreground"
+                  pathname === "/" 
+                  ? (item.active ? "text-foreground" : "text-muted-foreground")
+                  : (item.active ? "text-[#8c4030] font-bold" : "text-[#8a765f]")
                 }`}
               >
                 {item.label}
               </Link>
             ))}
-            <a href={`mailto:${siteConfig.email}`} className="py-3 text-sm font-medium text-foreground">
+            <a href={`mailto:${siteConfig.email}`} className={`py-3 text-sm font-medium ${pathname === "/" ? "text-foreground" : "text-[#3e3024]"}`}>
               {siteConfig.email}
             </a>
           </div>

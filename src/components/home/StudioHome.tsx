@@ -10,36 +10,37 @@ const selectedProjects = FEATURED_PROJECTS.slice(0, 4);
 
 const hubs = [
   {
-    title: "Laboratorios",
+    title: "Projects Hub",
     href: "/projects",
-    description: "Espacio de pruebas, motores físicos y experimentos Next.js.",
-    icon: <Cpu className="text-neon-cyan mb-4" size={32} />,
-    color: "from-cyan-500/20 to-blue-500/5",
+    description: "Atlas intergaláctico cartografiando arquitecturas 3D y simulaciones de cuerpos celestes.",
+    icon: <Globe className="text-[#a64020] mb-6 group-hover:scale-125 transition-transform duration-500 ease-out" size={48} />,
+    color: "from-orange-500/10 to-red-500/5",
+    hoverBg: "hover:bg-[#1a120e]",
+    borderHover: "group-hover:border-[#a64020]",
     colSpan: "lg:col-span-2",
+    delay: 0.1
   },
   {
-    title: "Chess",
+    title: "Chess Hub",
     href: "/chess",
-    description: "Plataforma multiplayer con matchmaking y bots integrados.",
-    icon: <Globe className="text-neon-purple mb-4" size={32} />,
-    color: "from-purple-500/20 to-fuchsia-500/5",
+    description: "Tablero Clásico Magistral. Matchmaking global comprimido en una vista sobria sin distracciones.",
+    icon: <Box className="text-[#3c5a6b] mb-6 group-hover:rotate-12 transition-transform duration-500 ease-out" size={48} />,
+    color: "from-[#9fbcce]/10 to-[#9fbcce]/5",
+    hoverBg: "hover:bg-[#fcfaf4]",
+    borderHover: "group-hover:border-[#3c5a6b]",
     colSpan: "lg:col-span-1",
+    delay: 0.3
   },
   {
-    title: "Blog",
-    href: "/blog",
-    description: "Documentación técnica, artículos y procesos estructurales.",
-    icon: <Code2 className="text-neon-pink mb-4" size={32} />,
-    color: "from-pink-500/20 to-rose-500/5",
+    title: "Social Hub",
+    href: "/social",
+    description: "Directorio táctil para interactuar con compañeros de desarrollo y trazar estrategias.",
+    icon: <Mail className="text-[#8c4030] mb-6 group-hover:-translate-y-2 transition-transform duration-500 ease-out" size={48} />,
+    color: "from-[#d6c4a5]/20 to-transparent",
+    hoverBg: "hover:bg-[#f4ead5]",
+    borderHover: "group-hover:border-[#8c4030]",
     colSpan: "lg:col-span-1",
-  },
-  {
-    title: "3D & Modelos",
-    href: "/modelos",
-    description: "Estudios espaciales renderizados en tiempo real.",
-    icon: <Box className="text-white mb-4" size={32} />,
-    color: "from-white/10 to-gray-500/5",
-    colSpan: "lg:col-span-2",
+    delay: 0.5
   },
 ];
 
@@ -149,19 +150,45 @@ export default function StudioHome() {
           </motion.div>
 
           {/* Hubs / Index Blocks */}
-          <div className="lg:col-span-4 mt-4 mb-2" id="work">
-            <h2 className="text-2xl font-bold font-display ml-2">Explora los Hubs</h2>
+          <div className="lg:col-span-4 mt-8 mb-4 border-l-4 border-l-neon-purple pl-4" id="work">
+            <h2 className="text-3xl font-bold font-display tracking-tight text-white/90">Estructura Global de Contenido</h2>
+            <p className="text-white/50 text-sm mt-2">Navegación animada hacia los diferentes ecosistemas y módulos del portfolio.</p>
           </div>
           
           {hubs.map((hub, i) => (
-            <motion.div key={hub.href} variants={cardVariant} className={`bento-card lg:${hub.colSpan} md:col-span-2 col-span-1`}>
-              <Link href={hub.href} className={`block h-full p-8 bg-gradient-to-br ${hub.color} hover:bg-white/5 transition-colors group`}>
-                <div className="flex justify-between items-start">
-                  {hub.icon}
-                  <ArrowUpRight size={24} className="text-white/20 group-hover:text-white transition-colors transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+            <motion.div 
+               key={hub.href} 
+               variants={cardVariant}
+               whileHover={{ y: -8, scale: 1.02 }}
+               transition={{ type: "spring", stiffness: 300, damping: 20 }}
+               className={`bento-card lg:${hub.colSpan} md:col-span-2 col-span-1 border border-white/5 group ${hub.borderHover} overflow-hidden relative`}
+            >
+              <Link href={hub.href} className={`block h-full p-10 bg-gradient-to-br ${hub.color} transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${hub.hoverBg} z-10 relative`}>
+                
+                {/* Background Animation Mask */}
+                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
+
+                <div className="flex flex-col h-full justify-between relative z-20">
+                   <div>
+                     {hub.icon}
+                     <motion.h3 
+                       className="text-3xl font-black mt-4 mb-3 transition-colors duration-500 group-hover:text-black"
+                       initial={{ opacity: 0.8 }}
+                       whileHover={{ opacity: 1, scale: 1.05, originX: 0 }}
+                     >
+                       {hub.title}
+                     </motion.h3>
+                     <p className="text-muted-foreground font-medium text-lg leading-relaxed group-hover:text-black/80 transition-colors duration-500 max-w-sm">
+                        {hub.description}
+                     </p>
+                   </div>
+                   
+                   <div className="flex justify-end mt-8">
+                     <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-black/30 group-hover:bg-black/10 transition-all duration-500">
+                       <ArrowRight size={24} className="text-white/30 group-hover:text-black group-hover:translate-x-1 transition-all duration-300" />
+                     </div>
+                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mt-4 mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/50 transition-all">{hub.title}</h3>
-                <p className="text-muted-foreground">{hub.description}</p>
               </Link>
             </motion.div>
           ))}
