@@ -191,7 +191,7 @@ function Dashboard() {
              </div>
              <div className="w-1/2 flex items-center justify-center p-4 border-l border-[#d6c4a5] border-dashed">
                 <p className="text-sm italic text-[#8a765f] text-center px-4">
-                  "Un tablero no es más que madera hasta que dos mentes deciden enfrentarse sobre él." <br/><br/>
+                  &quot;Un tablero no es más que madera hasta que dos mentes deciden enfrentarse sobre él.&quot; <br/><br/>
                   Reto a sus pares en el Lobby, o descienda a las mazmorras para practicar con la Inteligencia Mecánica.
                 </p>
              </div>
