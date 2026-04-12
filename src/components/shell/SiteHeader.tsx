@@ -6,6 +6,7 @@ import { Mail, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { primaryNavigation, siteConfig } from "@/config/site";
+import { useContextoGlobal } from "@/context/ContextoGlobal";
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -14,6 +15,7 @@ function isActive(pathname: string, href: string) {
 export default function SiteHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { bigBrotherWon } = useContextoGlobal();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -31,14 +33,27 @@ export default function SiteHeader() {
       transition={{ duration: 0.3 }}
       className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-md ${
         pathname === "/" 
-        ? "border-border/80 bg-background/88" 
+        ? "border-white/10 bg-[#050505]/80 text-white font-sans" 
         : "border-[#d6c4a5]/60 bg-[#fdfbf7]/90 font-serif"
       }`}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="min-w-0">
-          <p className={`truncate text-lg font-semibold tracking-tight ${pathname==="/" ? "font-display text-foreground" : "font-serif text-[#3e3024] font-bold"}`}>
-            {siteConfig.name}
+          <p className={`truncate text-lg font-bold tracking-tight ${pathname==="/" ? "font-display text-white" : "font-serif text-[#3e3024] font-bold"}`}>
+            {bigBrotherWon && pathname === "/" ? (
+              <span className="flex items-center">
+                @rodoc
+                <motion.span 
+                  animate={{ opacity: [1, 1, 0, 1, 1, 1, 1, 1, 0, 1] }} 
+                  transition={{ repeat: Infinity, duration: 5, times: [0, 0.4, 0.45, 0.5, 0.6, 0.8, 0.85, 0.9, 0.95, 1] }}
+                  className="text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)] rounded-full mx-[1px]"
+                  style={{ display: "inline-block", width: "12px", height: "12px", background: "radial-gradient(circle, #22c55e 20%, #000 80%)" }}
+                />
+                des
+              </span>
+            ) : (
+              siteConfig.name
+            )}
           </p>
         </Link>
 
@@ -47,9 +62,9 @@ export default function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className={`text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors ${
+              className={`text-[11px] font-bold uppercase tracking-[0.26em] transition-colors ${
                 pathname === "/" 
-                ? (item.active ? "text-foreground" : "text-muted-foreground hover:text-foreground")
+                ? (item.active ? "text-white" : "text-white/50 hover:text-white")
                 : (item.active ? "text-[#8c4030]" : "text-[#8a765f] hover:text-[#3e3024]")
               }`}
             >
@@ -61,8 +76,8 @@ export default function SiteHeader() {
         <div className="flex items-center gap-3">
           <a
             href={`mailto:${siteConfig.email}`}
-            className={`hidden text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors lg:inline-flex ${
-              pathname === "/" ? "text-muted-foreground hover:text-foreground" : "text-[#8a765f] hover:text-[#3e3024]"
+            className={`hidden text-[11px] font-bold uppercase tracking-[0.26em] transition-colors lg:inline-flex ${
+              pathname === "/" ? "text-white/50 hover:text-neon-cyan" : "text-[#8a765f] hover:text-[#3e3024]"
             }`}
           >
             <span className="inline-flex items-center gap-2">
@@ -75,7 +90,7 @@ export default function SiteHeader() {
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
             className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors lg:hidden ${
-              pathname === "/" ? "border-border/80 text-muted-foreground hover:text-foreground" : "border-[#d6c4a5] text-[#8a765f] hover:text-[#3e3024]"
+              pathname === "/" ? "border-white/10 text-white/50 hover:text-white" : "border-[#d6c4a5] text-[#8a765f] hover:text-[#3e3024]"
             }`}
             aria-label="Abrir navegación"
             aria-expanded={mobileOpen}
@@ -86,7 +101,7 @@ export default function SiteHeader() {
       </div>
 
       {mobileOpen ? (
-        <div className={`border-t lg:hidden ${pathname === "/" ? "border-border/80 bg-background" : "border-[#d6c4a5] bg-[#fdfbf7]"}`}>
+        <div className={`border-t lg:hidden ${pathname === "/" ? "border-white/10 bg-[#050505]" : "border-[#d6c4a5] bg-[#fdfbf7]"}`}>
           <div className="mx-auto grid max-w-7xl gap-2 px-4 py-4 sm:px-6">
             {navigation.map((item) => (
               <Link
@@ -94,14 +109,14 @@ export default function SiteHeader() {
                 href={item.href}
                 className={`py-3 text-sm font-medium ${
                   pathname === "/" 
-                  ? (item.active ? "text-foreground" : "text-muted-foreground")
+                  ? (item.active ? "text-white" : "text-white/50")
                   : (item.active ? "text-[#8c4030] font-bold" : "text-[#8a765f]")
                 }`}
               >
                 {item.label}
               </Link>
             ))}
-            <a href={`mailto:${siteConfig.email}`} className={`py-3 text-sm font-medium ${pathname === "/" ? "text-foreground" : "text-[#3e3024]"}`}>
+            <a href={`mailto:${siteConfig.email}`} className={`py-3 text-sm font-medium ${pathname === "/" ? "text-neon-cyan" : "text-[#3e3024]"}`}>
               {siteConfig.email}
             </a>
           </div>

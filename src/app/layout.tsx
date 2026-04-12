@@ -95,7 +95,7 @@ export default function DisposicionRaiz({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${fuenteSans.variable} ${fuenteDisplay.variable} ${fuenteMono.variable} font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-foreground`}
+        className={`${fuenteSans.variable} ${fuenteDisplay.variable} ${fuenteMono.variable} font-serif antialiased text-foreground bg-background`}
       >
         <Toaster
           position="bottom-right"
@@ -105,8 +105,8 @@ export default function DisposicionRaiz({
               background: 'hsl(var(--card))',
               color: 'hsl(var(--foreground))',
               border: '1px solid hsl(var(--border))',
-              borderRadius: '1.1rem',
-              boxShadow: '0 18px 48px rgba(15, 23, 42, 0.14)',
+              borderRadius: '0.125rem',
+              boxShadow: '5px 8px 15px rgba(100,70,40,0.15)',
             },
           }}
         />

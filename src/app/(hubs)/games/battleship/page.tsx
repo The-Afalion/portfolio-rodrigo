@@ -113,7 +113,7 @@ export default function BattleshipGame() {
   };
 
   return (
-    <div className="page-shell min-h-screen py-10 px-4 bg-[#cce3eb] font-serif">
+    <div className="page-shell min-h-screen py-10 px-4 bg-[#f4ead5] font-serif">
       <div className="max-w-6xl mx-auto">
         <Link href="/social" className="mb-6 inline-flex items-center gap-2 text-sm text-[#3c5a6b] font-bold hover:text-[#1e2a33] transition-colors">
           <ArrowLeft size={16} /> Volver a la Tavera
@@ -152,7 +152,7 @@ export default function BattleshipGame() {
         {phase === "queue" && (
            <MatchmakingLobby 
               gameKey="battleship" 
-              gameName="Batalla Naval Neón" 
+              gameName="Batalla Naval Clásica" 
               onCancel={() => setPhase("menu")}
               onMatchFound={(id, role) => {
                  setMatchId(id);

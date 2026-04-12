@@ -13,7 +13,7 @@ export default async function AdminLayout({
 
   if (!isEditor) {
     return (
-      <div className="flex min-h-screen bg-background font-mono items-center justify-center text-center">
+      <div className="flex min-h-screen bg-background font-serif items-center justify-center text-center">
         <div>
           <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">Acceso Denegado</h1>
@@ -29,7 +29,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background font-mono">
+    <div className="flex min-h-screen bg-background font-serif">
       <aside className="w-64 bg-secondary border-r border-border flex flex-col p-4">
         <h2 className="text-2xl font-bold mb-8 text-foreground">Admin Panel</h2>
         <nav className="flex flex-col gap-4">

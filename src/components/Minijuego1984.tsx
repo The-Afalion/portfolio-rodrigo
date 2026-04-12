@@ -1,125 +1,139 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useContextoGlobal } from '@/context/ContextoGlobal';
-import { Type, Printer, ShieldAlert, FileText, Zap, X } from 'lucide-react';
+import { Eye, BookOpen, AlertOctagon } from 'lucide-react';
 
 const ANCHO_JUEGO = 900;
 const ALTO_JUEGO = 600;
-const VELOCIDAD_JUGADOR = 8;
-const VELOCIDAD_PROYECTIL = 15;
-const VELOCIDAD_GUARDIA = 3;
+const VELOCIDAD_JUGADOR = 6;
+const VELOCIDAD_PROYECTIL = 12;
+const VELOCIDAD_GUARDIA = 2.5;
 const DAÑO_ARTICULO = 20;
 
 // --- Tipos ---
 type Proyectil = { id: number; x: number; y: number; vx: number };
 type Guardia = { id: number; x: number; hp: number };
 type Rayo = { id: number; x: number; duracion: number; advertencia: boolean };
-type BaseData = { x: number; ancho: number; tipo: 'inicio' | 'escritura' | 'imprenta'; saludTecho: number };
+type BaseData = { x: number; ancho: number; tipo: 'prole' | 'diario' | 'ministerio'; saludTecho: number };
 
 // --- Componentes Visuales ---
 
-function FondoGrid() {
+function FondoGrid({ ira }: { ira: number }) {
   return (
-    <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
-      <div className="absolute inset-0 bg-[linear-gradient(transparent_95%,#00ff00_95%)] bg-[size:100%_40px] animate-[scan_2s_linear_infinite]"></div>
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_95%,#00ff00_95%)] bg-[size:40px_100%]"></div>
+    <div className="absolute inset-0 overflow-hidden opacity-30 pointer-events-none transition-colors duration-1000" style={{ backgroundColor: `rgba(${10 + ira}, 10, 10, 0.9)` }}>
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] mix-blend-overlay"></div>
+      <div className="absolute top-0 bottom-0 left-0 w-full bg-[linear-gradient(rgba(0,0,0,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] pointer-events-none z-50 mix-blend-overlay"></div>
+      <div className="absolute inset-0 bg-red-900/5 mix-blend-color-burn"></div>
     </div>
   );
 }
 
-function Jugador({ x, mirandoDerecha, tieneArticulo }: { x: number, mirandoDerecha: boolean, tieneArticulo: boolean }) {
+function Winston({ x, mirandoDerecha, tieneArticulo }: { x: number, mirandoDerecha: boolean, tieneArticulo: boolean }) {
   return (
-    <div 
-      className="absolute bottom-10 w-10 h-10 flex items-center justify-center z-20 transition-transform duration-75"
-      style={{ left: x, transform: `translateX(-50%)` }}
+    <motion.div 
+      className="absolute bottom-10 w-10 h-16 flex flex-col items-center justify-end z-20"
+      style={{ left: x, translateX: '-50%' }}
+      animate={{ scaleX: mirandoDerecha ? 1 : -1 }}
+      transition={{ duration: 0.1 }}
     >
-      <div className={`relative w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[24px] border-b-cyan-400 filter drop-shadow-[0_0_8px_#22d3ee] ${mirandoDerecha ? 'rotate-90' : '-rotate-90'}`}>
-        {tieneArticulo && (
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">
-            <FileText size={16} className="text-yellow-400 fill-yellow-400" />
-          </div>
-        )}
+      <div className="w-4 h-4 bg-gray-300 rounded-full mb-1 border border-black shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"></div>
+      <div className="w-8 h-10 bg-gray-500 border border-black relative">
+        <div className="absolute inset-x-0 h-1 bg-gray-800 top-2"></div>
       </div>
-    </div>
+      <div className="flex gap-1 mt-0">
+        <div className="w-3 h-5 bg-gray-700 border border-black"></div>
+        <div className="w-3 h-5 bg-gray-700 border border-black"></div>
+      </div>
+      {tieneArticulo && (
+        <motion.div 
+          initial={{ scale: 0, y: 10 }}
+          animate={{ scale: 1, y: 0 }}
+          className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce drop-shadow-md"
+        >
+          <BookOpen size={20} className="text-white fill-[#222]" />
+        </motion.div>
+      )}
+    </motion.div>
   );
 }
 
-function BaseView({ base }: { base: BaseData }) {
+function EdificioView({ base }: { base: BaseData }) {
   const { x, ancho, tipo, saludTecho } = base;
   const tieneTecho = saludTecho > 0;
 
   return (
     <div 
-      className={`absolute bottom-10 h-32 border-x-2 flex flex-col items-center justify-end pb-4 overflow-hidden z-10 transition-colors duration-300
-        ${tipo === 'inicio' ? 'border-green-900/50 bg-green-900/10' : ''}
-        ${tipo === 'escritura' ? 'border-yellow-900/50 bg-yellow-900/10' : ''}
-        ${tipo === 'imprenta' ? 'border-purple-900/50 bg-purple-900/10' : ''}
+      className={`absolute bottom-10 h-40 border-x-4 flex flex-col items-center justify-end pb-4 overflow-hidden z-10 transition-colors duration-300
+        ${tipo === 'prole' ? 'border-[#333] bg-[#111]' : ''}
+        ${tipo === 'diario' ? 'border-[#444] bg-[#1a1a1a]' : ''}
+        ${tipo === 'ministerio' ? 'border-[#8b0000] bg-[#2a0000]' : ''}
       `}
-      style={{ left: x, width: ancho, borderTopWidth: tieneTecho ? 2 : 0, borderTopColor: 'transparent' }}
+      style={{ 
+         left: x, 
+         width: ancho, 
+         borderTopWidth: tieneTecho ? 6 : 0, 
+         borderTopColor: tieneTecho ? (tipo === 'ministerio' ? '#8b0000' : '#444') : 'transparent' 
+      }}
     >
-      {/* Techo Destructible */}
+      {/* Viga de Techo Destructible */}
       {tieneTecho && (
         <div 
-          className={`absolute top-0 left-0 w-full h-2 shadow-[0_0_15px] transition-all duration-300
-            ${tipo === 'inicio' ? 'bg-green-500 shadow-green-500' : ''}
-            ${tipo === 'escritura' ? 'bg-yellow-500 shadow-yellow-500' : ''}
-            ${tipo === 'imprenta' ? 'bg-purple-500 shadow-purple-500' : ''}
-          `}
-          style={{ opacity: saludTecho / 100 }}
+          className="absolute top-0 left-0 w-full h-2 bg-black opacity-50 transition-all duration-300"
+          style={{ width: `${saludTecho}%` }}
         ></div>
       )}
       
-      {tipo === 'escritura' && (
+      {tipo === 'diario' && (
         <>
-          <Type size={40} className="mb-2 text-yellow-500 opacity-80" />
-          <span className="text-[10px] font-mono text-yellow-500 mb-2">MESA DE REDACCIÓN</span>
-          <span className="text-[9px] text-yellow-300/50 mt-1">MANTÉN ESPACIO</span>
+          <span className="text-[10px] font-mono font-bold text-gray-400 mb-2 whitespace-nowrap">SECTOR PROLE</span>
+          <span className="text-[9px] text-gray-500 mt-1">SANTUARIO</span>
         </>
       )}
       
-      {tipo === 'imprenta' && (
+      {tipo === 'ministerio' && (
         <>
-          <Printer size={40} className="mb-2 text-purple-500 opacity-80" />
-          <span className="text-[10px] font-mono text-purple-500">PUBLICAR</span>
-          <span className="text-[9px] text-purple-300/50 mt-1">TRAE EL ARTÍCULO</span>
+          <span className="text-[10px] font-black font-serif text-[#ff4444] mb-2 tracking-widest text-center px-2">MINISTERIO DE LA VERDAD</span>
+          <span className="text-[9px] text-[#ff4444]/50 mt-1">ZONA DE REBELIÓN</span>
         </>
       )}
 
-      {tipo === 'inicio' && (
-        <div className="text-[10px] font-mono text-green-600">ZONA SEGURA</div>
+      {tipo === 'prole' && (
+        <div className="text-[10px] font-mono font-bold text-gray-600">ZONA SEGURA</div>
       )}
+      
+      {/* Estética de bloque de cemento */}
+      <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/concrete-wall.png')] mix-blend-overlay pointer-events-none"></div>
     </div>
   );
 }
 
-function OjoBoss({ ira, vida }: { ira: number, vida: number }) {
+function PantallaBoss({ ira, vida }: { ira: number, vida: number }) {
   return (
     <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center z-30">
-      <div className="w-[400px] h-6 bg-gray-900 border-2 border-gray-700 mb-4 relative overflow-hidden rounded-sm shadow-lg">
-        <div 
-          className="h-full bg-gradient-to-r from-red-900 to-red-600 transition-all duration-500"
-          style={{ width: `${vida}%` }}
-        ></div>
-        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono text-white tracking-widest">
-          ESTABILIDAD DEL SISTEMA
+      <div className="w-[400px] h-6 bg-[#111] border-2 border-[#333] mb-6 relative overflow-hidden flex items-center">
+        <motion.div 
+          className="h-full bg-[#ff3333] relative"
+          animate={{ width: `${vida}%` }}
+          transition={{ type: "spring", stiffness: 50 }}
+        >
+          <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')] mix-blend-overlay"></div>
+        </motion.div>
+        <div className="absolute inset-0 flex items-center justify-center text-[11px] font-mono text-white tracking-[0.3em] font-bold shadow-[0_0_10px_black] mix-blend-difference pointer-events-none z-10 w-full">
+          PODER DEL PARTIDO
         </div>
       </div>
 
-      <div 
-        className="w-32 h-32 rounded-full border-4 bg-black flex items-center justify-center relative shadow-[0_0_60px_rgba(220,38,38,0.4)] transition-all duration-300"
-        style={{ 
-          borderColor: ira > 50 ? '#ef4444' : '#7f1d1d',
-          transform: `scale(${1 + ira/200})`
-        }}
+      <motion.div 
+        className="relative flex items-center justify-center filter drop-shadow-[0_10px_30px_rgba(255,51,51,0.5)]"
+        animate={{ scale: 1 + ira/150 }}
       >
-        <div className="w-24 h-24 bg-red-600 rounded-full shadow-[0_0_40px_#dc2626] animate-pulse flex items-center justify-center overflow-hidden">
-          <div className="w-10 h-10 bg-black rounded-full relative">
-            <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full opacity-80 blur-[1px]"></div>
-          </div>
-        </div>
-      </div>
+         <Eye size={120} className="text-[#ff3333] opacity-90 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]" strokeWidth={1.5} />
+         <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 bg-black rounded-full border-2 border-[#ff3333]"></div>
+         </div>
+      </motion.div>
     </div>
   );
 }
@@ -128,19 +142,19 @@ function RayoView({ rayo }: { rayo: Rayo }) {
   if (rayo.advertencia) {
     return (
       <div 
-        className="absolute top-0 bottom-0 w-10 bg-red-500/20 animate-pulse z-10 border-x border-red-500/30 flex items-end justify-center pb-4"
-        style={{ left: rayo.x - 20 }}
+        className="absolute top-0 bottom-0 w-8 bg-[#ff3333]/10 animate-pulse z-10 border-x border-[#ff3333]/30 flex items-end justify-center pb-4"
+        style={{ left: rayo.x - 16 }}
       >
-        <Zap className="text-red-500 animate-bounce" />
+        <span className="text-[10px] font-mono text-[#ff4444] tracking-widest rotate-90 block mb-10">ATENCIÓN</span>
       </div>
     );
   }
   return (
     <div 
-      className="absolute top-0 bottom-0 w-16 bg-white animate-pulse z-40 shadow-[0_0_30px_white]"
+      className="absolute top-0 bottom-0 w-16 z-40 bg-white"
       style={{ left: rayo.x - 32 }}
     >
-      <div className="absolute inset-0 bg-red-500 mix-blend-overlay"></div>
+      <div className="absolute inset-0 bg-[#ff3333] mix-blend-multiply opacity-90 animate-[ping_0.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
     </div>
   );
 }
@@ -148,21 +162,23 @@ function RayoView({ rayo }: { rayo: Rayo }) {
 function ProyectilView({ p }: { p: Proyectil }) {
   return (
     <div 
-      className="absolute w-6 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee] z-20"
+      className="absolute flex items-center justify-center z-20"
       style={{ left: p.x, top: p.y }}
-    ></div>
+    >
+      <BookOpen size={20} className={`text-white fill-[#111] font-black ${p.vx > 0 ? 'animate-[spin_0.2s_linear_infinite]' : 'animate-[spin_0.2s_linear_infinite_reverse]'}`} />
+    </div>
   );
 }
 
-function GuardiaView({ g }: { g: Guardia }) {
+function PoliciaView({ g }: { g: Guardia }) {
   return (
     <div 
-      className="absolute bottom-10 w-12 h-16 bg-gray-900 border border-red-900 flex flex-col items-center justify-center z-20 shadow-[0_0_15px_rgba(220,38,38,0.2)]"
+      className="absolute bottom-10 w-12 h-16 bg-[#111] border border-[#333] flex flex-col items-center justify-center z-20 shadow-lg"
       style={{ left: g.x, transform: 'translateX(-50%)' }}
     >
-      <ShieldAlert className="text-red-600 mb-1" size={20} />
-      <div className="w-8 h-1 bg-red-900">
-        <div className="h-full bg-red-500" style={{ width: `${(g.hp / 3) * 100}%` }}></div>
+      <AlertOctagon className="text-gray-400 mb-1" size={20} />
+      <div className="w-8 h-1 bg-[#222]">
+        <div className="h-full bg-[#ff3333]" style={{ width: `${(g.hp / 4) * 100}%` }}></div>
       </div>
     </div>
   );
@@ -171,10 +187,10 @@ function GuardiaView({ g }: { g: Guardia }) {
 // --- Componente Principal ---
 
 export default function Minijuego1984() {
-  const { setEstado1984, setLogoCambiado1984 } = useContextoGlobal();
+  const { setEstado1984, setLogoCambiado1984, setBigBrotherWon } = useContextoGlobal();
   
   // Estados del Juego
-  const [posicionJugador, setPosicionJugador] = useState(100);
+  const [posicionJugador, setPosicionJugador] = useState(80);
   const [mirandoDerecha, setMirandoDerecha] = useState(true);
   const [estadoJuego, setEstadoJuego] = useState<'jugando' | 'ganado' | 'perdido'>('jugando');
   const [teclasPulsadas, setTeclasPulsadas] = useState<Set<string>>(new Set());
@@ -188,16 +204,17 @@ export default function Minijuego1984() {
   const [iraBoss, setIraBoss] = useState(0);
   const [vidaBoss, setVidaBoss] = useState(100);
   const [ultimoDisparo, setUltimoDisparo] = useState(0);
-  const [mensajeFlotante, setMensajeFlotante] = useState<{texto: string, color: string} | null>(null);
+  const [mensajeFlotante, setMensajeFlotante] = useState<{texto: string, color: string, id: number} | null>(null);
+  const [efectoBatalla, setEfectoBatalla] = useState(false);
 
-  // Bases (Estado mutable para techos)
-  const [bases, setBases] = useState<BaseData[]>([
-    { x: 50, ancho: 120, tipo: 'inicio', saludTecho: 100 },
-    { x: 400, ancho: 140, tipo: 'escritura', saludTecho: 100 }, 
-    { x: 750, ancho: 120, tipo: 'imprenta', saludTecho: 100 }
-  ]);
+  // Bases -> Edificios
+  const bases: BaseData[] = [
+    { x: 30, ancho: 120, tipo: 'prole', saludTecho: 100 },
+    { x: 320, ancho: 120, tipo: 'diario', saludTecho: 100 }, 
+    { x: 670, ancho: 180, tipo: 'ministerio', saludTecho: 100 }
+  ];
+  const [techos, setTechos] = useState([100, 100, 100]); // Salud de techos sincronizada por índice
 
-  // Input Loop
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => setTeclasPulsadas(prev => new Set(prev).add(e.key.toLowerCase()));
     const handleKeyUp = (e: KeyboardEvent) => setTeclasPulsadas(prev => {
@@ -213,14 +230,18 @@ export default function Minijuego1984() {
     };
   }, []);
 
-  // Game Loop Principal (60 FPS)
+  const triggerImpacto = () => {
+    setEfectoBatalla(true);
+    setTimeout(() => setEfectoBatalla(false), 200);
+  };
+
   useEffect(() => {
     if (estadoJuego !== 'jugando') return;
 
     const loop = setInterval(() => {
       const ahora = Date.now();
 
-      // --- 1. Movimiento Jugador ---
+      // --- 1. Movimiento ---
       setPosicionJugador(prev => {
         let nueva = prev;
         if (teclasPulsadas.has('arrowleft') || teclasPulsadas.has('a')) {
@@ -234,51 +255,49 @@ export default function Minijuego1984() {
         return Math.max(20, Math.min(nueva, ANCHO_JUEGO - 20));
       });
 
-      // --- 2. Mecánica de Escritura ---
-      const enEscritura = posicionJugador > bases[1].x && posicionJugador < bases[1].x + bases[1].ancho;
-      if (enEscritura && teclasPulsadas.has(' ') && !tieneArticulo) {
+      // --- 2. Crimen de Pensamiento (Cargar Diarios) ---
+      const enDiario = posicionJugador > bases[1].x && posicionJugador < bases[1].x + bases[1].ancho;
+      if (enDiario && teclasPulsadas.has(' ') && !tieneArticulo) {
         setProgresoEscritura(p => {
-          const nuevo = Math.min(100, p + 2); // Más rápido
+          const nuevo = Math.min(100, p + 1.5);
           if (nuevo >= 100 && p < 100) {
             setTieneArticulo(true);
-            setMensajeFlotante({ texto: "¡ARTÍCULO LISTO!", color: "text-yellow-400" });
-            setTimeout(() => setMensajeFlotante(null), 1500);
+            setMensajeFlotante({ texto: "PENSAMIENTO FORMADO", color: "text-white", id: ahora });
           }
           return nuevo;
         });
-      } else if (!enEscritura && !tieneArticulo) {
+      } else if (!enDiario && !tieneArticulo) {
         setProgresoEscritura(0);
       }
 
-      // --- 3. Mecánica de Publicación ---
-      const enImprenta = posicionJugador > bases[2].x && posicionJugador < bases[2].x + bases[2].ancho;
-      if (enImprenta && tieneArticulo) {
+      // --- 3. Publicación ---
+      const enMinisterio = posicionJugador > bases[2].x && posicionJugador < bases[2].x + bases[2].ancho;
+      if (enMinisterio && tieneArticulo) {
         setTieneArticulo(false);
         setProgresoEscritura(0);
+        triggerImpacto();
         setVidaBoss(v => Math.max(0, v - DAÑO_ARTICULO));
-        setIraBoss(i => Math.min(100, i + 20));
-        setMensajeFlotante({ texto: "¡VERDAD PUBLICADA!", color: "text-purple-400" });
-        setTimeout(() => setMensajeFlotante(null), 1500);
+        setIraBoss(i => Math.min(100, i + 30));
+        setMensajeFlotante({ texto: "REBELIÓN PUBLICADA", color: "text-[#ff3333]", id: ahora });
       }
 
-      // --- 4. Disparo a Guardias (Tecla Z) ---
-      if (teclasPulsadas.has('z') && ahora - ultimoDisparo > 200) {
+      // --- 4. Disparo de Herejías ---
+      if (teclasPulsadas.has('z') && ahora - ultimoDisparo > 250) {
         setProyectiles(prev => [...prev, { 
           id: ahora, 
           x: posicionJugador, 
-          y: ALTO_JUEGO - 50, 
+          y: ALTO_JUEGO - 65, 
           vx: mirandoDerecha ? VELOCIDAD_PROYECTIL : -VELOCIDAD_PROYECTIL
         }]);
         setUltimoDisparo(ahora);
       }
 
-      // --- 5. Actualizar Proyectiles ---
+      // --- 5 & 6. Proyectiles y Policía ---
       setProyectiles(prev => prev
         .map(p => ({ ...p, x: p.x + p.vx }))
         .filter(p => p.x > 0 && p.x < ANCHO_JUEGO)
       );
 
-      // --- 6. Colisiones Proyectil -> Guardias ---
       setProyectiles(prev => {
         const activos = [];
         let guardiasActualizados = [...guardias];
@@ -300,65 +319,64 @@ export default function Minijuego1984() {
         return activos;
       });
 
-      // --- 7. Generar Guardias (Más frecuente) ---
-      // Probabilidad base 2% + ira
-      if (Math.random() < (0.02 + iraBoss/2000)) {
+      // --- 7. Generar Policía del Pensamiento ---
+      if (Math.random() < (0.015 + iraBoss/1500)) {
         const lado = Math.random() > 0.5 ? 'izq' : 'der';
         setGuardias(prev => [...prev, {
           id: Date.now() + Math.random(),
           x: lado === 'izq' ? -50 : ANCHO_JUEGO + 50,
-          hp: 3
+          hp: 4 // Más resistentes
         }]);
       }
 
-      // --- 8. Mover Guardias ---
       setGuardias(prev => prev.map(g => ({
         ...g,
         x: g.x + (g.x < posicionJugador ? VELOCIDAD_GUARDIA : -VELOCIDAD_GUARDIA)
       })));
 
-      // --- 9. Generar Rayos (Ataque del Ojo) ---
-      if (Math.random() < (0.01 + iraBoss/3000)) {
-        const xObjetivo = Math.random() * (ANCHO_JUEGO - 100) + 50;
+      // --- 9. Generar Miradas (Ataque) ---
+      // IMPORTANTE: Nunca generar rayos en la zona de inicio (Base 0: 30 a 150 px)
+      if (Math.random() < (0.01 + iraBoss/2000)) {
+        let xObjetivo = Math.random() * (ANCHO_JUEGO - 100) + 50;
+        
+        // Evitar generar en la zona segura (Prole)
+        if (xObjetivo < bases[0].x + bases[0].ancho + 20) {
+          xObjetivo = Math.random() * (ANCHO_JUEGO - 200) + 200;
+        }
+
         setRayos(prev => [...prev, {
           id: Date.now() + Math.random(),
           x: xObjetivo,
-          duracion: 100, // Ciclos de vida (advertencia + disparo)
+          duracion: 80, 
           advertencia: true
         }]);
       }
 
-      // --- 10. Actualizar Rayos y Daño ---
       setRayos(prev => {
         const nuevos = [];
-        let basesActualizadas = [...bases];
+        let techosActualizados = [...techos];
         let jugadorMuerto = false;
 
         for (const r of prev) {
           const nuevaDuracion = r.duracion - 1;
           
-          // Cambio de fase: Advertencia -> Disparo
-          if (r.advertencia && nuevaDuracion < 40) {
+          if (r.advertencia && nuevaDuracion < 35) {
             r.advertencia = false;
           }
 
-          // Lógica de Daño (Solo en fase de disparo)
           if (!r.advertencia) {
-            // Daño a Bases (Techos)
-            basesActualizadas = basesActualizadas.map(b => {
-              if (r.x > b.x && r.x < b.x + b.ancho) {
-                return { ...b, saludTecho: Math.max(0, b.saludTecho - 2) };
-              }
-              return b;
+            // Daño a los techos
+            bases.forEach((b, index) => {
+               if (r.x > b.x && r.x < b.x + b.ancho) {
+                  techosActualizados[index] = Math.max(0, techosActualizados[index] - 4);
+               }
             });
 
-            // Daño al Jugador
-            if (Math.abs(r.x - posicionJugador) < 30) {
-              // Verificar si hay techo protegiendo
-              const baseProtectora = basesActualizadas.find(b => 
-                posicionJugador > b.x && posicionJugador < b.x + b.ancho && b.saludTecho > 0
-              );
-              if (!baseProtectora) {
+            if (Math.abs(r.x - posicionJugador) < 25) {
+              const indiceBase = bases.findIndex(b => posicionJugador > b.x && posicionJugador < b.x + b.ancho);
+              const protegidoPorTecho = indiceBase !== -1 && techosActualizados[indiceBase] > 0;
+              
+              if (!protegidoPorTecho) {
                 jugadorMuerto = true;
               }
             }
@@ -367,23 +385,27 @@ export default function Minijuego1984() {
           if (nuevaDuracion > 0) nuevos.push({ ...r, duracion: nuevaDuracion });
         }
 
-        setBases(basesActualizadas);
-        if (jugadorMuerto) setEstadoJuego('perdido');
+        setTechos(techosActualizados);
+        
+        // --- Condición de Pérdida ---
+        if (jugadorMuerto) {
+           setEstadoJuego('perdido');
+           setBigBrotherWon(true);
+        }
         return nuevos;
       });
 
-      // --- 11. Colisiones Jugador -> Guardias ---
-      // Solo si NO está en la base inicial (Zona Segura absoluta)
+      // --- Colisiones con Guardias ---
       const enBaseInicio = posicionJugador > bases[0].x && posicionJugador < bases[0].x + bases[0].ancho;
       if (!enBaseInicio) {
         for (const g of guardias) {
-          if (Math.abs(g.x - posicionJugador) < 25) {
+          if (Math.abs(g.x - posicionJugador) < 28) {
             setEstadoJuego('perdido');
+            setBigBrotherWon(true);
           }
         }
       }
 
-      // --- 12. Victoria ---
       if (vidaBoss <= 0) {
         setEstadoJuego('ganado');
         setTimeout(() => {
@@ -395,89 +417,113 @@ export default function Minijuego1984() {
     }, 16);
 
     return () => clearInterval(loop);
-  }, [estadoJuego, teclasPulsadas, posicionJugador, tieneArticulo, ultimoDisparo, iraBoss, vidaBoss, guardias, mirandoDerecha, bases, rayos, setEstado1984, setLogoCambiado1984]);
+  }, [estadoJuego, teclasPulsadas, posicionJugador, tieneArticulo, ultimoDisparo, iraBoss, vidaBoss, guardias, mirandoDerecha, techos, rayos, setEstado1984, setLogoCambiado1984, setBigBrotherWon, bases]);
 
+  const handleReintentar = () => {
+    setPosicionJugador(80);
+    setMirandoDerecha(true);
+    setIraBoss(0);
+    setVidaBoss(100);
+    setProgresoEscritura(0);
+    setTieneArticulo(false);
+    setProyectiles([]);
+    setGuardias([]);
+    setRayos([]);
+    setTechos([100, 100, 100]);
+    // Nota: Aunque reintente, el BigBrotherWon flag ya marcó al sistema
+    setEstadoJuego('jugando');
+  };
 
   return (
     <motion.div 
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
-      className="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center backdrop-blur-sm"
+      className="fixed inset-0 bg-[#050505]/98 z-[200] flex flex-col items-center justify-center backdrop-blur-xl py-10"
     >
-      <div className="relative bg-black border-2 border-gray-800 shadow-2xl overflow-hidden" style={{ width: ANCHO_JUEGO, height: ALTO_JUEGO }}>
-        <FondoGrid />
+       <div className="flex w-full max-w-[900px] justify-between items-center mb-4 px-4 bg-[#111] border border-[#333] p-4 text-white">
+          <p className="font-mono text-sm tracking-widest text-gray-400">EXPEDIENTE W-84</p>
+          <button 
+            onClick={() => setEstado1984('inactivo')}
+            className="px-4 py-2 bg-white text-black hover:bg-gray-200 transition-colors font-bold font-sans uppercase text-sm"
+          >
+            Abandonar Sesión
+          </button>
+       </div>
+
+      <motion.div 
+        animate={efectoBatalla ? { x: [-10, 10, -5, 5, 0], y: [-5, 5, -2, 2, 0] } : {}}
+        transition={{ duration: 0.2 }}
+        className="relative bg-[#020202] border-4 border-[#1a1a1a] shadow-[0_0_80px_rgba(0,0,0,1)] overflow-hidden" 
+        style={{ width: ANCHO_JUEGO, height: ALTO_JUEGO, filter: 'sepia(0.6) contrast(1.5) grayscale(0.8)' }}
+      >
+        <FondoGrid ira={iraBoss} />
         
-        {/* Botón de Salir (Accesibilidad) */}
-        <button 
-          onClick={() => setEstado1984('inactivo')}
-          className="absolute top-4 right-4 z-50 p-2 bg-red-900/50 text-white rounded hover:bg-red-700 transition-colors"
-          aria-label="Cerrar Minijuego"
-        >
-          <X size={24} />
-        </button>
-        
-        {/* UI Controles */}
-        <div className="absolute top-4 left-4 text-gray-500 font-mono text-[10px] z-40 bg-black/50 p-2 border border-gray-800 rounded">
-          <p>MOVIMIENTO: <span className="text-white">FLECHAS / WASD</span></p>
-          <p>ESCRIBIR: <span className="text-yellow-400">MANTENER ESPACIO</span> (EN MESA)</p>
-          <p>DISPARAR: <span className="text-cyan-400">TECLA Z</span></p>
+        <div className="absolute top-4 left-4 text-white/50 font-mono text-[10px] z-40 bg-black/80 p-3 border border-white/10 font-bold tracking-widest shadow-[0_0_10px_black]">
+          <p className="mb-1 text-gray-400">DIRECCIONES: <span className="text-white">FLECHAS / WASD</span></p>
+          <p className="mb-1">PENSAMIENTO: <span className="text-white">MANTENER ESPACIO</span></p>
+          <p>DIFUSIÓN: <span className="text-white">TECLA Z</span></p>
         </div>
 
-        {/* Mensaje Flotante */}
+        {/* Barra de escritura flotante */}
+        {progresoEscritura > 0 && !tieneArticulo && (
+          <div className="absolute z-50 bg-[#111] border border-gray-600 h-2 w-32" style={{ left: posicionJugador - 64, bottom: 90 }}>
+             <div className="h-full bg-white" style={{ width: `${progresoEscritura}%` }}></div>
+          </div>
+        )}
+
         <AnimatePresence>
           {mensajeFlotante && (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              exit={{ opacity: 0 }}
-              className={`absolute top-32 left-1/2 -translate-x-1/2 text-2xl font-black font-mono z-50 ${mensajeFlotante.color}`}
+              key={mensajeFlotante.id}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }} 
+              animate={{ opacity: 1, y: 0, scale: 1 }} 
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className={`absolute top-40 left-1/2 -translate-x-1/2 text-2xl font-black font-sans tracking-tight z-50 bg-[#111]/90 px-6 py-3 border-2 border-current shadow-lg ${mensajeFlotante.color}`}
             >
               {mensajeFlotante.texto}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Elementos del Juego */}
-        <OjoBoss ira={iraBoss} vida={vidaBoss} />
+        <PantallaBoss ira={iraBoss} vida={vidaBoss} />
         
-        {bases.map((b, i) => <BaseView key={i} base={b} />)}
+        {bases.map((b, i) => <EdificioView key={i} base={{ ...b, saludTecho: techos[i] }} />)}
         
-        {estadoJuego === 'jugando' && <Jugador x={posicionJugador} mirandoDerecha={mirandoDerecha} tieneArticulo={tieneArticulo} />}
+        {estadoJuego === 'jugando' && <Winston x={posicionJugador} mirandoDerecha={mirandoDerecha} tieneArticulo={tieneArticulo} />}
         
         {proyectiles.map(p => <ProyectilView key={p.id} p={p} />)}
-        {guardias.map(g => <GuardiaView key={g.id} g={g} />)}
+        {guardias.map(g => <PoliciaView key={g.id} g={g} />)}
         {rayos.map(r => <RayoView key={r.id} rayo={r} />)}
 
-        {/* Pantallas Finales */}
         {estadoJuego === 'perdido' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-red-900/90 flex flex-col items-center justify-center z-50">
-            <h2 className="text-6xl font-black font-mono text-black mb-4 tracking-tighter">ELIMINADO</h2>
-            <p className="text-xl font-mono text-black mb-8">EL GRAN HERMANO SIEMPRE GANA.</p>
-            <button onClick={() => {
-              setPosicionJugador(100);
-              setVidaBoss(100);
-              setIraBoss(0);
-              setProgresoEscritura(0);
-              setTieneArticulo(false);
-              setGuardias([]);
-              setProyectiles([]);
-              setRayos([]);
-              setBases(prev => prev.map(b => ({ ...b, saludTecho: 100 })));
-              setEstadoJuego('jugando');
-            }} className="px-8 py-3 bg-black text-red-500 font-bold font-mono uppercase border border-red-900 hover:bg-gray-900 transition-all">
-              Reintentar
-            </button>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-50 p-10 text-center backdrop-blur-sm">
+            <h2 className="text-7xl font-black font-sans text-white mb-4 tracking-tighter uppercase drop-shadow-[0_0_10px_black]">VIGILANDO</h2>
+            <p className="text-xl font-mono text-[#ff3333] mb-8 tracking-widest uppercase relative z-10 bg-black p-4 border border-[#ff3333]">El Pensamiento no muere tan rápido.</p>
+            <p className="max-w-md text-xs font-mono text-gray-400 mb-10 leading-loose uppercase z-10">
+              Has sido atrapado, pero el sistema aún registra insubordinación.
+            </p>
+            <div className="flex gap-4">
+              <button onClick={() => {
+                setEstado1984('inactivo');
+              }} className="px-8 py-3 bg-[#111] text-gray-400 font-bold font-sans uppercase hover:bg-gray-200 hover:text-black transition-all text-sm border-2 border-gray-600">
+                Aceptar Destino
+              </button>
+              <button onClick={handleReintentar} className="px-8 py-3 bg-white text-black font-black font-sans uppercase tracking-widest hover:bg-[#ff3333] hover:text-white hover:border-[#ff3333] transition-all text-sm border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+                Reintentar
+              </button>
+            </div>
           </motion.div>
         )}
 
         {estadoJuego === 'ganado' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-cyan-900/90 flex flex-col items-center justify-center z-50">
-            <h2 className="text-6xl font-black font-mono text-white mb-4 tracking-tighter">LIBERTAD</h2>
-            <p className="text-xl font-mono text-cyan-200 mb-8">LA VERDAD ES REVOLUCIONARIA.</p>
-            <div className="animate-pulse text-cyan-400 font-mono text-sm">ACCEDIENDO AL SISTEMA...</div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-white flex flex-col items-center justify-center z-50 border-[20px] border-black">
+            <h2 className="text-7xl font-black font-serif text-black mb-4 tracking-tighter uppercase">ANOMALÍA</h2>
+            <p className="text-xl font-serif text-gray-800 mb-8 tracking-widest uppercase font-bold">Ruptura del sistema. Pensamiento libre detectado.</p>
+            <div className="animate-pulse text-gray-500 font-mono text-xs uppercase tracking-[0.3em] font-bold">REDIRECCIONANDO DATOS AL NUEVO ORDEN...</div>
           </motion.div>
         )}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

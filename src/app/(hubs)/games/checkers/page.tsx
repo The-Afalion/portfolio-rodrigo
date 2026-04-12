@@ -93,8 +93,8 @@ export default function CheckersGame() {
   return (
     <div className="page-shell min-h-screen flex flex-col items-center justify-center py-10">
       <div className="w-full max-w-4xl px-4">
-        <Link href="/social" className="mb-8 inline-flex items-center gap-2 text-sm text-neon-pink hover:text-white transition-colors">
-          <ArrowLeft size={16} /> Volver al Hub
+        <Link href="/social" className="mb-8 inline-flex items-center gap-2 text-sm text-[#8c673d] hover:text-[#3e2b22] font-bold transition-colors">
+          <ArrowLeft size={16} /> Volver a la Tavera
         </Link>
         <div className="text-center mb-8">
            <h1 className="text-4xl font-bold font-serif text-[#3e3024] tracking-tight">Damas <span className="text-[#8c4030]">Clásicas</span></h1>
@@ -128,7 +128,7 @@ export default function CheckersGame() {
         {phase === "queue" && (
            <MatchmakingLobby 
               gameKey="checkers" 
-              gameName="Damas Neón" 
+              gameName="Damas Clásicas" 
               onCancel={() => setPhase("menu")}
               onMatchFound={(id, role) => {
                  setMatchId(id);

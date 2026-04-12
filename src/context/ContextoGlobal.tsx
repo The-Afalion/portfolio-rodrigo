@@ -20,6 +20,8 @@ interface ContextoGlobalProps {
   setEstado1984: (estado: Estado1984) => void;
   logoCambiado1984: boolean;
   setLogoCambiado1984: (cambiado: boolean) => void;
+  bigBrotherWon: boolean;
+  setBigBrotherWon: (won: boolean) => void;
 }
 
 // --- Creación del Contexto ---
@@ -31,6 +33,7 @@ export function ProveedorContextoGlobal({ children }: { children: ReactNode }) {
   const [eventoRandyActivo, setEventoRandyActivo] = useState<TipoEventoRandy>(null);
   const [estado1984, setEstado1984] = useState<Estado1984>("inactivo");
   const [logoCambiado1984, setLogoCambiado1984] = useState(false);
+  const [bigBrotherWon, setBigBrotherWon] = useState(false);
 
   const valor = {
     efectoMatrixVisible,
@@ -41,6 +44,8 @@ export function ProveedorContextoGlobal({ children }: { children: ReactNode }) {
     setEstado1984,
     logoCambiado1984,
     setLogoCambiado1984,
+    bigBrotherWon,
+    setBigBrotherWon,
   };
 
   return (
