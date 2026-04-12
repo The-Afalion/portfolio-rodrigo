@@ -122,7 +122,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="h-screen pt-16 max-h-screen overflow-hidden flex flex-col bg-[#f4ead5] font-serif selection:bg-[#cc6640]/30 selection:text-[#3e3024]">
+    <div className="min-h-screen pt-16 flex flex-col bg-[#f4ead5] font-serif selection:bg-[#cc6640]/30 selection:text-[#3e3024]">
       <header className="shrink-0 mx-auto w-full max-w-7xl px-4 mt-4">
         <div className="flex h-14 items-center justify-between border-b-2 border-dashed border-[#d6c4a5] pb-2">
           <div className="flex items-center gap-3">
@@ -149,10 +149,10 @@ function Dashboard() {
       </header>
 
       {/* SINGLE PANE GRID */}
-      <main className="flex-1 min-h-0 w-full max-w-[1600px] mx-auto p-4 flex gap-4 overflow-hidden">
+      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 flex flex-col lg:flex-row gap-4">
         
         {/* PANEL IZQUIERDO: Comunidad y Amigos */}
-        <div className="w-[30%] min-w-[300px] flex flex-col gap-4 min-h-0">
+        <div className="lg:w-[25%] xl:w-[20%] min-w-[250px] flex flex-col gap-4">
           
           <Link
             href="/chess/community"
@@ -167,25 +167,25 @@ function Dashboard() {
             <p className="text-[12px] text-[#8a765f] leading-snug mt-2 italic">1 Voto diario. Pizarras ocultas. El movimiento más votado será ejecutado.</p>
           </Link>
 
-          <div className="flex-1 min-h-0 bg-[#fdfbf7] border border-[#e3d5b8] rounded-sm shadow-[2px_4px_10px_rgba(120,90,60,0.1)] overflow-hidden flex flex-col relative transform rotate-[0.5deg]">
+          <div className="flex-1 bg-[#fdfbf7] border border-[#e3d5b8] rounded-sm shadow-[2px_4px_10px_rgba(120,90,60,0.1)] flex flex-col relative transform rotate-[0.5deg]">
              <div className="absolute top-2 right-4 w-4 h-4 rounded-full bg-[#668c99] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#4d6c7a] z-20"/>
              <h3 className="text-sm font-bold uppercase tracking-widest text-[#3c5a6b] p-4 border-b border-[#e3d5b8] border-dashed mt-2 mx-4">Tribunas y Gradas</h3>
-             <div className="flex-1 overflow-y-auto w-full p-2 no-scrollbar">
+             <div className="w-full p-2">
                <ChessFriendsPanel />
              </div>
           </div>
         </div>
 
         {/* PANEL DERECHO/CENTRO: Bots y Lobby */}
-        <div className="flex-1 bg-[#fcfaf4] p-6 border border-[#e3d5b8] rounded-sm shadow-[5px_8px_15px_rgba(100,70,40,0.15)] flex flex-col min-h-0 relative">
+        <div className="flex-1 bg-[#fcfaf4] p-4 lg:p-6 border border-[#e3d5b8] rounded-sm shadow-[5px_8px_15px_rgba(100,70,40,0.15)] flex flex-col">
           
-          <div className="shrink-0 flex gap-4 w-full h-[30%]">
-             <div className="w-1/2 flex flex-col">
+          <div className="shrink-0 flex flex-col md:flex-row gap-4 w-full h-auto">
+             <div className="w-full md:w-1/2 flex flex-col">
                <div className="flex items-center gap-2 mb-2 border-b border-[#d6c4a5] border-dashed pb-1">
                  <Flame size={16} className="text-[#ccaa40]"/>
                  <h3 className="text-sm uppercase tracking-widest font-bold text-[#5c4033]">Lobby Activo</h3>
                </div>
-               <div className="flex-1 overflow-y-auto no-scrollbar">
+               <div className="w-full">
                  <ChessLobby />
                </div>
              </div>
@@ -204,7 +204,7 @@ function Dashboard() {
              <p className="text-xs font-mono uppercase text-[#8a765f] tracking-widest mt-1">Sala de Entrenamiento Privada</p>
           </div>
 
-          <div className="flex-1 w-full overflow-x-auto overflow-y-hidden flex gap-4 items-center mt-4 pb-4 px-2 no-scrollbar">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-4 pb-2 px-1">
             {BOTS.map((bot, index) => {
               const unlocked = isBotUnlocked(index);
               const vencido = usuario?.botsDefeated.includes(bot.id);
@@ -212,7 +212,7 @@ function Dashboard() {
               return (
                 <div
                   key={bot.id}
-                  className={`shrink-0 w-64 h-[90%] bg-white border border-[#d6c4a5] rounded-sm shadow-[2px_4px_8px_rgba(100,70,40,0.1)] flex flex-col relative overflow-hidden transition-transform ${unlocked ? 'hover:-translate-y-1' : 'opacity-70 grayscale'}`}
+                  className={`w-full bg-white border border-[#d6c4a5] rounded-sm shadow-[2px_4px_8px_rgba(100,70,40,0.1)] flex flex-col relative overflow-hidden transition-transform ${unlocked ? 'hover:-translate-y-1' : 'opacity-70 grayscale'}`}
                 >
                   {!unlocked && (
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#f4ead5]/90 backdrop-blur-[1px]">
@@ -227,18 +227,18 @@ function Dashboard() {
                     </div>
                   )}
 
-                  <div className="p-4 flex flex-col items-center text-center flex-1">
-                    <div className={`mt-4 mb-4 flex h-16 w-16 items-center justify-center rounded-full border bg-[#fcfaf4] text-3xl shadow-inner ${unlocked ? 'border-[#d6c4a5]' : 'border-[#e3d5b8]'}`}>
+                  <div className="p-3 flex flex-col items-center text-center flex-1">
+                    <div className={`mt-2 mb-2 flex h-12 w-12 items-center justify-center rounded-full border bg-[#fcfaf4] text-xl shadow-inner ${unlocked ? 'border-[#d6c4a5]' : 'border-[#e3d5b8]'}`}>
                       {bot.avatar}
                     </div>
 
-                    <h3 className="text-lg font-bold text-[#3e3024]">{bot.nombre}</h3>
-                    <div className="mt-1 flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest bg-[#f4ead5] px-2 py-1 border border-[#d6c4a5]">
-                      <span className="text-[#8c4030]">{bot.titulo}</span>
-                      <span className="text-[#5c4033] border-l border-[#d6c4a5] pl-2">{bot.elo} Pts</span>
+                    <h3 className="text-base leading-tight font-bold text-[#3e3024]">{bot.nombre}</h3>
+                    <div className="mt-1 flex flex-col xl:flex-row items-center justify-center gap-1 xl:gap-2 font-mono text-[9px] uppercase tracking-widest bg-[#f4ead5] px-2 py-1 border border-[#d6c4a5]">
+                      <span className="text-[#8c4030] whitespace-nowrap">{bot.titulo}</span>
+                      <span className="text-[#5c4033] xl:border-l xl:border-[#d6c4a5] xl:pl-2 whitespace-nowrap">{bot.elo} Pts</span>
                     </div>
 
-                    <p className="mt-4 text-[11px] leading-relaxed italic text-[#8a765f] line-clamp-3">
+                    <p className="mt-2 text-[10px] leading-relaxed italic text-[#8a765f] line-clamp-3 md:line-clamp-2 xl:line-clamp-3">
                       {bot.descripcion}
                     </p>
                   </div>
