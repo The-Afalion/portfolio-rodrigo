@@ -28,15 +28,6 @@ export default function EngineeringPage() {
         </Link>
       </div>
 
-      <div className="pointer-events-none absolute bottom-5 left-5 z-30 max-w-[320px] bg-[#fcfaf4] border-2 border-[#8c673d] shadow-[8px_12px_20px_rgba(60,40,30,0.4)] p-7 md:bottom-8 md:left-8 md:max-w-[420px] relative">
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#cc6640] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#a64020]" />
-        
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#a68659] mt-3">Cartografía de Proyectos</p>
-        <h1 className="text-2xl font-black tracking-tight text-[#3e2b22] md:text-3xl uppercase">Atlas de Desarrollo</h1>
-        <p className="mt-3 text-sm leading-relaxed text-[#5c4033] font-medium border-t-2 border-dashed border-[#e3d5b8] pt-3">
-          Orbita libremente. Colisione su nave de madera contra cualquier orbe para examinar los documentos de la expedición técnica.
-        </p>
-      </div>
 
       <div className="absolute inset-0 z-10">
         <GalaxyScene />

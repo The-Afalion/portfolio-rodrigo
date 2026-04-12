@@ -170,7 +170,7 @@ function Dashboard() {
           <div className="flex-1 min-h-0 bg-[#fdfbf7] border border-[#e3d5b8] rounded-sm shadow-[2px_4px_10px_rgba(120,90,60,0.1)] overflow-hidden flex flex-col relative transform rotate-[0.5deg]">
              <div className="absolute top-2 right-4 w-4 h-4 rounded-full bg-[#668c99] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#4d6c7a] z-20"/>
              <h3 className="text-sm font-bold uppercase tracking-widest text-[#3c5a6b] p-4 border-b border-[#e3d5b8] border-dashed mt-2 mx-4">Tribunas y Gradas</h3>
-             <div className="flex-1 overflow-y-auto w-full p-2">
+             <div className="flex-1 overflow-y-auto w-full p-2 no-scrollbar">
                <ChessFriendsPanel />
              </div>
           </div>
@@ -185,7 +185,7 @@ function Dashboard() {
                  <Flame size={16} className="text-[#ccaa40]"/>
                  <h3 className="text-sm uppercase tracking-widest font-bold text-[#5c4033]">Lobby Activo</h3>
                </div>
-               <div className="flex-1 overflow-y-auto">
+               <div className="flex-1 overflow-y-auto no-scrollbar">
                  <ChessLobby />
                </div>
              </div>
@@ -204,7 +204,7 @@ function Dashboard() {
              <p className="text-xs font-mono uppercase text-[#8a765f] tracking-widest mt-1">Sala de Entrenamiento Privada</p>
           </div>
 
-          <div className="flex-1 w-full overflow-x-auto overflow-y-hidden flex gap-4 items-center mt-4 pb-4 px-2">
+          <div className="flex-1 w-full overflow-x-auto overflow-y-hidden flex gap-4 items-center mt-4 pb-4 px-2 no-scrollbar">
             {BOTS.map((bot, index) => {
               const unlocked = isBotUnlocked(index);
               const vencido = usuario?.botsDefeated.includes(bot.id);
