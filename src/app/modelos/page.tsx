@@ -1,6 +1,6 @@
-import ModelGallery from "@/components/ModelGallery";
 import { Cuboid, MousePointerClick, ScanLine } from "lucide-react";
 import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
+import ModelGalleryLauncher from "./ModelGalleryLauncher";
 
 export const metadata = {
   title: "Galería 3D | Rodrigo Alonso",
@@ -26,7 +26,7 @@ export default function PaginaGaleria3D() {
 
       <div className="space-y-8">
         <div className="interactive-frame h-[640px] p-4 md:p-6">
-          <ModelGallery />
+          <ModelGalleryLauncher />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

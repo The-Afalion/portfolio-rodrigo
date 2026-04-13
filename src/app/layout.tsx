@@ -1,11 +1,15 @@
 import type { Metadata, Viewport } from "next";
+import dynamic from "next/dynamic";
 import { IBM_Plex_Mono, Manrope, Sora } from "next/font/google";
-import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 import { Proveedores } from "@/components/Proveedores";
 import ContenidoPrincipal from "@/components/ContenidoPrincipal";
 import { siteConfig } from "@/config/site";
+
+const GlobalToaster = dynamic(() => import("@/components/shell/GlobalToaster"), {
+  ssr: false,
+});
 
 const fuenteSans = Manrope({
   subsets: ["latin"],
@@ -95,21 +99,9 @@ export default function DisposicionRaiz({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${fuenteSans.variable} ${fuenteDisplay.variable} ${fuenteMono.variable} font-serif antialiased text-foreground bg-background`}
+        className={`${fuenteSans.variable} ${fuenteDisplay.variable} ${fuenteMono.variable} font-sans antialiased text-foreground bg-background selection:bg-primary/20 selection:text-foreground`}
       >
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            className: 'font-mono',
-            style: {
-              background: 'hsl(var(--card))',
-              color: 'hsl(var(--foreground))',
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '0.125rem',
-              boxShadow: '5px 8px 15px rgba(100,70,40,0.15)',
-            },
-          }}
-        />
+        <GlobalToaster />
         <Proveedores>
           <ContenidoPrincipal>{children}</ContenidoPrincipal>
           {modal} {/* Renderizamos el modal aquí */}

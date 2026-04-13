@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Github, Linkedin, Mail, ArrowRight, Code2, Rocket, Globe } from "lucide-react";
+import { ArrowUpRight, Github, Linkedin, Mail, ArrowRight, Code2, Cpu, Globe, Box } from "lucide-react";
 import { FEATURED_PROJECTS } from "@/datos/proyectos";
 import { siteConfig } from "@/config/site";
 
@@ -10,34 +10,37 @@ const selectedProjects = FEATURED_PROJECTS.slice(0, 4);
 
 const hubs = [
   {
-    title: "Atlas de Ingeniería",
+    title: "Projects Hub",
     href: "/projects",
-    description: "Proyectos en órbita. Arquitecturas 3D interactivas, simuladores y repositorios en un mapa estelar.",
-    icon: <Globe className="text-[#00e5ff] mb-6 group-hover:scale-110 transition-transform duration-500 ease-out" size={48} strokeWidth={1.5} />,
-    glowColor: "rgba(0, 229, 255, 0.15)",
-    borderColor: "group-hover:border-[#00e5ff]/50",
-    hoverBg: "hover:bg-[#00e5ff]/5",
+    description: "Atlas intergaláctico cartografiando arquitecturas 3D y simulaciones de cuerpos celestes.",
+    icon: <Globe className="text-[#a64020] mb-6 group-hover:scale-125 transition-transform duration-500 ease-out" size={48} />,
+    color: "from-orange-500/10 to-red-500/5",
+    hoverBg: "hover:bg-[#1a120e]",
+    borderHover: "group-hover:border-[#a64020]",
     colSpan: "lg:col-span-2",
+    delay: 0.1
   },
   {
-    title: "Chess Club",
+    title: "Chess Hub",
     href: "/chess",
-    description: "La Tavera. Motor de reglas de ajedrez, bots por niveles y matchmaking postal asíncrono.",
-    icon: <Code2 className="text-[#a855f7] mb-6 group-hover:rotate-12 transition-transform duration-500 ease-out" size={48} strokeWidth={1.5} />,
-    glowColor: "rgba(168, 85, 247, 0.15)",
-    borderColor: "group-hover:border-[#a855f7]/50",
-    hoverBg: "hover:bg-[#a855f7]/5",
+    description: "Tablero Clásico Magistral. Matchmaking global comprimido en una vista sobria sin distracciones.",
+    icon: <Box className="text-[#3c5a6b] mb-6 group-hover:rotate-12 transition-transform duration-500 ease-out" size={48} />,
+    color: "from-[#9fbcce]/10 to-[#9fbcce]/5",
+    hoverBg: "hover:bg-[#fcfaf4]",
+    borderHover: "group-hover:border-[#3c5a6b]",
     colSpan: "lg:col-span-1",
+    delay: 0.3
   },
   {
-    title: "Comunicaciones",
+    title: "Social Hub",
     href: "/social",
-    description: "Directorio global, mensajería en tiempo real y red de contactos para desarrolladores.",
-    icon: <Rocket className="text-[#f43f5e] mb-6 group-hover:-translate-y-2 transition-transform duration-500 ease-out" size={48} strokeWidth={1.5} />,
-    glowColor: "rgba(244, 63, 94, 0.15)",
-    borderColor: "group-hover:border-[#f43f5e]/50",
-    hoverBg: "hover:bg-[#f43f5e]/5",
+    description: "Directorio táctil para interactuar con compañeros de desarrollo y trazar estrategias.",
+    icon: <Mail className="text-[#8c4030] mb-6 group-hover:-translate-y-2 transition-transform duration-500 ease-out" size={48} />,
+    color: "from-[#d6c4a5]/20 to-transparent",
+    hoverBg: "hover:bg-[#f4ead5]",
+    borderHover: "group-hover:border-[#8c4030]",
     colSpan: "lg:col-span-1",
+    delay: 0.5
   },
 ];
 
@@ -46,152 +49,150 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
   },
 };
 
 const cardVariant = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
   show: { 
     opacity: 1, 
     y: 0, 
-    transition: { type: "spring", stiffness: 100, damping: 20 }
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 15 }
   },
 };
 
 export default function StudioHome() {
   return (
-    <main className="relative min-h-screen bg-[#050505] text-white font-sans selection:bg-[#a855f7]/30 selection:text-white pb-32 pt-28 overflow-x-hidden">
-      {/* Background Animated Noise & Gradient Elements */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#00e5ff]/10 blur-[120px] mix-blend-screen" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[#a855f7]/10 blur-[150px] mix-blend-screen" />
-        <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] rounded-full bg-[#f43f5e]/5 blur-[100px] mix-blend-screen" />
-      </div>
+    <main className="relative min-h-screen overflow-hidden bg-background">
+      {/* Background Glowing Orbs */}
+      <div className="glow-blob bg-neon-purple w-[600px] h-[600px] top-[-100px] right-[-100px]" />
+      <div className="glow-blob bg-neon-cyan w-[500px] h-[500px] top-[40%] left-[-200px]" />
+      <div className="glow-blob bg-neon-pink w-[400px] h-[400px] bottom-[-50px] right-[20%]" />
 
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="page-container relative z-10 pt-32 pb-24">
         <motion.div 
           variants={staggerContainer}
           initial="hidden"
           animate="show"
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {/* Main Hero Header */}
-          <motion.div variants={cardVariant} className="lg:col-span-4 rounded-3xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 p-8 md:p-12 lg:p-16 relative overflow-hidden flex flex-col justify-end min-h-[50vh] xl:min-h-[60vh]">
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay pointer-events-none" />
-            <div className="relative z-10 w-full max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#00e5ff] uppercase tracking-widest mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00e5ff] animate-pulse" /> Estado: Operativo
-              </div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium tracking-tight text-white mb-6 leading-tight">
-                Software de precisión.<br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/40">
-                  Ingeniería a escala.
-                </span>
-              </h1>
-              <p className="text-lg md:text-xl text-white/50 font-light max-w-2xl leading-relaxed">
-                Desarrollo de ecosistemas interactivos, arquitecturas sólidas y un portfolio en constante expansión.
-              </p>
-              <div className="mt-10 flex flex-wrap gap-4 items-center">
-                <Link href="#hubs" className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium text-sm hover:scale-105 transition-transform">
-                  Ver Estructura <ArrowRight size={16} />
-                </Link>
-                <Link href="#work" className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-6 py-3 rounded-full font-medium text-sm hover:bg-white/10 transition-colors">
-                  Proyectos Recientes
-                </Link>
-              </div>
+          {/* Hero Main Block (Col-span 4 for a banner, or Col-span 2x2) */}
+          <motion.div variants={cardVariant} className="bento-card p-10 lg:col-span-4 lg:row-span-1 flex flex-col justify-center min-h-[40vh] border-l-4 border-l-neon-cyan">
+            <p className="page-eyebrow mb-4">Rodrigo Alonso</p>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter mb-6">
+              Software <span className="gradient-text animate-pulse">claro</span>.<br/> 
+              Interacción precisa.
+            </h1>
+            <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl font-light">
+              Diseño y construyo producto digital, sistemas interactivos y experiencias técnicas con una ejecución vanguardista.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link href="#work" className="action-pill bg-white/10 text-white font-bold border-white/20">
+                Ver Proyectos <ArrowRight size={18} />
+              </Link>
+              <Link href="/contact" className="action-pill text-muted-foreground">
+                Hablemos
+              </Link>
             </div>
           </motion.div>
 
-          {/* Contact Node */}
-          <motion.div variants={cardVariant} className="lg:col-span-1 rounded-3xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 p-8 flex flex-col justify-between group relative overflow-hidden">
-             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#a855f7]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-             <div className="relative z-10">
-               <p className="text-xs font-mono uppercase tracking-widest text-[#a855f7] mb-2">Comunicaciones</p>
-               <h3 className="text-2xl font-display font-medium text-white mb-4">Nodo de Acceso</h3>
-               <p className="text-sm text-white/50 leading-relaxed mb-8">
-                 Disponible para nuevos sistemas, arquitectura en la nube o diseño de protocolos interactivos.
-               </p>
-             </div>
-             <div className="flex gap-4 relative z-10">
-                <a href={`mailto:${siteConfig.email}`} className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all">
-                  <Mail size={20} />
-                </a>
-                <a href={siteConfig.github} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all">
-                  <Github size={20} />
-                </a>
-                <a href={siteConfig.linkedin} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all">
-                  <Linkedin size={20} />
-                </a>
-             </div>
+          {/* Contact / Links Small Block */}
+          <motion.div variants={cardVariant} className="bento-card p-8 lg:col-span-1 flex flex-col justify-between bg-gradient-to-br from-white/5 to-transparent">
+            <div>
+              <h3 className="text-xl font-semibold mb-2">Conecta</h3>
+              <p className="text-sm text-muted-foreground mb-6">Disponibilidad para retos complejos y diseño de sistemas.</p>
+            </div>
+            <div className="flex gap-3">
+               <a href={`mailto:${siteConfig.email}`} className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                 <Mail size={20} className="text-neon-cyan" />
+               </a>
+               <a href={siteConfig.github} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                 <Github size={20} className="text-white" />
+               </a>
+               <a href={siteConfig.linkedin} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                 <Linkedin size={20} className="text-neon-purple" />
+               </a>
+            </div>
           </motion.div>
 
-          {/* Featured Highlights */}
-          <motion.div variants={cardVariant} className="lg:col-span-3 rounded-3xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 p-8" id="work">
-             <div className="flex justify-between items-end mb-8 border-b border-white/10 pb-4">
-               <div>
-                 <p className="text-xs font-mono uppercase tracking-widest text-white/50 mb-2">Dossier Destacado</p>
-                 <h2 className="text-2xl md:text-3xl font-display font-medium text-white">Registros Recientes</h2>
-               </div>
-             </div>
-             
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-               {selectedProjects.map((project) => (
-                 <Link 
-                   href={`/proyectos/${project.id}`} 
-                   key={project.id}
-                   className="group block p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-300"
-                 >
-                   <div className="flex justify-between items-start mb-4">
-                     <div className="w-10 h-10 rounded-full border border-white/10 bg-[#050505] flex items-center justify-center" style={{ boxShadow: `0 0 20px ${project.color}30` }}>
-                       <span className="w-3 h-3 rounded-full" style={{ backgroundColor: project.color }} />
+          {/* Featured Projects List */}
+          <motion.div variants={cardVariant} className="bento-card p-8 lg:col-span-3 flex flex-col">
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <p className="page-eyebrow mb-2">Portfolio</p>
+                <h2 className="text-3xl font-bold">Trabajos Destacados</h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+              {selectedProjects.map((project, i) => (
+                <Link
+                  key={project.id}
+                  href={`/proyectos/${project.id}`}
+                  className="group relative overflow-hidden rounded-2xl bg-black/40 border border-white/5 p-6 transition-all hover:bg-white/5 hover:border-white/20 flex flex-col justify-between"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundImage: `radial-gradient(circle, ${project.color}40 0%, transparent 70%)`}} />
+                  <div>
+                     <div className="flex items-center gap-3 mb-3">
+                       <span className="w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]" style={{ backgroundColor: project.color, color: project.color }} />
+                       <h3 className="text-xl font-bold">{project.title}</h3>
                      </div>
-                     <ArrowUpRight size={18} className="text-white/30 group-hover:text-white group-hover:-translate-y-1 transition-all" />
-                   </div>
-                   <h3 className="text-xl font-display font-medium mb-2 text-white group-hover:text-[#00e5ff] transition-colors">{project.title}</h3>
-                   <p className="text-sm text-white/50 line-clamp-2">{project.description}</p>
-                 </Link>
-               ))}
-             </div>
+                     <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+                  </div>
+                  <div className="mt-6 flex justify-between items-center text-sm font-medium text-white/50 group-hover:text-white transition-colors">
+                     <span>Ver proyecto</span>
+                     <ArrowUpRight size={18} className="transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </div>
+                </Link>
+              ))}
+            </div>
           </motion.div>
 
-          <motion.div variants={cardVariant} className="lg:col-span-4 mt-8 mb-4 flex items-center gap-4" id="hubs">
-            <h2 className="text-2xl font-display font-medium text-white/90">Estructura Global</h2>
-            <div className="flex-1 h-px bg-gradient-to-r from-white/20 to-transparent" />
-          </motion.div>
-
-          {hubs.map((hub) => (
-             <motion.div 
-               key={hub.href}
+          {/* Hubs / Index Blocks */}
+          <div className="lg:col-span-4 mt-8 mb-4 border-l-4 border-l-neon-purple pl-4" id="work">
+            <h2 className="text-3xl font-bold font-display tracking-tight text-white/90">Estructura Global de Contenido</h2>
+            <p className="text-white/50 text-sm mt-2">Navegación animada hacia los diferentes ecosistemas y módulos del portfolio.</p>
+          </div>
+          
+          {hubs.map((hub, i) => (
+            <motion.div 
+               key={hub.href} 
                variants={cardVariant}
-               whileHover={{ y: -8 }}
-               className={`rounded-3xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 p-8 relative overflow-hidden group ${hub.colSpan} ${hub.borderColor} transition-colors duration-500`}
-             >
-               <Link href={hub.href} className="absolute inset-0 z-20" />
-               <div 
-                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none mix-blend-screen bg-gradient-to-br from-white/5 to-transparent" 
-               />
-               <div 
-                 className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 -translate-y-1/2 translate-x-1/4 pointer-events-none"
-                 style={{ backgroundColor: hub.glowColor }}
-               />
-               
-               <div className="relative z-10 flex flex-col h-full justify-between">
-                 <div>
-                   {hub.icon}
-                   <h3 className="text-2xl font-display font-medium text-white mb-3">{hub.title}</h3>
-                   <p className="text-white/50 text-base leading-relaxed max-w-sm font-sans">
-                     {hub.description}
-                   </p>
-                 </div>
-                 <div className="mt-8 flex justify-end">
-                   <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors duration-300">
-                     <ArrowRight size={18} className="text-white/50 group-hover:text-black transition-colors" />
+               whileHover={{ y: -8, scale: 1.02 }}
+               transition={{ type: "spring", stiffness: 300, damping: 20 }}
+               className={`bento-card lg:${hub.colSpan} md:col-span-2 col-span-1 border border-white/5 group ${hub.borderHover} overflow-hidden relative`}
+            >
+              <Link href={hub.href} className={`block h-full p-10 bg-gradient-to-br ${hub.color} transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${hub.hoverBg} z-10 relative`}>
+                
+                {/* Background Animation Mask */}
+                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
+
+                <div className="flex flex-col h-full justify-between relative z-20">
+                   <div>
+                     {hub.icon}
+                     <motion.h3 
+                       className="text-3xl font-black mt-4 mb-3 transition-colors duration-500 group-hover:text-black"
+                       initial={{ opacity: 0.8 }}
+                       whileHover={{ opacity: 1, scale: 1.05, originX: 0 }}
+                     >
+                       {hub.title}
+                     </motion.h3>
+                     <p className="text-muted-foreground font-medium text-lg leading-relaxed group-hover:text-black/80 transition-colors duration-500 max-w-sm">
+                        {hub.description}
+                     </p>
                    </div>
-                 </div>
-               </div>
-             </motion.div>
+                   
+                   <div className="flex justify-end mt-8">
+                     <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-black/30 group-hover:bg-black/10 transition-all duration-500">
+                       <ArrowRight size={24} className="text-white/30 group-hover:text-black group-hover:translate-x-1 transition-all duration-300" />
+                     </div>
+                   </div>
+                </div>
+              </Link>
+            </motion.div>
           ))}
+
         </motion.div>
       </div>
     </main>

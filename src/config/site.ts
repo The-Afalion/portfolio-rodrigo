@@ -73,7 +73,6 @@ export const sitemapRoutes = [
   '/contact',
   '/slalom',
   '/sonic',
-  '/urban',
   '/chrono-dasher',
   '/pi-vault',
 ] as const;
@@ -132,11 +131,11 @@ export function shouldShowNewsletter(pathname: string) {
 }
 
 export function shouldShowChat(pathname: string) {
-  if (pathname.startsWith('/chess/play/')) {
-    return false;
+  if (pathname === '/chess') {
+    return true;
   }
 
-  return matchesPrefix(pathname, chatEnabledPrefixes);
+  return pathname === '/nexus' || pathname.startsWith('/nexus/');
 }
 
 export function shouldEnableHomeEffects(pathname: string) {
@@ -146,4 +145,3 @@ export function shouldEnableHomeEffects(pathname: string) {
 export function shouldUsePlainShell(pathname: string) {
   return matchesPrefix(pathname, chromeHiddenPrefixes);
 }
-

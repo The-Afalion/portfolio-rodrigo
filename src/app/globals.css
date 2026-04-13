@@ -3,32 +3,64 @@
 @tailwind utilities;
 
 @layer base {
-  :root, .dark, .forest, .sepia {
-    --background: 41 52% 90%;      /* #f4ead5 */
-    --foreground: 28 27% 19%;      /* #3e3024 */
-    --card: 48 45% 97%;            /* #fcfaf4 */
-    --card-foreground: 28 27% 19%; /* #3e3024 */
-    --popover: 48 45% 97%;
-    --popover-foreground: 28 27% 19%;
-    --primary: 10 50% 37%;         /* #8c4030 */
-    --primary-foreground: 48 45% 97%; /* #fcfaf4 */
-    --secondary: 41 50% 85%;       /* #e8dcc4 */
-    --secondary-foreground: 25 40% 25%;
-    --muted: 41 50% 85%;           /* #e8dcc4 */
-    --muted-foreground: 32 18% 46%;/* #8a765f */
-    --accent: 16 57% 53%;          /* #cc6640 */
-    --accent-foreground: 48 45% 97%;
-    --border: 38 40% 74%;          /* #d6c4a5 */
-    --input: 38 40% 74%;
-    --ring: 16 57% 53%;
-    --radius: 0.125rem;            /* rounded-sm */
-    --surface-elevated: 48 45% 97%;
-    --surface-strong: 41 52% 90%;
+  :root {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
     
-    /* Neon Tokens kept for index page compatibility */
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+    
+    --primary: 270 100% 65%;
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 5% 65%;
+    
+    --accent: 190 100% 50%;
+    --accent-foreground: 0 0% 98%;
+    
+    --border: 240 14% 15%;
+    --input: 240 14% 15%;
+    --ring: 270 100% 65%;
+    
+    --radius: 1.5rem;
+    
+    --surface-elevated: 240 10% 8%;
+    --surface-strong: 240 10% 12%;
+    
+    /* Neon Tokens */
     --neon-purple: 270 100% 60%;
     --neon-cyan: 190 100% 50%;
     --neon-pink: 320 100% 60%;
+  }
+
+  .dark, .forest, .sepia {
+    /* Mapear todo al nuevo Dark Premium para mantener compatibilidad con Theme toggles */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 270 100% 65%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 0 0% 98%;
+    --border: 240 14% 15%;
+    --input: 240 14% 15%;
+    --ring: 270 100% 65%;
+    --surface-elevated: 240 10% 8%;
+    --surface-strong: 240 10% 12%;
   }
 }
 
@@ -42,13 +74,16 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased font-serif;
+    @apply bg-background text-foreground antialiased;
     min-height: 100vh;
-    background-image: none;
+    /* Efecto estelar sutil en el fondo global */
+    background-image: radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 100% 100%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4 {
-    @apply font-serif tracking-tight text-foreground font-bold;
+    @apply font-display tracking-tight text-foreground;
   }
 
   p {
@@ -66,63 +101,80 @@
   }
 
   .page-eyebrow {
-    @apply inline-flex text-xs font-bold uppercase tracking-[0.2em] text-accent font-mono;
+    @apply inline-flex text-xs font-bold uppercase tracking-[0.3em] text-neon-cyan;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
   }
 
   .bento-card {
-    background-color: hsl(var(--card));
-    @apply relative overflow-hidden rounded-sm border border-border shadow-[5px_8px_15px_rgba(100,70,40,0.15)] transition-all duration-300;
+    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    @apply relative overflow-hidden rounded-[2rem] border border-white/5 transition-all duration-300;
   }
   
   .bento-card:hover {
-    @apply border-accent/30;
-    box-shadow: 2px 4px 10px rgba(100, 70, 40, 0.1);
-    transform: translateY(-2px);
+    @apply border-white/10;
+    box-shadow: 0 0 40px -10px rgba(138, 43, 226, 0.15), 
+                inset 0 0 20px -10px rgba(255, 255, 255, 0.05);
   }
 
+  /* Clases Base Restauradas (Bento Variant) */
   .surface-panel {
-    background-color: hsl(var(--card));
-    @apply block rounded-sm border border-border shadow-[2px_4px_10px_rgba(120,90,60,0.1)] transition-all duration-300;
+    background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    @apply block rounded-[2rem] border border-white/5 transition-all duration-300;
   }
   
   .surface-panel-muted {
-    background-color: transparent;
-    @apply block rounded-sm border border-border border-dashed transition-all duration-300;
+    background: transparent;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    @apply block rounded-[1.4rem] border border-white/5 transition-all duration-300;
   }
 
   .surface-divider {
-    @apply border-t border-border border-dashed;
+    @apply border-t border-white/5;
   }
 
   .interactive-frame {
-    background-color: hsl(var(--surface-elevated));
-    @apply block overflow-hidden rounded-sm border border-border touch-none; 
+    background: rgba(0, 0, 0, 0.4);
+    @apply block overflow-hidden rounded-[2rem] border border-white/10 touch-none; 
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent via-primary to-[#5c4033];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan via-white to-neon-purple;
   }
 
   .action-pill {
-    @apply relative inline-flex items-center gap-2 rounded-sm px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-all duration-300 shadow-sm bg-primary border-primary;
+    @apply relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-foreground transition-all duration-300 overflow-hidden;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
   }
 
-  .action-pill:hover {
-    @apply bg-[#a64020] border-[#a64020];
+  .action-pill::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(45deg, rgba(0,255,255,0.1), rgba(138,43,226,0.1));
   }
 
-  .glow-blob {
-    @apply absolute blur-[100px] rounded-full opacity-30 pointer-events-none;
+  .action-pill:hover::before {
+    @apply opacity-100;
   }
   
-  /* Textures for office style */
-  .wood-texture {
-    background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png");
+  .action-pill:hover {
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 0 20px rgba(0,255,255,0.15);
+  }
+
+  /* Neon Glow Backgrounds for Bento Items */
+  .glow-blob {
+    @apply absolute blur-[100px] rounded-full opacity-30 pointer-events-none;
   }
 }
 
 ::selection {
-  @apply bg-accent/30 text-foreground;
+  @apply bg-neon-purple/30 text-white;
 }
 
 ::-webkit-scrollbar {
@@ -134,19 +186,93 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply rounded-sm bg-border;
+  @apply rounded-full bg-white/10;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-[#b8a991];
+  @apply bg-white/20;
 }
 
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
+/* ========================================================
+   FLAT UI THEME (Hubs) 
+   ======================================================== */
+.flat-theme {
+  --background: 40 50% 95%;      /* #F9F5EC Crema pergamino */
+  --foreground: 25 30% 25%;      /* #524239 Café oscuro para texto */
+  --card: 40 40% 92%;            /* Papel más oscuro */
+  --card-foreground: 25 30% 25%;
+  --popover: 40 40% 92%;
+  --popover-foreground: 25 30% 25%;
+  --border: 35 25% 82%;          /* Bordes arena/beige oscuro */
+  --surface-elevated: 40 50% 98%;
+  
+  /* Destruir neones y reemplazarlos por pasteles/planos organicos */
+  --neon-cyan: 15 50% 50%;       /* Terracota cálido */
+  --neon-pink: 120 15% 55%;      /* Verde Salvia apagado */
+  --neon-purple: 40 50% 55%;     /* Mostaza viejo orgánico */
+  
+  --radius: 1rem;
+  
+  background-image: none !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.flat-theme .bento-card,
+.flat-theme .surface-panel,
+.flat-theme .interactive-frame {
+  background: white !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0.5rem !important;
+}
+
+.flat-theme .bento-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
+
+.flat-theme .page-eyebrow,
+.flat-theme h1, .flat-theme h2, .flat-theme h3 {
+  text-shadow: none !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.flat-theme .gradient-text {
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+  color: hsl(var(--neon-cyan)) !important;
+}
+
+.flat-theme .action-pill {
+  background: hsl(var(--neon-cyan)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+.flat-theme .action-pill::before {
+  display: none !important;
+}
+
+.flat-theme .action-pill:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.flat-theme .glow-blob {
+  display: none !important;
+}
+
+/* Scrollbar para flat-theme */
+.flat-theme ::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.flat-theme ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1) !important;
+}
+.flat-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.2) !important;
 }

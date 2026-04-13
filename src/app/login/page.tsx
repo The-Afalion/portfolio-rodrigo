@@ -9,11 +9,18 @@ export default function LoginPage({
 }) {
   const audience = parseAuthAudience(getFirstQueryValue(searchParams?.audience));
   const nextPath = resolveNextPath(audience, getFirstQueryValue(searchParams?.next));
-  const initialError = getAuthErrorMessage(getFirstQueryValue(searchParams?.error), audience);
+  const initialErrorCode = getFirstQueryValue(searchParams?.error);
+  const initialError = getAuthErrorMessage(initialErrorCode, audience);
 
   return (
     <AuthShell audience={audience}>
-      <AuthFormCard audience={audience} initialError={initialError} mode="signin" nextPath={nextPath} />
+      <AuthFormCard
+        audience={audience}
+        initialError={initialError}
+        initialErrorCode={initialErrorCode}
+        mode="signin"
+        nextPath={nextPath}
+      />
     </AuthShell>
   );
 }

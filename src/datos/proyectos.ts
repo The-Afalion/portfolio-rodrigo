@@ -75,15 +75,6 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     featured: true,
   },
   {
-    id: 'urban',
-    title: 'Urban Pulse',
-    description: 'Escena 3D que convierte tráfico, energía y estado de red en una lectura urbana clara.',
-    tech: ['Three.js', 'Data Viz', 'WebGL'],
-    color: '#9e97ff',
-    position: [0, -11, -12] as [number, number, number],
-    link: '/urban'
-  },
-  {
     id: 'chrono-dasher',
     title: 'Chrono Dasher',
     description: 'Runner 3D rápido con niveles generados de forma procedural.',
@@ -158,4 +149,3 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
 ];
 
 export const FEATURED_PROJECTS = PROYECTOS_CORE.filter((project) => project.featured);
-

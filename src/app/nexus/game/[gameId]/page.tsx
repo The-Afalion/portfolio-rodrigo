@@ -87,42 +87,35 @@ export default function GamePage() {
   }
 
   if (!playerEmail) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#f4ead5] text-[#3e3024] font-serif">Redirigiendo a Telegrama Global...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-black text-white">Redirigiendo al Nexus...</div>;
   }
 
   return (
-    <main className="min-h-screen bg-[#f4ead5] text-[#3e3024] font-serif flex flex-col selection:bg-[#cc6640]/30 selection:text-[#3e3024]">
-      <header className="px-6 py-4 border-b-2 border-dashed border-[#d6c4a5] flex justify-between items-center bg-[#fcfaf4]">
-        <button onClick={() => router.push('/nexus')} className="flex items-center gap-2 text-[#8c673d] hover:text-[#3e2b22] transition-colors font-mono font-bold text-[10px] uppercase tracking-[0.2em]">
-          <ArrowLeft size={16} /> Abandonar Mesa
+    <main className="min-h-screen bg-black text-white flex flex-col">
+      <header className="p-4 border-b border-neutral-800 flex justify-between items-center">
+        <button onClick={() => router.push('/nexus')} className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors font-mono text-sm">
+          <ArrowLeft size={16} /> Abandonar Partida
         </button>
-        <div className={`flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-mono font-bold ${isConnected ? 'text-[#6a8c54]' : 'text-[#8c4030]'}`}>
+        <div className={`flex items-center gap-2 text-xs font-mono ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
           {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
-          {isConnected ? 'LÍNEA ACTIVA' : 'LÍNEA CORTADA'}
+          {isConnected ? 'CONECTADO' : 'DESCONECTADO'}
         </div>
       </header>
 
-      <div className="flex-grow flex flex-col items-center justify-center p-4 relative">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10 pointer-events-none mix-blend-multiply" />
-        
-        <div className="mb-8 text-center relative z-10 bg-[#fcfaf4] p-6 border-2 border-[#1a120e] shadow-[8px_12px_20px_rgba(60,40,30,0.2)] transform rotate-[-0.5deg]">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#ccaa40] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#a68659]" />
-          <p className="font-mono text-sm tracking-widest mt-2 uppercase">
-            <span className="font-bold text-[#3c5a6b]">{playerEmail.split('@')[0]}</span> (Tú) <span className="mx-2 text-[#8a765f] text-xs">vs</span> <span className="font-bold text-[#8c4030]">{opponent ? opponent.split('@')[0] : '...'}</span>
+      <div className="flex-grow flex flex-col items-center justify-center p-4">
+        <div className="mb-4 text-center">
+          <p className="font-mono text-lg">
+            <span className="font-bold text-blue-400">{playerEmail.split('@')[0]}</span> (Tú) vs <span className="font-bold text-red-400">{opponent ? opponent.split('@')[0] : '...'}</span>
           </p>
-          <div className="flex-1 border-t border-dashed border-[#d6c4a5] my-4" />
-          <p className="text-xl font-bold font-serif text-[#3e3024] tracking-tight uppercase">
-            {game.isGameOver() ? 'Partida Concluida' : `Turno: ${game.turn() === 'w' ? 'Piezas de Marfil' : 'Piezas de Nogal'}`}
+          <p className="text-sm text-neutral-400">
+            {game.isGameOver() ? 'Partida terminada' : `Turno de las ${game.turn() === 'w' ? 'Blancas' : 'Negras'}`}
           </p>
         </div>
-        
-        <div className="w-full max-w-2xl bg-[#1a120e] p-4 border-8 border-[#3e3024] shadow-[10px_15px_30px_rgba(60,40,30,0.3)] relative z-10">
+        <div className="w-full max-w-lg">
           <Chessboard
             position={game.fen()}
             onPieceDrop={onDrop}
             boardOrientation={playerSide || 'white'}
-            customDarkSquareStyle={{ backgroundColor: '#5c4033' }}
-            customLightSquareStyle={{ backgroundColor: '#e3d7c5' }}
           />
         </div>
       </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { Clock3, Loader2, Mail, MessageSquare, Search, Send, Sparkles, Swords, UserPlus, Users } from "lucide-react";
+import { Clock3, Loader2, Mail, Search, Send, Sparkles, Swords, UserPlus, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import { useChess } from "@/context/ContextoChess";
 import { useRealtime } from "@/context/ContextoRealtime";
@@ -42,6 +41,10 @@ type FriendMessage = {
   createdAt: string;
 };
 
+type ChessFriendsPanelProps = {
+  compact?: boolean;
+};
+
 function formatRelativeDate(value?: string | null) {
   if (!value) {
     return "Sin actividad aún";
@@ -66,7 +69,17 @@ function formatRelativeDate(value?: string | null) {
   return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 }
 
-export default function ChessFriendsPanel() {
+function cardClasses(compact: boolean) {
+  return compact ? "border border-white/10 bg-white/[0.03]" : "border border-border/70 bg-background/70";
+}
+
+function mutedCardClasses(compact: boolean) {
+  return compact
+    ? "border border-white/10 bg-white/[0.02] text-slate-400"
+    : "border border-dashed border-border/70 bg-background/45 text-muted-foreground";
+}
+
+export default function ChessFriendsPanel({ compact = false }: ChessFriendsPanelProps) {
   const { usuario } = useChess();
   const { invitarJugador } = useRealtime();
   const [friends, setFriends] = useState<FriendSummary[]>([]);
@@ -308,31 +321,31 @@ export default function ChessFriendsPanel() {
   }
 
   return (
-    <section className="mb-16">
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+    <section className={compact ? "h-full" : "mb-16"}>
+      <div className={compact ? "mb-6 border-b border-white/10 pb-6" : "mb-8"}>
+        <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${compact ? "text-slate-400" : "text-muted-foreground"}`}>
           Zona social
         </p>
-        <h3 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+        <h3 className={`mt-3 font-semibold tracking-tight ${compact ? "text-2xl text-white md:text-3xl" : "text-3xl md:text-4xl"}`}>
           Amigos, mensajes privados y retos por modo
         </h3>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
-          Esta capa ya está preparada para crecer hacia más minijuegos con `modeKey`, pero desde hoy puedes
-          gestionar amistades, hablar por privado y lanzar desafíos de ajedrez con ritmo rápido o por correspondencia.
+        <p className={`mt-3 max-w-3xl text-sm leading-7 ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
+          Busca jugadores frecuentes, mantén conversaciones privadas y lanza partidas rápidas o por correspondencia sin
+          salir del panel.
         </p>
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
+      <div className={`grid gap-6 ${compact ? "2xl:grid-cols-[0.92fr_1.08fr]" : "xl:grid-cols-[0.95fr_1.05fr]"}`}>
         <div className="space-y-6">
           <div className="surface-panel overflow-hidden">
-            <div className="border-b border-border/60 px-6 py-5">
+            <div className={`px-6 py-5 ${compact ? "border-b border-white/10" : "border-b border-border/60"}`}>
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-background">
-                  <UserPlus size={18} className="text-primary" />
+                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${compact ? "border border-white/10 bg-white/[0.04]" : "border border-border/70 bg-background"}`}>
+                  <UserPlus size={18} className={compact ? "text-amber-100" : "text-primary"} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Añadir amigos</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={`text-sm font-semibold ${compact ? "text-white" : "text-foreground"}`}>Añadir amigos</p>
+                  <p className={`text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                     Busca por nombre visible o correo para conectar dentro del club.
                   </p>
                 </div>
@@ -352,12 +365,18 @@ export default function ChessFriendsPanel() {
                     }
                   }}
                   placeholder="Busca por correo o alias..."
-                  className="flex-1 rounded-2xl border border-border/70 bg-background/75 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary/60"
+                  className={`flex-1 rounded-2xl px-4 py-3 text-sm outline-none transition-colors ${
+                    compact
+                      ? "border border-white/10 bg-white/[0.04] text-white placeholder:text-slate-500 focus:border-amber-200/40"
+                      : "border border-border/70 bg-background/75 text-foreground focus:border-primary/60"
+                  }`}
                 />
                 <button
                   onClick={() => void runSearch()}
                   disabled={searching}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-foreground px-4 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-60 ${
+                    compact ? "bg-amber-300 text-slate-950" : "bg-foreground text-background"
+                  }`}
                 >
                   {searching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
                   Buscar
@@ -366,23 +385,25 @@ export default function ChessFriendsPanel() {
 
               <div className="mt-4 space-y-3">
                 {searchResults.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-border/70 bg-background/45 px-4 py-6 text-center text-sm text-muted-foreground">
+                  <div className={`rounded-3xl px-4 py-6 text-center text-sm ${mutedCardClasses(compact)}`}>
                     Haz una búsqueda para enviar solicitudes.
                   </div>
                 ) : (
                   searchResults.map((result) => (
-                    <div key={result.id} className="rounded-3xl border border-border/70 bg-background/70 p-4">
+                    <div key={result.id} className={`rounded-3xl p-4 ${cardClasses(compact)}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="font-medium text-foreground">{result.displayName}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">
+                          <p className={`font-medium ${compact ? "text-white" : "text-foreground"}`}>{result.displayName}</p>
+                          <p className={`mt-1 text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                             {result.email} · ELO {result.elo}
                           </p>
                         </div>
                         <button
                           onClick={() => void sendFriendRequest(result.id)}
                           disabled={result.friendshipStatus === "ACCEPTED" || result.friendshipStatus === "PENDING"}
-                          className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                          className={`rounded-full px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+                            compact ? "bg-amber-300 text-slate-950" : "bg-foreground text-background"
+                          }`}
                         >
                           {result.friendshipStatus === "ACCEPTED"
                             ? "Ya sois amigos"
@@ -401,40 +422,46 @@ export default function ChessFriendsPanel() {
           </div>
 
           <div className="surface-panel overflow-hidden">
-            <div className="border-b border-border/60 px-6 py-5">
-              <p className="text-sm font-semibold text-foreground">Solicitudes pendientes</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+            <div className={`px-6 py-5 ${compact ? "border-b border-white/10" : "border-b border-border/60"}`}>
+              <p className={`text-sm font-semibold ${compact ? "text-white" : "text-foreground"}`}>Solicitudes pendientes</p>
+              <p className={`mt-1 text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                 Responde a las peticiones entrantes o revisa las que ya has mandado.
               </p>
             </div>
 
             <div className="space-y-5 p-5">
               <div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.2em] ${compact ? "text-slate-400" : "text-muted-foreground"}`}>
                   Recibidas
                 </p>
                 <div className="space-y-3">
                   {incomingRequests.length === 0 ? (
-                    <div className="rounded-3xl border border-dashed border-border/70 bg-background/45 px-4 py-5 text-sm text-muted-foreground">
+                    <div className={`rounded-3xl px-4 py-5 text-sm ${mutedCardClasses(compact)}`}>
                       No tienes solicitudes nuevas.
                     </div>
                   ) : (
                     incomingRequests.map((request) => (
-                      <div key={request.id} className="rounded-3xl border border-border/70 bg-background/70 p-4">
-                        <p className="font-medium text-foreground">{request.name}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                      <div key={request.id} className={`rounded-3xl p-4 ${cardClasses(compact)}`}>
+                        <p className={`font-medium ${compact ? "text-white" : "text-foreground"}`}>{request.name}</p>
+                        <p className={`mt-1 text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                           ELO {request.elo} · {formatRelativeDate(request.createdAt)}
                         </p>
                         <div className="mt-4 flex gap-2">
                           <button
                             onClick={() => void resolveRequest(request.id, "accept")}
-                            className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                            className={`rounded-full px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 ${
+                              compact ? "bg-amber-300 text-slate-950" : "bg-foreground text-background"
+                            }`}
                           >
                             Aceptar
                           </button>
                           <button
                             onClick={() => void resolveRequest(request.id, "decline")}
-                            className="rounded-full border border-border/80 bg-background/80 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary/60"
+                            className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                              compact
+                                ? "border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                                : "border-border/80 bg-background/80 text-foreground hover:bg-secondary/60"
+                            }`}
                           >
                             Rechazar
                           </button>
@@ -446,19 +473,19 @@ export default function ChessFriendsPanel() {
               </div>
 
               <div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.2em] ${compact ? "text-slate-400" : "text-muted-foreground"}`}>
                   Enviadas
                 </p>
                 <div className="space-y-3">
                   {outgoingRequests.length === 0 ? (
-                    <div className="rounded-3xl border border-dashed border-border/70 bg-background/45 px-4 py-5 text-sm text-muted-foreground">
+                    <div className={`rounded-3xl px-4 py-5 text-sm ${mutedCardClasses(compact)}`}>
                       No hay solicitudes salientes pendientes.
                     </div>
                   ) : (
                     outgoingRequests.map((request) => (
-                      <div key={request.id} className="rounded-3xl border border-border/70 bg-background/70 p-4">
-                        <p className="font-medium text-foreground">{request.name}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                      <div key={request.id} className={`rounded-3xl p-4 ${cardClasses(compact)}`}>
+                        <p className={`font-medium ${compact ? "text-white" : "text-foreground"}`}>{request.name}</p>
+                        <p className={`mt-1 text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                           ELO {request.elo} · enviada {formatRelativeDate(request.createdAt)}
                         </p>
                       </div>
@@ -471,16 +498,16 @@ export default function ChessFriendsPanel() {
         </div>
 
         <div className="surface-panel overflow-hidden">
-          <div className="grid min-h-[760px] gap-0 lg:grid-cols-[0.42fr_0.58fr]">
-            <div className="border-b border-border/60 lg:border-b-0 lg:border-r">
-              <div className="border-b border-border/60 px-6 py-5">
+          <div className={`grid gap-0 lg:grid-cols-[0.42fr_0.58fr] ${compact ? "min-h-[720px]" : "min-h-[760px]"}`}>
+            <div className={compact ? "border-b border-white/10 lg:border-b-0 lg:border-r lg:border-white/10" : "border-b border-border/60 lg:border-b-0 lg:border-r"}>
+              <div className={`px-6 py-5 ${compact ? "border-b border-white/10" : "border-b border-border/60"}`}>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-background">
-                    <Users size={18} className="text-primary" />
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${compact ? "border border-white/10 bg-white/[0.04]" : "border border-border/70 bg-background"}`}>
+                    <Users size={18} className={compact ? "text-amber-100" : "text-primary"} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Amigos</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className={`text-sm font-semibold ${compact ? "text-white" : "text-foreground"}`}>Amigos</p>
+                    <p className={`text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                       Selecciona una conversación y reta desde aquí.
                     </p>
                   </div>
@@ -489,55 +516,60 @@ export default function ChessFriendsPanel() {
 
               <div className="space-y-3 p-4">
                 {loadingPanel ? (
-                  <div className="flex items-center gap-2 rounded-3xl border border-border/70 bg-background/70 px-4 py-4 text-sm text-muted-foreground">
+                  <div className={`flex items-center gap-2 rounded-3xl px-4 py-4 text-sm ${cardClasses(compact)} ${compact ? "text-slate-400" : "text-muted-foreground"}`}>
                     <Loader2 size={16} className="animate-spin" />
                     Cargando red social...
                   </div>
                 ) : friends.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-border/70 bg-background/45 px-4 py-8 text-center text-sm text-muted-foreground">
+                  <div className={`rounded-3xl px-4 py-8 text-center text-sm ${mutedCardClasses(compact)}`}>
                     Todavía no tienes amigos añadidos en Chess Club.
                   </div>
                 ) : (
                   friends.map((friend) => (
-                    <motion.button
+                    <button
                       key={friend.id}
                       onClick={() => setSelectedFriendshipId(friend.id)}
-                      whileHover={{ y: -2 }}
                       className={`w-full rounded-3xl border p-4 text-left transition-colors ${
                         selectedFriendshipId === friend.id
-                          ? "border-primary/40 bg-primary/10"
-                          : "border-border/70 bg-background/70 hover:bg-background/90"
+                          ? compact
+                            ? "border-amber-300/30 bg-amber-300/10"
+                            : "border-primary/40 bg-primary/10"
+                          : compact
+                            ? "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                            : "border-border/70 bg-background/70 hover:bg-background/90"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="font-medium text-foreground">{friend.friendName}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">ELO {friend.friendElo}</p>
+                          <p className={`font-medium ${compact ? "text-white" : "text-foreground"}`}>{friend.friendName}</p>
+                          <p className={`mt-1 text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>ELO {friend.friendElo}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground">{formatRelativeDate(friend.lastMessageAt)}</span>
+                        <span className={`text-xs ${compact ? "text-slate-500" : "text-muted-foreground"}`}>
+                          {formatRelativeDate(friend.lastMessageAt)}
+                        </span>
                       </div>
-                      <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
+                      <p className={`mt-3 line-clamp-2 text-sm ${compact ? "text-slate-400" : "text-muted-foreground"}`}>
                         {friend.lastMessagePreview ?? "Sin mensajes todavía. Puedes abrir la conversación y empezar."}
                       </p>
-                    </motion.button>
+                    </button>
                   ))
                 )}
               </div>
             </div>
 
             <div className="flex min-h-[560px] flex-col">
-              <div className="border-b border-border/60 px-6 py-5">
+              <div className={`px-6 py-5 ${compact ? "border-b border-white/10" : "border-b border-border/60"}`}>
                 {selectedFriend ? (
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{selectedFriend.friendName}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className={`text-sm font-semibold ${compact ? "text-white" : "text-foreground"}`}>{selectedFriend.friendName}</p>
+                        <p className={`mt-1 text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                           ELO {selectedFriend.friendElo} · amistad activa
                         </p>
                       </div>
-                      <div className="rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs text-muted-foreground">
-                        Preparado para más `modeKey`
+                      <div className={`rounded-full border px-3 py-1 text-xs ${compact ? "border-white/10 bg-white/[0.04] text-slate-300" : "border-border/70 bg-background/80 text-muted-foreground"}`}>
+                        Modos listos
                       </div>
                     </div>
 
@@ -549,7 +581,9 @@ export default function ChessFriendsPanel() {
                             modeKey: "chess_rapid_10m",
                           })
                         }
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-foreground px-4 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                        className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-opacity hover:opacity-90 ${
+                          compact ? "bg-amber-300 text-slate-950" : "bg-foreground text-background"
+                        }`}
                       >
                         <Clock3 size={16} />
                         Reto 10 min
@@ -561,7 +595,11 @@ export default function ChessFriendsPanel() {
                             modeKey: "chess_correspondence_3d",
                           })
                         }
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border/80 bg-background/80 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary/60"
+                        className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
+                          compact
+                            ? "border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                            : "border-border/80 bg-background/80 text-foreground hover:bg-secondary/60"
+                        }`}
                       >
                         <Sparkles size={16} />
                         Correspondencia 3 días
@@ -570,8 +608,8 @@ export default function ChessFriendsPanel() {
                   </div>
                 ) : (
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Mensajería privada</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className={`text-sm font-semibold ${compact ? "text-white" : "text-foreground"}`}>Mensajería privada</p>
+                    <p className={`mt-1 text-sm ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
                       Selecciona un amigo para abrir la conversación y enviar retos.
                     </p>
                   </div>
@@ -580,36 +618,38 @@ export default function ChessFriendsPanel() {
 
               <div className="flex-1 space-y-3 overflow-y-auto p-5">
                 {!selectedFriend ? (
-                  <div className="rounded-3xl border border-dashed border-border/70 bg-background/45 px-4 py-8 text-center text-sm text-muted-foreground">
+                  <div className={`rounded-3xl px-4 py-8 text-center text-sm ${mutedCardClasses(compact)}`}>
                     Elige un amigo a la izquierda para abrir el chat privado.
                   </div>
                 ) : loadingMessages ? (
-                  <div className="flex items-center gap-2 rounded-3xl border border-border/70 bg-background/70 px-4 py-4 text-sm text-muted-foreground">
+                  <div className={`flex items-center gap-2 rounded-3xl px-4 py-4 text-sm ${cardClasses(compact)} ${compact ? "text-slate-400" : "text-muted-foreground"}`}>
                     <Loader2 size={16} className="animate-spin" />
                     Cargando conversación...
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-border/70 bg-background/45 px-4 py-8 text-center text-sm text-muted-foreground">
+                  <div className={`rounded-3xl px-4 py-8 text-center text-sm ${mutedCardClasses(compact)}`}>
                     Todavía no habéis hablado. Puedes mandar el primer mensaje o lanzar un reto directo.
                   </div>
                 ) : (
                   messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex flex-col ${
-                        message.senderId === usuario.id ? "items-end" : "items-start"
-                      }`}
+                      className={`flex flex-col ${message.senderId === usuario.id ? "items-end" : "items-start"}`}
                     >
                       <div
                         className={`max-w-[82%] rounded-3xl px-4 py-3 text-sm ${
                           message.senderId === usuario.id
-                            ? "rounded-br-md bg-foreground text-background"
-                            : "rounded-bl-md bg-background/80 text-foreground"
+                            ? compact
+                              ? "rounded-br-md bg-amber-300 text-slate-950"
+                              : "rounded-br-md bg-foreground text-background"
+                            : compact
+                              ? "rounded-bl-md bg-white/[0.05] text-white"
+                              : "rounded-bl-md bg-background/80 text-foreground"
                         }`}
                       >
                         {message.content}
                       </div>
-                      <span className="mt-1 px-1 text-[11px] text-muted-foreground">
+                      <span className={`mt-1 px-1 text-[11px] ${compact ? "text-slate-500" : "text-muted-foreground"}`}>
                         {formatRelativeDate(message.createdAt)}
                       </span>
                     </div>
@@ -618,7 +658,7 @@ export default function ChessFriendsPanel() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="border-t border-border/60 p-4">
+              <div className={`p-4 ${compact ? "border-t border-white/10" : "border-t border-border/60"}`}>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -632,12 +672,18 @@ export default function ChessFriendsPanel() {
                     }}
                     disabled={!selectedFriend}
                     placeholder={selectedFriend ? "Escribe a tu amigo..." : "Selecciona una conversación"}
-                    className="flex-1 rounded-2xl border border-border/70 bg-background/75 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-60"
+                    className={`flex-1 rounded-2xl px-4 py-3 text-sm outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                      compact
+                        ? "border border-white/10 bg-white/[0.04] text-white placeholder:text-slate-500 focus:border-amber-200/40"
+                        : "border border-border/70 bg-background/75 text-foreground focus:border-primary/60"
+                    }`}
                   />
                   <button
                     onClick={() => void sendDirectMessage()}
                     disabled={!selectedFriend || !messageDraft.trim() || sendingMessage}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-foreground px-4 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+                      compact ? "bg-amber-300 text-slate-950" : "bg-foreground text-background"
+                    }`}
                   >
                     {sendingMessage ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                     Enviar
@@ -645,22 +691,22 @@ export default function ChessFriendsPanel() {
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <div className={`rounded-3xl p-4 ${cardClasses(compact)}`}>
+                    <div className={`flex items-center gap-2 text-sm font-medium ${compact ? "text-white" : "text-foreground"}`}>
                       <Swords size={16} />
                       Listo para retar
                     </div>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                      Desde aquí ya puedes lanzar desafíos de ajedrez y la estructura está preparada para más modos.
+                    <p className={`mt-2 text-sm leading-7 ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
+                      Invita en el momento adecuado sin salir del chat y mantén cada conversación vinculada al rival.
                     </p>
                   </div>
-                  <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <div className={`rounded-3xl p-4 ${cardClasses(compact)}`}>
+                    <div className={`flex items-center gap-2 text-sm font-medium ${compact ? "text-white" : "text-foreground"}`}>
                       <Mail size={16} />
                       Canal privado
                     </div>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                      Los mensajes quedan persistidos para que puedas seguir la conversación entre sesiones.
+                    <p className={`mt-2 text-sm leading-7 ${compact ? "text-slate-300" : "text-muted-foreground"}`}>
+                      Los mensajes quedan persistidos para que puedas retomar la conversación entre sesiones.
                     </p>
                   </div>
                 </div>

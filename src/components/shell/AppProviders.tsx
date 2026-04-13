@@ -7,21 +7,35 @@ import { ProveedorContextoGlobal } from "@/context/ContextoGlobal";
 import { ProveedorContextoChess } from "@/context/ContextoChess";
 import { ProveedorContextoRealtime } from "@/context/ContextoRealtime";
 
-function shouldUseInteractiveAuthProviders(pathname: string) {
+function shouldUseGlobalContext(pathname: string) {
+  return pathname === "/" || pathname.startsWith("/easter-eggs");
+}
+
+function shouldUseChessSessionProvider(pathname: string) {
   return (
     pathname === "/chess" ||
-    pathname.startsWith("/chess/") ||
+    pathname === "/chess/invitations" ||
+    pathname.startsWith("/chess/play/") ||
     pathname === "/nexus" ||
     pathname.startsWith("/nexus/")
   );
 }
 
-function ProvidersWithOptionalRealtime({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const shouldUseChessProviders = shouldUseInteractiveAuthProviders(pathname);
+function shouldUseRealtimeProvider(pathname: string) {
+  return pathname === "/chess" || pathname === "/chess/invitations" || pathname === "/nexus" || pathname.startsWith("/nexus/");
+}
 
-  if (!shouldUseChessProviders) {
+function ProvidersWithOptionalInteractiveContexts({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const shouldUseChessProvider = shouldUseChessSessionProvider(pathname);
+  const shouldUseRealtime = shouldUseRealtimeProvider(pathname);
+
+  if (!shouldUseChessProvider) {
     return <>{children}</>;
+  }
+
+  if (!shouldUseRealtime) {
+    return <ProveedorContextoChess>{children}</ProveedorContextoChess>;
   }
 
   return (
@@ -31,9 +45,19 @@ function ProvidersWithOptionalRealtime({ children }: { children: ReactNode }) {
   );
 }
 
+function ProvidersWithOptionalGlobalContext({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
+  if (!shouldUseGlobalContext(pathname)) {
+    return <>{children}</>;
+  }
+
+  return <ProveedorContextoGlobal>{children}</ProveedorContextoGlobal>;
+}
+
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <ProveedorContextoGlobal>
+    <ProvidersWithOptionalGlobalContext>
       <ThemeProvider
         attribute="class"
         defaultTheme="light"
@@ -41,8 +65,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
         disableTransitionOnChange
         themes={["light", "dark", "forest", "sepia"]}
       >
-        <ProvidersWithOptionalRealtime>{children}</ProvidersWithOptionalRealtime>
+        <ProvidersWithOptionalInteractiveContexts>{children}</ProvidersWithOptionalInteractiveContexts>
       </ThemeProvider>
-    </ProveedorContextoGlobal>
+    </ProvidersWithOptionalGlobalContext>
   );
 }

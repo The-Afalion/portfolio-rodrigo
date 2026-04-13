@@ -1,11 +1,6 @@
-import dynamic from "next/dynamic";
 import { Gauge, MoveRight } from "lucide-react";
 import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
-
-const Game = dynamic(() => import("./Game"), {
-  ssr: false,
-  loading: () => <div className="interactive-frame flex min-h-[520px] items-center justify-center text-sm text-muted-foreground">Cargando simulación de vuelo...</div>,
-});
+import GameLauncher from "./GameLauncher";
 
 export default function ChronoDasherPage() {
   return (
@@ -18,7 +13,7 @@ export default function ChronoDasherPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="interactive-frame min-h-[640px]">
-          <Game />
+          <GameLauncher />
         </div>
         <div className="space-y-4">
           <SectionInset>

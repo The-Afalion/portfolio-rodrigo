@@ -1,29 +1,24 @@
 "use client";
 
-import { Canvas, useFrame, extend } from '@react-three/fiber';
-import { Stars, Effects } from '@react-three/drei';
-import { useMemo, useRef, useState, useEffect } from 'react';
-import * as THREE from 'three';
-import { UnrealBloomPass } from 'three-stdlib';
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Stars } from "@react-three/drei";
+import { useMemo, useRef, useState, useEffect } from "react";
+import * as THREE from "three";
 
-// Extend R3F para que reconozca el efecto
-extend({ UnrealBloomPass });
-
-// --- Componente de la Nave ---
 function PlayerShip() {
   const ref = useRef<THREE.Group>(null);
   const [targetX, setTargetX] = useState(0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') setTargetX(x => Math.max(x - 5, -10));
-      if (e.key === 'ArrowRight') setTargetX(x => Math.min(x + 5, 10));
+      if (e.key === "ArrowLeft") setTargetX((x) => Math.max(x - 5, -10));
+      if (e.key === "ArrowRight") setTargetX((x) => Math.min(x + 5, 10));
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, { passive: true });
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (ref.current) {
       ref.current.position.x += (targetX - ref.current.position.x) * 0.1;
     }
@@ -39,7 +34,6 @@ function PlayerShip() {
   );
 }
 
-// --- Componente del Túnel ---
 function Tunnel() {
   const count = 50;
   const rings = useMemo(() => Array.from({ length: count }, (_, i) => i), []);
@@ -56,7 +50,7 @@ function Tunnel() {
 
   return (
     <group ref={groupRef}>
-      {rings.map(i => (
+      {rings.map((i) => (
         <mesh key={i} position={[0, 0, -i * 20]}>
           <ringGeometry args={[15, 15.1, 32]} />
           <meshBasicMaterial color="#f97316" side={THREE.DoubleSide} wireframe />
@@ -66,41 +60,35 @@ function Tunnel() {
   );
 }
 
-// --- Lógica Principal del Juego ---
 export default function Game() {
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'gameOver'>('idle');
+  const [gameState, setGameState] = useState<"idle" | "playing" | "gameOver">("idle");
 
   useEffect(() => {
     const handleSpace = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        setGameState(current => (current === 'idle' || current === 'gameOver' ? 'playing' : current));
-        const statusEl = document.getElementById('game-status');
-        if (statusEl) statusEl.style.display = 'none';
+      if (e.code === "Space") {
+        setGameState((current) => (current === "idle" || current === "gameOver" ? "playing" : current));
+        const statusEl = document.getElementById("game-status");
+        if (statusEl) statusEl.style.display = "none";
       }
     };
-    window.addEventListener('keydown', handleSpace);
-    return () => window.removeEventListener('keydown', handleSpace);
+    window.addEventListener("keydown", handleSpace, { passive: true });
+    return () => window.removeEventListener("keydown", handleSpace);
   }, []);
 
   return (
-    <Canvas camera={{ position: [0, 0, 10], fov: 75 }}>
-      <color attach="background" args={['#000000']} />
+    <Canvas camera={{ position: [0, 0, 10], fov: 75 }} dpr={[1, 1.5]}>
+      <color attach="background" args={["#000000"]} />
       <ambientLight intensity={0.5} />
-      <pointLight position={[0, 0, 0]} color="#f97316" intensity={5} />
+      <pointLight position={[0, 0, 0]} color="#f97316" intensity={3.2} />
 
-      <Stars radius={200} depth={50} count={5000} factor={10} saturation={0} fade speed={2} />
+      <Stars radius={180} depth={40} count={1800} factor={6} saturation={0} fade speed={1.5} />
 
-      {gameState === 'playing' && (
+      {gameState === "playing" ? (
         <>
           <PlayerShip />
           <Tunnel />
         </>
-      )}
-
-      <Effects>
-        {/* @ts-expect-error extending intrinsic elements in R3F */}
-        <unrealBloomPass args={[undefined, 1.5, 1, 0]} />
-      </Effects>
+      ) : null}
     </Canvas>
   );
 }

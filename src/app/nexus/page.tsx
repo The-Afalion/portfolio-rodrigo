@@ -7,7 +7,7 @@ import { createClient } from '@/utils/supabase/server';
 // Cargamos el cliente del Nexus de forma dinámica
 const NexusClient = dynamicImport(() => import('./NexusClient'), {
   ssr: false,
-  loading: () => <div className="min-h-screen flex items-center justify-center bg-[#f4ead5]"><p className="text-[#8c4030] font-serif uppercase tracking-[0.2em] font-bold animate-pulse">Conectando al Telegrama Global...</p></div>,
+  loading: () => <div className="min-h-screen flex items-center justify-center bg-black"><p className="text-white animate-pulse">Conectando al Nexus...</p></div>,
 });
 
 export const dynamic = 'force-dynamic';

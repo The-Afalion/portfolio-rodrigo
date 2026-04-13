@@ -1,113 +1,153 @@
 "use client";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Flame, Lock, LogOut, ShieldCheck, Trophy, Vote } from 'lucide-react';
-import Link from 'next/link';
-import { useChess } from '@/context/ContextoChess';
-import { BOTS } from '@/datos/bots';
-import { buildForgotPasswordPath, buildLoginPath, buildSignupPath } from '@/lib/auth';
-import ChessLobby from './ChessLobby';
-import ChessFriendsPanel from './ChessFriendsPanel';
+import dynamic from "next/dynamic";
+import {
+  ArrowRight,
+  Bot,
+  Lock,
+  LogOut,
+  ShieldCheck,
+  Sparkles,
+  Swords,
+  Trophy,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useChess } from "@/context/ContextoChess";
+import { BOTS } from "@/datos/bots";
+import { buildLoginPath, buildSignupPath } from "@/lib/auth";
+
+const ChessFriendsPanel = dynamic(() => import("./ChessFriendsPanel"), {
+  ssr: false,
+  loading: () => <PanelPlaceholder title="Cargando zona social" description="Preparando amigos, mensajes y retos directos." />,
+});
+
+const ChessLobby = dynamic(() => import("./ChessLobby"), {
+  ssr: false,
+  loading: () => <PanelPlaceholder title="Conectando lobby" description="Sincronizando rivales online e invitaciones activas." />,
+});
+
+function PanelPlaceholder({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-[1.6rem] border border-white/10 bg-[#0b111b]/90 p-6">
+      <div className="h-2.5 w-28 rounded-full bg-white/10" />
+      <div className="mt-5 h-7 w-56 rounded-full bg-white/10" />
+      <div className="mt-4 h-4 w-full max-w-xl rounded-full bg-white/10" />
+      <div className="mt-2 h-4 w-full max-w-lg rounded-full bg-white/5" />
+      <p className="mt-6 text-sm text-slate-400">{description}</p>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="h-24 rounded-[1.25rem] border border-white/10 bg-white/[0.03]" />
+        <div className="h-24 rounded-[1.25rem] border border-white/10 bg-white/[0.03]" />
+      </div>
+      <p className="mt-4 text-sm font-medium text-white">{title}</p>
+    </div>
+  );
+}
 
 function LoadingScreen() {
   return (
-    <div className="flex h-screen pt-16 items-center justify-center overflow-hidden px-4 bg-[#f4ead5] font-serif">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#fcfaf4] border border-[#d6c4a5] shadow-[5px_8px_15px_rgba(100,70,40,0.15)] w-full max-w-lg p-10 text-center rounded-sm"
-      >
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-[#d6c4a5] bg-[#f4ead5] text-5xl text-[#3e3024] shadow-inner">
-          ♞
+    <div className="min-h-screen bg-[#070b12] px-4 pb-10 pt-24 text-white">
+      <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center justify-center">
+        <div className="surface-panel w-full max-w-xl overflow-hidden border border-white/10 bg-white/[0.03] p-10 text-center shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-amber-200/20 bg-amber-300/10 text-4xl text-amber-100">
+            ♞
+          </div>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.32em] text-amber-200/70">
+            Chess Hub
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold text-white">Preparando la sala</h1>
+          <p className="mt-3 text-sm leading-7 text-slate-300">
+            Cargando tu perfil, el lobby en tiempo real y la zona de entrenamiento.
+          </p>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-[#3e3024]">Preparando la mesa</h1>
-        <p className="mt-4 text-sm leading-7 text-[#8a765f] italic">
-          Buscando piezas talladas y acomodando el tablero...
-        </p>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 function AuthGate() {
   const { error } = useChess();
-  const loginHref = buildLoginPath('chess', '/chess');
-  const signupHref = buildSignupPath('chess', '/chess');
+  const loginHref = buildLoginPath("chess", "/chess");
+  const signupHref = buildSignupPath("chess", "/chess");
 
   return (
-    <div className="flex h-screen pt-16 items-center justify-center overflow-hidden px-4 bg-[#f4ead5] font-serif">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-[#fcfaf4] border border-[#d6c4a5] shadow-[5px_8px_15px_rgba(100,70,40,0.15)] relative z-10 w-full max-w-3xl overflow-hidden p-8 md:p-10 rounded-sm transform rotate-[0.5deg]"
-      >
-        <div className="absolute inset-x-0 top-0 h-2 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-20" />
-        <div className="relative grid gap-8 md:grid-cols-[1.15fr_0.85fr] md:items-center">
-          <div>
-            <div className="mb-8 flex justify-center md:justify-start">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#d6c4a5] bg-[#fdfbf7] text-5xl text-[#3e3024] shadow-sm">
-                ♟
-              </div>
-            </div>
-
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[#8a765f] font-mono">Salón Magistral</p>
-            <h1 className="text-center text-3xl font-bold tracking-tight md:text-left md:text-4xl text-[#3e3024]">
-              Accede al Club
+    <div className="min-h-screen bg-[#070b12] px-4 pb-14 pt-24 text-white">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-6 overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.35)] backdrop-blur xl:grid-cols-[1.15fr_0.85fr] xl:p-8">
+          <div className="rounded-[1.75rem] border border-white/10 bg-[#0b111b]/90 p-7 sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-amber-200/70">
+              Chess Hub
+            </p>
+            <h1 className="mt-5 max-w-xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              Entra al club y empieza a jugar sin perderte.
             </h1>
-            <p className="mt-4 text-center text-sm leading-7 text-[#5c4033] md:text-left italic">
-              Traiga sus credenciales postales. Usamos la misma identidad en todo el establecimiento.
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+              Un acceso único para jugar en vivo, organizar amistades, responder retos y entrenar contra bots con
+              progresión.
             </p>
 
-            {error && (
-              <div className="mt-4 rounded-sm border border-[#8c4030]/50 bg-[#e8705c]/10 p-3 text-sm text-[#8c4030]">
+            {error ? (
+              <div className="mt-6 rounded-[1.25rem] border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
                 {error}
               </div>
-            )}
+            ) : null}
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row font-serif">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={loginHref}
-                className="flex items-center justify-center gap-2 rounded-sm bg-[#8c4030] px-6 py-3 text-sm font-bold text-[#fdfbf7] hover:bg-[#a64020] transition-colors uppercase tracking-widest shadow-sm"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-300 px-6 py-3 text-sm font-semibold text-slate-950 transition-transform hover:-translate-y-0.5"
               >
-                <span>Sellar Pase</span>
+                Iniciar sesión
+                <ArrowRight size={16} />
               </Link>
               <Link
                 href={signupHref}
-                className="rounded-sm border border-[#d6c4a5] bg-[#f4ead5] px-6 py-3 text-center text-sm font-bold text-[#453628] hover:bg-[#e8dcc4] transition-colors uppercase tracking-widest shadow-sm"
+                className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
               >
-                Solicitar Ingreso
+                Crear cuenta
               </Link>
             </div>
           </div>
 
-          <div className="bg-[#f5ebd3] relative rounded-sm p-6 md:p-7 border border-[#d6c4a5] shadow-inner transform rotate-[-1deg]">
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d6c4a5] bg-[#fdfbf7]">
-                <ShieldCheck size={20} className="text-[#6a8c54]" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-[#3e3024]">Membresía Única</p>
-                <p className="text-[10px] text-[#8a765f] uppercase tracking-widest font-mono mt-1">Ecosistema Global</p>
+          <div className="grid gap-4">
+            <div className="rounded-[1.75rem] border border-amber-200/10 bg-[radial-gradient(circle_at_top_left,rgba(245,190,92,0.16),transparent_55%),#0b111b] p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-200/15 bg-amber-300/10 text-amber-100">
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Acceso unificado</p>
+                  <p className="text-sm text-slate-300">Mismo perfil para social, matchmaking y progreso.</p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-4 text-sm leading-7 text-[#5c4033] italic">
-              <p>Mismo libro de registros para conservar su rango y trofeos en madera.</p>
-            </div>
-
-            <div className="mt-6 space-y-3 rounded-sm border border-[#d6c4a5] bg-[#fdfbf7] p-4 text-xs font-mono uppercase tracking-widest text-[#8a765f]">
-              <div className="flex items-center justify-between border-b border-dashed border-[#e3d5b8] pb-2">
-                <span>Acceso</span>
-                <span className="font-bold text-[#3e3024]">Activo</span>
+            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">En vivo</p>
+                <p className="mt-3 text-lg font-semibold text-white">Lobby global</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">Reta a jugadores conectados en tiempo real.</p>
               </div>
-              <div className="flex items-center justify-between">
-                <span>Nivel</span>
-                <span className="font-bold text-[#3e3024]">Sincronizado</span>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Privado</p>
+                <p className="mt-3 text-lg font-semibold text-white">Amigos y chat</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">Mantén conversaciones y lanza retos directos.</p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Práctica</p>
+                <p className="mt-3 text-lg font-semibold text-white">Escalera de bots</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">Progresa de rivales básicos a maestros.</p>
               </div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -115,156 +155,295 @@ function AuthGate() {
 function Dashboard() {
   const { usuario, cerrarSesion } = useChess();
 
-  const isBotUnlocked = (index: number) => {
-    if (index === 0) return true;
-    const previousBotId = BOTS[index - 1].id;
-    return usuario?.botsDefeated.includes(previousBotId);
-  };
+  const defeatedBots = usuario?.botsDefeated ?? [];
+  const unlockedBotCount = BOTS.reduce((count, bot, index) => {
+    if (index === 0) {
+      return count + 1;
+    }
+
+    return defeatedBots.includes(BOTS[index - 1].id) ? count + 1 : count;
+  }, 0);
+
+  const profileStats = [
+    { label: "ELO actual", value: usuario?.elo ?? 0, tone: "text-white" },
+    { label: "Bots vencidos", value: defeatedBots.length, tone: "text-amber-200" },
+    { label: "Bots desbloqueados", value: `${unlockedBotCount}/${BOTS.length}`, tone: "text-sky-200" },
+  ];
+
+  const quickLinks = [
+    {
+      href: "/chess/community",
+      icon: Trophy,
+      eyebrow: "Modo especial",
+      title: "Ajedrez comunal",
+      description: "Participa en la partida colectiva diaria y decide el próximo movimiento con tu voto.",
+    },
+    {
+      href: "/chess/invitations",
+      icon: Users,
+      eyebrow: "Seguimiento",
+      title: "Bandeja de invitaciones",
+      description: "Revisa invitaciones pendientes y entra rápido en tus partidas activas.",
+    },
+  ];
 
   return (
-    <div className="min-h-screen pt-16 flex flex-col bg-[#f4ead5] font-serif selection:bg-[#cc6640]/30 selection:text-[#3e3024]">
-      <header className="shrink-0 mx-auto w-full max-w-7xl px-4 mt-4">
-        <div className="flex h-14 items-center justify-between border-b-2 border-dashed border-[#d6c4a5] pb-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d6c4a5] bg-[#fcfaf4] text-xl text-[#3e3024] shadow-[1px_2px_4px_rgba(0,0,0,0.1)]">
-              ♞
+    <div className="min-h-screen bg-[#070b12] text-white">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute left-[-12%] top-[-8%] h-[26rem] w-[26rem] rounded-full bg-amber-300/10 blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-8%] h-[30rem] w-[30rem] rounded-full bg-sky-400/10 blur-3xl" />
+      </div>
+
+      <div className="relative px-4 pb-16 pt-24">
+        <div className="mx-auto max-w-7xl">
+          <header className="mb-6 flex flex-col gap-4 rounded-[1.75rem] border border-white/10 bg-white/[0.03] px-5 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-amber-200/20 bg-amber-300/10 text-amber-100">
+                ♞
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-amber-200/70">Chess Hub</p>
+                <h1 className="mt-1 text-2xl font-semibold text-white">Club de Maestros</h1>
+              </div>
             </div>
-            <span className="font-serif text-2xl font-bold tracking-tight text-[#3e3024]">Club de Maestros</span>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden flex-col items-end md:flex">
-              <span className="text-sm font-bold text-[#453628] leading-tight">{usuario?.username}</span>
-              <span className="text-[10px] font-mono tracking-widest text-[#a64020] uppercase border px-1 border-[#d6c4a5] mt-1 bg-[#fcfaf4] py-0.5 rounded-sm">Rango: {usuario?.elo} Pts</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5">
+                <p className="text-sm font-semibold text-white">{usuario?.username}</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Perfil activo</p>
+              </div>
+              <button
+                onClick={cerrarSesion}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/[0.09]"
+                title="Cerrar sesión"
+              >
+                <LogOut size={16} />
+                Salir
+              </button>
             </div>
-            <button
-              onClick={cerrarSesion}
-              className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#8c4030] text-[#fdfbf7] hover:bg-[#a64020] transition-colors shadow-sm"
-              title="Cerrar Sesión"
-            >
-              <LogOut size={14} />
-            </button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* SINGLE PANE GRID */}
-      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 flex flex-col lg:flex-row gap-4">
-        
-        {/* PANEL IZQUIERDO: Comunidad y Amigos */}
-        <div className="lg:w-[25%] xl:w-[20%] min-w-[250px] flex flex-col gap-4">
-          
-          <Link
-            href="/chess/community"
-            className="shrink-0 bg-[#fdfbf7] border border-[#e3d5b8] p-5 shadow-[2px_4px_10px_rgba(120,90,60,0.1)] hover:-translate-y-0.5 hover:shadow-md transition-all relative group transform rotate-[-0.5deg]"
-          >
-            <div className="absolute top-2 left-6 w-4 h-4 rounded-full bg-[#cc6640] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#a64020] z-20"/>
-            <p className="text-[10px] uppercase font-mono tracking-widest text-[#cc6640] font-bold mt-2">Partida Global Diaria</p>
-            <div className="flex items-center gap-3 mt-2">
-              <Trophy size={20} className="text-[#a68659]" />
-              <h3 className="text-xl font-bold text-[#3e3024] leading-none">Ajedrez Comunal</h3>
-            </div>
-            <p className="text-[12px] text-[#8a765f] leading-snug mt-2 italic">1 Voto diario. Pizarras ocultas. El movimiento más votado será ejecutado.</p>
-          </Link>
+          <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-amber-200/70">Panel principal</p>
+              <h2 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                Todo lo importante del ajedrez, ordenado para jugar en segundos.
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                Elige si quieres retar a alguien online, coordinar partidas con amigos o subir la dificultad contra
+                bots, sin perder el contexto de tu progreso.
+              </p>
 
-          <div className="flex-1 bg-[#fdfbf7] border border-[#e3d5b8] rounded-sm shadow-[2px_4px_10px_rgba(120,90,60,0.1)] flex flex-col relative transform rotate-[0.5deg]">
-             <div className="absolute top-2 right-4 w-4 h-4 rounded-full bg-[#668c99] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-[#4d6c7a] z-20"/>
-             <h3 className="text-sm font-bold uppercase tracking-widest text-[#3c5a6b] p-4 border-b border-[#e3d5b8] border-dashed mt-2 mx-4">Tribunas y Gradas</h3>
-             <div className="w-full p-2">
-               <ChessFriendsPanel />
-             </div>
-          </div>
-        </div>
-
-        {/* PANEL DERECHO/CENTRO: Bots y Lobby */}
-        <div className="flex-1 bg-[#fcfaf4] p-4 lg:p-6 border border-[#e3d5b8] rounded-sm shadow-[5px_8px_15px_rgba(100,70,40,0.15)] flex flex-col">
-          
-          <div className="shrink-0 flex flex-col md:flex-row gap-4 w-full h-auto">
-             <div className="w-full md:w-1/2 flex flex-col">
-               <div className="flex items-center gap-2 mb-2 border-b border-[#d6c4a5] border-dashed pb-1">
-                 <Flame size={16} className="text-[#ccaa40]"/>
-                 <h3 className="text-sm uppercase tracking-widest font-bold text-[#5c4033]">Lobby Activo</h3>
-               </div>
-               <div className="w-full">
-                 <ChessLobby />
-               </div>
-             </div>
-             <div className="w-1/2 flex items-center justify-center p-4 border-l border-[#d6c4a5] border-dashed">
-                <p className="text-sm italic text-[#8a765f] text-center px-4">
-                  &quot;Un tablero no es más que madera hasta que dos mentes deciden enfrentarse sobre él.&quot; <br/><br/>
-                  Reto a sus pares en el Lobby, o descienda a las mazmorras para practicar con la Inteligencia Mecánica.
-                </p>
-             </div>
-          </div>
-          
-          <div className="mt-6 pt-4 border-t-4 border-double border-[#d6c4a5] shrink-0">
-             <h3 className="text-xl font-bold flex items-center gap-2 text-[#3e3024]">
-               <ShieldCheck size={20} className="text-[#6a8c54]"/> Autómatas Desafiantes
-             </h3>
-             <p className="text-xs font-mono uppercase text-[#8a765f] tracking-widest mt-1">Sala de Entrenamiento Privada</p>
-          </div>
-
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-4 pb-2 px-1">
-            {BOTS.map((bot, index) => {
-              const unlocked = isBotUnlocked(index);
-              const vencido = usuario?.botsDefeated.includes(bot.id);
-
-              return (
-                <div
-                  key={bot.id}
-                  className={`w-full bg-white border border-[#d6c4a5] rounded-sm shadow-[2px_4px_8px_rgba(100,70,40,0.1)] flex flex-col relative overflow-hidden transition-transform ${unlocked ? 'hover:-translate-y-1' : 'opacity-70 grayscale'}`}
-                >
-                  {!unlocked && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#f4ead5]/90 backdrop-blur-[1px]">
-                      <Lock size={32} className="mb-2 text-[#8c4030]" />
-                      <span className="text-[10px] font-bold font-mono tracking-widest uppercase text-[#8c4030]">Bloqueado</span>
-                    </div>
-                  )}
-
-                  {vencido && (
-                    <div className="absolute right-2 top-2 z-10 flex items-center gap-1 bg-[#d8e0c3] border border-[#6a8c54] px-2 py-0.5 text-[9px] font-mono tracking-widest text-[#2d4023] uppercase shadow-sm">
-                      <Trophy size={10} /> Victorioso
-                    </div>
-                  )}
-
-                  <div className="p-3 flex flex-col items-center text-center flex-1">
-                    <div className={`mt-2 mb-2 flex h-12 w-12 items-center justify-center rounded-full border bg-[#fcfaf4] text-xl shadow-inner ${unlocked ? 'border-[#d6c4a5]' : 'border-[#e3d5b8]'}`}>
-                      {bot.avatar}
-                    </div>
-
-                    <h3 className="text-base leading-tight font-bold text-[#3e3024]">{bot.nombre}</h3>
-                    <div className="mt-1 flex flex-col xl:flex-row items-center justify-center gap-1 xl:gap-2 font-mono text-[9px] uppercase tracking-widest bg-[#f4ead5] px-2 py-1 border border-[#d6c4a5]">
-                      <span className="text-[#8c4030] whitespace-nowrap">{bot.titulo}</span>
-                      <span className="text-[#5c4033] xl:border-l xl:border-[#d6c4a5] xl:pl-2 whitespace-nowrap">{bot.elo} Pts</span>
-                    </div>
-
-                    <p className="mt-2 text-[10px] leading-relaxed italic text-[#8a765f] line-clamp-3 md:line-clamp-2 xl:line-clamp-3">
-                      {bot.descripcion}
-                    </p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                {profileStats.map((stat) => (
+                  <div key={stat.label} className="rounded-[1.5rem] border border-white/10 bg-[#0b111b]/90 p-5">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">{stat.label}</p>
+                    <p className={`mt-3 text-3xl font-semibold ${stat.tone}`}>{stat.value}</p>
                   </div>
+                ))}
+              </div>
+            </div>
 
-                  <div className="mt-auto p-3 bg-[#e8dcc4] border-t border-[#d6c4a5]">
-                    {unlocked ? (
-                      <button
-                        type="button"
-                        onClick={() => window.location.assign(`/chess/play/${bot.id}`)}
-                        className="w-full bg-[#8c4030] py-2 text-[11px] font-bold font-mono tracking-widest uppercase text-[#fdfbf7] hover:bg-[#a64020] transition-colors shadow-sm"
-                      >
-                        Desafiar
-                      </button>
-                    ) : (
-                      <button type="button" disabled className="w-full cursor-not-allowed bg-[#c4ae91] py-2 text-[11px] font-bold font-mono tracking-widest uppercase text-[#8a765f]">
-                        Encadenado
-                      </button>
-                    )}
+            <div className="grid gap-4">
+              {quickLinks.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="group block rounded-[1.75rem] border border-white/10 bg-[#0b111b]/90 p-6 transition-transform hover:-translate-y-1"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
+                          {item.eyebrow}
+                        </p>
+                        <h3 className="mt-4 text-2xl font-semibold text-white">{item.title}</h3>
+                        <p className="mt-3 max-w-md text-sm leading-7 text-slate-300">{item.description}</p>
+                      </div>
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-amber-100 transition-colors group-hover:bg-amber-300/10">
+                        <Icon size={18} />
+                      </div>
+                    </div>
+                    <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-amber-200">
+                      Abrir
+                      <ArrowRight size={16} />
+                    </div>
+                  </Link>
+                );
+              })}
+
+              <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Ruta recomendada</p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-white">
+                      <Users size={16} className="text-sky-200" />
+                      1. Mira quién está online
+                    </div>
+                  </div>
+                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-white">
+                      <Swords size={16} className="text-amber-200" />
+                      2. Lanza un reto directo
+                    </div>
+                  </div>
+                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-white">
+                      <Bot size={16} className="text-emerald-200" />
+                      3. Entrena con bots si no hay rival
+                    </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            </div>
+          </section>
 
+          <section className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] backdrop-blur sm:p-6">
+              <ChessLobby compact />
+            </div>
+
+            <div className="grid gap-6">
+              <div className="rounded-[2rem] border border-amber-200/10 bg-[radial-gradient(circle_at_top_left,rgba(245,190,92,0.18),transparent_58%),#0b111b] p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-200/70">Jugar en comunidad</p>
+                <h3 className="mt-4 text-2xl font-semibold text-white">Una partida cooperativa, un movimiento al día.</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-300">
+                  Vota la jugada del equipo, sigue la evolución del tablero y compite por tomar la decisión más fuerte.
+                </p>
+                <Link
+                  href="/chess/community"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition-transform hover:-translate-y-0.5"
+                >
+                  Entrar al modo comunal
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+
+              <div className="rounded-[2rem] border border-white/10 bg-[#0b111b]/90 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-amber-100">
+                    <Sparkles size={18} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">Entrenamiento inteligente</p>
+                    <p className="text-sm text-slate-300">La progresión de bots te guía de lo básico a la precisión técnica.</p>
+                  </div>
+                </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Primer objetivo</p>
+                    <p className="mt-2 text-sm font-medium text-white">Derrota al primer bot para abrir el siguiente nivel.</p>
+                  </div>
+                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Ideal cuando</p>
+                    <p className="mt-2 text-sm font-medium text-white">Quieres practicar aperturas y cálculo sin esperar rival.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] backdrop-blur sm:p-6">
+            <ChessFriendsPanel compact />
+          </section>
+
+          <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.24)] backdrop-blur">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Bots</p>
+                <h2 className="mt-3 text-3xl font-semibold text-white">Sala de entrenamiento</h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+                  Elige rival según dificultad. Cada victoria desbloquea el siguiente oponente y deja claro cuál es tu
+                  próximo reto.
+                </p>
+              </div>
+              <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300">
+                {defeatedBots.length} de {BOTS.length} superados
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+              {BOTS.map((bot, index) => {
+                const unlocked = index === 0 || defeatedBots.includes(BOTS[index - 1].id);
+                const defeated = defeatedBots.includes(bot.id);
+
+                return (
+                  <article
+                    key={bot.id}
+                    className={`relative overflow-hidden rounded-[1.75rem] border p-5 transition-transform ${
+                      unlocked
+                        ? "border-white/10 bg-[#0b111b]/90 hover:-translate-y-1"
+                        : "border-white/8 bg-white/[0.02] opacity-75"
+                    }`}
+                  >
+                    {!unlocked ? (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-[#070b12]/70 backdrop-blur-[3px]">
+                        <Lock size={22} className="text-amber-200" />
+                        <span className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-100">Bloqueado</span>
+                      </div>
+                    ) : null}
+
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] border border-white/10 bg-white/[0.04] text-3xl">
+                        {bot.avatar}
+                      </div>
+                      {defeated ? (
+                        <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/15 bg-amber-300/10 px-3 py-1 text-xs font-medium text-amber-100">
+                          <Trophy size={14} />
+                          Superado
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-2xl font-semibold text-white">{bot.nombre}</h3>
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-slate-300">
+                          {bot.titulo}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-slate-300">{bot.descripcion}</p>
+                    </div>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-[auto_1fr] sm:items-end">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Dificultad</p>
+                        <p className="mt-2 text-lg font-semibold text-white">{bot.elo} ELO</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Estilo</p>
+                        <p className="mt-2 text-sm font-medium text-slate-200">{bot.personalidad.etiqueta}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => window.location.assign(`/chess/play/${bot.id}`)}
+                      disabled={!unlocked}
+                      className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${
+                        unlocked
+                          ? "bg-amber-300 text-slate-950 hover:-translate-y-0.5"
+                          : "cursor-not-allowed bg-white/10 text-slate-500"
+                      }`}
+                    >
+                      {unlocked ? (
+                        <>
+                          <Swords size={16} />
+                          Jugar contra {bot.nombre}
+                        </>
+                      ) : (
+                        "Desbloquea el rival anterior"
+                      )}
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -272,21 +451,13 @@ function Dashboard() {
 export default function ChessPage() {
   const { usuario, estaInicializando } = useChess();
 
-  return (
-    <AnimatePresence mode="wait">
-      {estaInicializando ? (
-        <motion.div key="loading" exit={{ opacity: 0 }}>
-          <LoadingScreen />
-        </motion.div>
-      ) : !usuario ? (
-        <motion.div key="login" exit={{ opacity: 0 }}>
-          <AuthGate />
-        </motion.div>
-      ) : (
-        <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <Dashboard />
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  if (estaInicializando) {
+    return <LoadingScreen />;
+  }
+
+  if (!usuario) {
+    return <AuthGate />;
+  }
+
+  return <Dashboard />;
 }
