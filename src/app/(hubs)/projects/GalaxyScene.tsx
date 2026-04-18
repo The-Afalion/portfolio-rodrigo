@@ -295,7 +295,7 @@ export default function GalaxyScene() {
               }
             }
           }}
-          className="px-6 py-2 bg-[#1a120e]/70 backdrop-blur-md border border-[#8c673d]/40 text-[#e8dcc4] font-serif font-bold text-sm uppercase tracking-widest rounded-sm hover:bg-[#8c673d] hover:text-[#fdfbf7] shadow-sm transition-all duration-300"
+          className="border border-[#8c673d]/40 bg-[#1a120e]/72 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-[#e8dcc4] shadow-[0_14px_30px_rgba(0,0,0,0.26)] backdrop-blur-md transition-all duration-300 hover:bg-[#8c673d] hover:text-[#fdfbf7]"
         >
           {isShipMode ? "Desmontar Nave" : "Tomar el Timón"}
         </button>
@@ -346,12 +346,11 @@ export default function GalaxyScene() {
       </Canvas>
 
       {isShipMode && !isWarping && (
-        <div className="absolute bottom-20 right-6 z-40 text-[#a68659] font-mono text-[10px] text-right pointer-events-none animate-fade-in drop-shadow-md bg-[#1a120e]/50 p-4 border border-[#8c673d]/30">
-          <p className="font-bold text-[#e8dcc4] mb-1">INTERFAZ DE VUELO ACTIVA</p>
-          <p>[W] ACELERAR   |   [S] FRENAR</p>
-          <p>[A] Babor     |   [D] Estribor</p>
-          <p className="mt-1 text-[#cc6640] font-bold">ESTADO DE VUELO EXPERIMENTAL (6-DOF)</p>
-          <p className="mt-2 text-[#b8a991]">COLISIONE CON EL ORBE PARA ENTRAR</p>
+        <div className="pointer-events-none absolute bottom-6 right-6 z-40 hidden border border-[#8c673d]/30 bg-[#1a120e]/50 px-4 py-3 font-mono text-[10px] text-right text-[#a68659] shadow-[0_18px_40px_rgba(0,0,0,0.24)] backdrop-blur md:block">
+          <p className="mb-1 font-bold text-[#e8dcc4]">Modo nave activo</p>
+          <p>W / S acelerar y frenar</p>
+          <p>A / D girar</p>
+          <p className="mt-2 text-[#b8a991]">Toca un orbe para entrar</p>
         </div>
       )}
 

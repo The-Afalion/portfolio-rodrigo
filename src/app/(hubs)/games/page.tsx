@@ -60,10 +60,10 @@ export default function GamesHub() {
           style={{ backgroundImage: "linear-gradient(90deg, rgba(166,134,89,0.05) 50%, transparent 50%), linear-gradient(rgba(166,134,89,0.05) 50%, transparent 50%)", backgroundSize: "120px 120px" }}>
       
       {/* HEADER TIPO TICKET DE REGISTRO */}
-      <div className="absolute left-6 top-6 z-50">
+      <div className="absolute left-4 top-4 z-50 md:left-6 md:top-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-3 bg-[#fdfbf7] px-6 py-3 text-sm font-bold text-[#453628] shadow-[2px_4px_0px_#a68659] border-2 border-[#8c673d] transition-transform hover:-translate-y-1 hover:shadow-[2px_6px_0px_#a68659] active:translate-y-1 active:shadow-none"
+          className="inline-flex items-center gap-2 border-2 border-[#8c673d] bg-[#fdfbf7] px-4 py-2.5 text-xs font-bold text-[#453628] shadow-[2px_4px_0px_#a68659] transition-transform hover:-translate-y-0.5 hover:shadow-[2px_6px_0px_#a68659] active:translate-y-1 active:shadow-none md:px-6 md:py-3 md:text-sm"
         >
           <ArrowLeft size={16} className="text-[#8c673d]" />
           RETIRARSE AL INICIO
@@ -71,21 +71,21 @@ export default function GamesHub() {
       </div>
 
       {/* LETRERO DE MADERA */}
-      <div className="absolute top-12 w-full flex justify-center z-10 pointer-events-none">
-         <div className="bg-[#5c4033] px-12 py-6 shadow-[0_10px_20px_rgba(60,40,30,0.3)] border-4 border-[#3e2b22] transform rotate-[-1deg]">
+      <div className="pointer-events-none absolute left-1/2 top-24 z-10 flex w-full -translate-x-1/2 justify-center px-4 md:top-14">
+         <div className="max-w-[min(92vw,680px)] bg-[#5c4033] px-8 py-5 shadow-[0_10px_20px_rgba(60,40,30,0.3)] border-4 border-[#3e2b22] transform rotate-[-1deg] md:px-12 md:py-6">
            {/* Clavos */}
            <div className="absolute top-3 left-4 w-3 h-3 rounded-full bg-[#1a120e] shadow-inner" />
            <div className="absolute top-3 right-4 w-3 h-3 rounded-full bg-[#1a120e] shadow-inner" />
            <div className="absolute bottom-3 left-4 w-3 h-3 rounded-full bg-[#1a120e] shadow-inner" />
            <div className="absolute bottom-3 right-4 w-3 h-3 rounded-full bg-[#1a120e] shadow-inner" />
            
-           <h1 className="text-4xl md:text-5xl font-black text-[#e8dcc4] tracking-[0.1em] drop-shadow-md">TAVERA DE JUEGOS</h1>
+           <h1 className="text-center text-3xl font-black tracking-[0.1em] text-[#e8dcc4] drop-shadow-md md:text-5xl">TABERNA DE JUEGOS</h1>
            <p className="mt-2 text-[#b8a991] font-mono text-xs tracking-[0.3em] uppercase text-center">Seleccione una caja</p>
          </div>
       </div>
 
       {/* MESA DE MADERA (LAYOUT 2D ORGÁNICO) */}
-      <div className="flex-1 flex items-center justify-center pt-32 pb-12 px-6">
+      <div className="flex flex-1 items-center justify-center px-6 pb-12 pt-44 md:pt-36">
         <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 relative">
           
            {games.map((g, i) => (

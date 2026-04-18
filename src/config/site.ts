@@ -131,10 +131,6 @@ export function shouldShowNewsletter(pathname: string) {
 }
 
 export function shouldShowChat(pathname: string) {
-  if (pathname === '/chess') {
-    return true;
-  }
-
   return pathname === '/nexus' || pathname.startsWith('/nexus/');
 }
 

@@ -7,7 +7,6 @@ import {
   Lock,
   LogOut,
   ShieldCheck,
-  Sparkles,
   Swords,
   Trophy,
   Users,
@@ -189,14 +188,9 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#070b12] text-white">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute left-[-12%] top-[-8%] h-[26rem] w-[26rem] rounded-full bg-amber-300/10 blur-3xl" />
-        <div className="absolute bottom-[-10%] right-[-8%] h-[30rem] w-[30rem] rounded-full bg-sky-400/10 blur-3xl" />
-      </div>
-
       <div className="relative px-4 pb-16 pt-24">
-        <div className="mx-auto max-w-7xl">
-          <header className="mb-6 flex flex-col gap-4 rounded-[1.75rem] border border-white/10 bg-white/[0.03] px-5 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto max-w-6xl">
+          <header className="mb-6 flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-amber-200/20 bg-amber-300/10 text-amber-100">
                 ♞
@@ -223,20 +217,19 @@ function Dashboard() {
             </div>
           </header>
 
-          <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8">
+          <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <div className="surface-panel overflow-hidden p-6 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.34em] text-amber-200/70">Panel principal</p>
               <h2 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                Todo lo importante del ajedrez, ordenado para jugar en segundos.
+                Jugar rápido, seguir tu progreso y volver al tablero sin ruido.
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                Elige si quieres retar a alguien online, coordinar partidas con amigos o subir la dificultad contra
-                bots, sin perder el contexto de tu progreso.
+                Elige si quieres retar a alguien online, organizar una partida con amigos o seguir subiendo contra bots.
               </p>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
                 {profileStats.map((stat) => (
-                  <div key={stat.label} className="rounded-[1.5rem] border border-white/10 bg-[#0b111b]/90 p-5">
+                  <div key={stat.label} className="rounded-[1.5rem] border border-white/10 bg-[#0b111b]/70 p-5">
                     <p className="text-xs uppercase tracking-[0.24em] text-slate-400">{stat.label}</p>
                     <p className={`mt-3 text-3xl font-semibold ${stat.tone}`}>{stat.value}</p>
                   </div>
@@ -252,7 +245,7 @@ function Dashboard() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="group block rounded-[1.75rem] border border-white/10 bg-[#0b111b]/90 p-6 transition-transform hover:-translate-y-1"
+                    className="surface-panel group block p-6 hover:-translate-y-1"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -274,39 +267,23 @@ function Dashboard() {
                 );
               })}
 
-              <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Ruta recomendada</p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-white">
-                      <Users size={16} className="text-sky-200" />
-                      1. Mira quién está online
-                    </div>
-                  </div>
-                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-white">
-                      <Swords size={16} className="text-amber-200" />
-                      2. Lanza un reto directo
-                    </div>
-                  </div>
-                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-white">
-                      <Bot size={16} className="text-emerald-200" />
-                      3. Entrena con bots si no hay rival
-                    </div>
-                  </div>
-                </div>
+              <div className="surface-panel p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Sugerencia rápida</p>
+                <p className="mt-4 text-sm leading-7 text-slate-300">
+                  Si no ves a nadie conectado, abre el lobby un momento y pasa después a la sala de bots. Todo el
+                  progreso se conserva.
+                </p>
               </div>
             </div>
           </section>
 
           <section className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] backdrop-blur sm:p-6">
+            <div className="surface-panel p-5 sm:p-6">
               <ChessLobby compact />
             </div>
 
             <div className="grid gap-6">
-              <div className="rounded-[2rem] border border-amber-200/10 bg-[radial-gradient(circle_at_top_left,rgba(245,190,92,0.18),transparent_58%),#0b111b] p-6">
+              <div className="surface-panel p-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-200/70">Jugar en comunidad</p>
                 <h3 className="mt-4 text-2xl font-semibold text-white">Una partida cooperativa, un movimiento al día.</h3>
                 <p className="mt-3 text-sm leading-7 text-slate-300">
@@ -321,35 +298,21 @@ function Dashboard() {
                 </Link>
               </div>
 
-              <div className="rounded-[2rem] border border-white/10 bg-[#0b111b]/90 p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-amber-100">
-                    <Sparkles size={18} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Entrenamiento inteligente</p>
-                    <p className="text-sm text-slate-300">La progresión de bots te guía de lo básico a la precisión técnica.</p>
-                  </div>
-                </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Primer objetivo</p>
-                    <p className="mt-2 text-sm font-medium text-white">Derrota al primer bot para abrir el siguiente nivel.</p>
-                  </div>
-                  <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Ideal cuando</p>
-                    <p className="mt-2 text-sm font-medium text-white">Quieres practicar aperturas y cálculo sin esperar rival.</p>
-                  </div>
-                </div>
+              <div className="surface-panel p-6">
+                <p className="text-sm font-semibold text-white">Entrenamiento inteligente</p>
+                <p className="mt-2 text-sm leading-7 text-slate-300">
+                  La progresión de bots te guía de lo básico a la precisión técnica sin llenar la pantalla de paneles
+                  extra.
+                </p>
               </div>
             </div>
           </section>
 
-          <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] backdrop-blur sm:p-6">
+          <section className="mt-6">
             <ChessFriendsPanel compact />
           </section>
 
-          <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.24)] backdrop-blur">
+          <section className="surface-panel mt-6 p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Bots</p>
@@ -418,25 +381,19 @@ function Dashboard() {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => window.location.assign(`/chess/play/${bot.id}`)}
-                      disabled={!unlocked}
-                      className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${
-                        unlocked
-                          ? "bg-amber-300 text-slate-950 hover:-translate-y-0.5"
-                          : "cursor-not-allowed bg-white/10 text-slate-500"
-                      }`}
-                    >
-                      {unlocked ? (
-                        <>
-                          <Swords size={16} />
-                          Jugar contra {bot.nombre}
-                        </>
-                      ) : (
-                        "Desbloquea el rival anterior"
-                      )}
-                    </button>
+                    {unlocked ? (
+                      <Link
+                        href={`/chess/play/${bot.id}`}
+                        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5"
+                      >
+                        <Swords size={16} />
+                        Jugar contra {bot.nombre}
+                      </Link>
+                    ) : (
+                      <div className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-white/10 px-5 py-3 text-sm font-semibold text-slate-500">
+                        Desbloquea el rival anterior
+                      </div>
+                    )}
                   </article>
                 );
               })}

@@ -4,63 +4,63 @@
 
 @layer base {
   :root {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
+    --background: 220 24% 7%;
+    --foreground: 38 33% 96%;
     
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
+    --card: 222 22% 10%;
+    --card-foreground: 38 33% 96%;
     
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 22% 10%;
+    --popover-foreground: 38 33% 96%;
     
-    --primary: 270 100% 65%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 28 84% 62%;
+    --primary-foreground: 222 45% 10%;
     
-    --secondary: 240 10% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 18% 14%;
+    --secondary-foreground: 38 33% 96%;
     
-    --muted: 240 10% 12%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 220 18% 14%;
+    --muted-foreground: 32 18% 70%;
     
-    --accent: 190 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 188 61% 56%;
+    --accent-foreground: 222 45% 10%;
     
-    --border: 240 14% 15%;
-    --input: 240 14% 15%;
-    --ring: 270 100% 65%;
+    --border: 220 16% 20%;
+    --input: 220 16% 20%;
+    --ring: 28 84% 62%;
     
     --radius: 1.5rem;
     
-    --surface-elevated: 240 10% 8%;
-    --surface-strong: 240 10% 12%;
+    --surface-elevated: 222 22% 9%;
+    --surface-strong: 220 18% 14%;
     
     /* Neon Tokens */
-    --neon-purple: 270 100% 60%;
-    --neon-cyan: 190 100% 50%;
-    --neon-pink: 320 100% 60%;
+    --neon-purple: 28 84% 62%;
+    --neon-cyan: 188 61% 56%;
+    --neon-pink: 8 72% 62%;
   }
 
   .dark, .forest, .sepia {
     /* Mapear todo al nuevo Dark Premium para mantener compatibilidad con Theme toggles */
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 270 100% 65%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 10% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 10% 12%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 190 100% 50%;
-    --accent-foreground: 0 0% 98%;
-    --border: 240 14% 15%;
-    --input: 240 14% 15%;
-    --ring: 270 100% 65%;
-    --surface-elevated: 240 10% 8%;
-    --surface-strong: 240 10% 12%;
+    --background: 220 24% 7%;
+    --foreground: 38 33% 96%;
+    --card: 222 22% 10%;
+    --card-foreground: 38 33% 96%;
+    --popover: 222 22% 10%;
+    --popover-foreground: 38 33% 96%;
+    --primary: 28 84% 62%;
+    --primary-foreground: 222 45% 10%;
+    --secondary: 220 18% 14%;
+    --secondary-foreground: 38 33% 96%;
+    --muted: 220 18% 14%;
+    --muted-foreground: 32 18% 70%;
+    --accent: 188 61% 56%;
+    --accent-foreground: 222 45% 10%;
+    --border: 220 16% 20%;
+    --input: 220 16% 20%;
+    --ring: 28 84% 62%;
+    --surface-elevated: 222 22% 9%;
+    --surface-strong: 220 18% 14%;
   }
 }
 
@@ -76,9 +76,10 @@
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100vh;
-    /* Efecto estelar sutil en el fondo global */
-    background-image: radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
-                      radial-gradient(circle at 100% 100%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+    background-image:
+      radial-gradient(circle at top, rgba(242, 165, 95, 0.09), transparent 42%),
+      radial-gradient(circle at 85% 15%, rgba(89, 184, 194, 0.07), transparent 28%),
+      linear-gradient(180deg, rgba(12, 18, 31, 0.96), rgba(10, 14, 24, 1));
     background-attachment: fixed;
   }
 
@@ -100,21 +101,32 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
+  .page-hero {
+    @apply mb-12 grid gap-8 border-b border-border/70 pb-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end;
+  }
+
+  .page-title {
+    @apply max-w-4xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl;
+  }
+
+  .page-lead {
+    @apply max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base;
+  }
+
   .page-eyebrow {
-    @apply inline-flex text-xs font-bold uppercase tracking-[0.3em] text-neon-cyan;
-    text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+    @apply inline-flex text-xs font-bold uppercase tracking-[0.3em] text-[hsl(var(--accent))];
   }
 
   .bento-card {
-    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-    backdrop-filter: blur(20px);
+    background: linear-gradient(145deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%);
+    backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(20px);
-    @apply relative overflow-hidden rounded-[2rem] border border-white/5 transition-all duration-300;
+    @apply relative overflow-hidden rounded-[2rem] border border-white/10 transition-all duration-300;
   }
   
   .bento-card:hover {
-    @apply border-white/10;
-    box-shadow: 0 0 40px -10px rgba(138, 43, 226, 0.15), 
+    @apply border-white/15;
+    box-shadow: 0 24px 64px -32px rgba(0, 0, 0, 0.65),
                 inset 0 0 20px -10px rgba(255, 255, 255, 0.05);
   }
 
@@ -123,14 +135,14 @@
     background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    @apply block rounded-[2rem] border border-white/5 transition-all duration-300;
+    @apply block rounded-[2rem] border border-white/10 transition-all duration-300;
   }
   
   .surface-panel-muted {
     background: transparent;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    @apply block rounded-[1.4rem] border border-white/5 transition-all duration-300;
+    @apply block rounded-[1.4rem] border border-white/10 transition-all duration-300;
   }
 
   .surface-divider {
@@ -143,19 +155,19 @@
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan via-white to-neon-purple;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--accent))] via-white to-[hsl(var(--primary))];
   }
 
   .action-pill {
     @apply relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-foreground transition-all duration-300 overflow-hidden;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
   }
 
   .action-pill::before {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(45deg, rgba(0,255,255,0.1), rgba(138,43,226,0.1));
+    background: linear-gradient(45deg, rgba(89,184,194,0.12), rgba(242,165,95,0.12));
   }
 
   .action-pill:hover::before {
@@ -164,7 +176,7 @@
   
   .action-pill:hover {
     border-color: rgba(255,255,255,0.2);
-    box-shadow: 0 0 20px rgba(0,255,255,0.15);
+    box-shadow: 0 18px 40px -28px rgba(89, 184, 194, 0.5);
   }
 
   /* Neon Glow Backgrounds for Bento Items */
@@ -216,6 +228,64 @@
   background-image: none !important;
   background-color: hsl(var(--background)) !important;
   color: hsl(var(--foreground)) !important;
+}
+
+.latte-theme {
+  --background: 38 50% 97%;
+  --foreground: 25 28% 22%;
+  --card: 42 40% 95%;
+  --card-foreground: 25 28% 22%;
+  --popover: 42 40% 95%;
+  --popover-foreground: 25 28% 22%;
+  --primary: 18 49% 40%;
+  --primary-foreground: 40 60% 98%;
+  --secondary: 40 40% 92%;
+  --secondary-foreground: 25 28% 22%;
+  --muted: 38 28% 92%;
+  --muted-foreground: 28 16% 44%;
+  --accent: 155 25% 40%;
+  --accent-foreground: 40 60% 98%;
+  --border: 34 27% 82%;
+  --input: 34 27% 82%;
+  --ring: 18 49% 40%;
+  --surface-elevated: 40 45% 98%;
+  --surface-strong: 38 28% 92%;
+  --neon-cyan: 155 25% 40%;
+  --neon-pink: 18 49% 40%;
+  --neon-purple: 37 48% 50%;
+  background:
+    radial-gradient(circle at top, rgba(180, 139, 98, 0.1), transparent 28%),
+    linear-gradient(180deg, #fdfbf7, #f5efe6);
+  color: hsl(var(--foreground));
+}
+
+.latte-theme .page-eyebrow,
+.latte-theme h1,
+.latte-theme h2,
+.latte-theme h3,
+.latte-theme h4 {
+  color: hsl(var(--foreground));
+  text-shadow: none;
+}
+
+.latte-theme .surface-panel,
+.latte-theme .surface-panel-muted,
+.latte-theme .bento-card {
+  background: rgba(255, 252, 247, 0.82);
+  border-color: hsl(var(--border));
+  box-shadow: 0 16px 40px -34px rgba(78, 56, 34, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.latte-theme .action-pill {
+  background: rgba(92, 64, 51, 0.06);
+  border-color: rgba(92, 64, 51, 0.16);
+  color: hsl(var(--foreground));
+}
+
+.latte-theme .action-pill:hover {
+  border-color: rgba(140, 64, 48, 0.28);
+  box-shadow: 0 16px 32px -26px rgba(140, 64, 48, 0.4);
 }
 
 .flat-theme .bento-card,

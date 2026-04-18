@@ -43,7 +43,7 @@ export default async function PaginaBlog({
       <PageHero
         eyebrow="Blog"
         title="Notas sobre producto, implementación y sistemas."
-        description="Artículos y apuntes breves alrededor del software y las piezas que voy construyendo."
+        description="Artículos, diarios de proyecto y apuntes técnicos escritos para leerse rápido y volver cuando hagan falta."
         actions={
           <>
             <div className="min-w-[280px] max-w-md flex-1">
@@ -74,9 +74,9 @@ export default async function PaginaBlog({
       {posts.length > 0 ? (
         <section className="divide-y divide-border/80 border-y border-border/80">
           {posts.map((post) => (
-            <Link key={post.id} href={`/blog/${post.slug}`} className="group block py-8">
-              <article className="grid gap-6 lg:grid-cols-[220px,minmax(0,1fr),auto] lg:items-start">
-                <div className="space-y-4">
+            <Link key={post.id} href={`/blog/${post.slug}`} className="group block py-7">
+              <article className="grid gap-6 lg:grid-cols-[180px,minmax(0,1fr),auto] lg:items-start">
+                <div className="space-y-3">
                   <time
                     dateTime={post.createdAt.toISOString()}
                     className="block text-[11px] font-semibold uppercase tracking-[0.26em] text-muted-foreground"
@@ -89,12 +89,12 @@ export default async function PaginaBlog({
                     })}
                   </time>
                   {post.coverImage ? (
-                    <div className="relative h-28 overflow-hidden border border-border/80">
+                    <div className="relative h-24 overflow-hidden rounded-[1.2rem] border border-border/80">
                       <Image
                         src={post.coverImage}
                         alt={post.title}
                         fill
-                        sizes="220px"
+                        sizes="180px"
                         className="object-cover"
                       />
                     </div>
@@ -103,7 +103,7 @@ export default async function PaginaBlog({
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{post.title}</h2>
+                    <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[2rem]">{post.title}</h2>
                     <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
                       {post.content.replace(/<[^>]*>?/gm, "").substring(0, 190)}...
                     </p>
@@ -112,7 +112,7 @@ export default async function PaginaBlog({
                     {post.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag.id}
-                        className="rounded-full border border-border/80 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground"
+                        className="rounded-full border border-border/80 bg-white/40 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground"
                       >
                         {tag.name}
                       </span>
