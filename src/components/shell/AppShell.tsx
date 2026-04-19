@@ -29,9 +29,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const showNewsletter = shouldShowNewsletter(pathname);
   const showChat = shouldShowChat(pathname);
   const plainShell = shouldUsePlainShell(pathname);
+  const shellClassName = pathname === "/" ? "" : "board-theme";
 
   return (
-    <>
+    <div className={shellClassName}>
       {enableHomeEffects ? <GestorDeEventosGlobales /> : null}
       {enableHomeEffects ? <GestorDeEventosRandy /> : null}
       {showHeader ? <SiteHeader /> : null}
@@ -42,6 +43,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {showFooter ? <SiteFooter /> : null}
       {showChat ? <ChatRealtime /> : null}
       {enableHomeEffects ? <HomeEffectsOverlay /> : null}
-    </>
+    </div>
   );
 }

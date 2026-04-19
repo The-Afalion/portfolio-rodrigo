@@ -288,6 +288,122 @@
   box-shadow: 0 16px 32px -26px rgba(140, 64, 48, 0.4);
 }
 
+.board-theme {
+  --background: 38 44% 93%;
+  --foreground: 24 25% 22%;
+  --card: 42 38% 94%;
+  --card-foreground: 24 25% 22%;
+  --popover: 42 38% 94%;
+  --popover-foreground: 24 25% 22%;
+  --primary: 18 52% 38%;
+  --primary-foreground: 40 60% 98%;
+  --secondary: 40 30% 88%;
+  --secondary-foreground: 24 25% 22%;
+  --muted: 39 24% 87%;
+  --muted-foreground: 28 16% 40%;
+  --accent: 191 25% 35%;
+  --accent-foreground: 40 60% 98%;
+  --border: 34 28% 74%;
+  --input: 34 28% 74%;
+  --ring: 18 52% 38%;
+  --surface-elevated: 44 42% 97%;
+  --surface-strong: 38 24% 89%;
+  --neon-cyan: 191 25% 35%;
+  --neon-pink: 18 52% 38%;
+  --neon-purple: 37 48% 50%;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(171, 132, 88, 0.16), transparent 28%),
+    linear-gradient(90deg, rgba(166, 134, 89, 0.06) 50%, transparent 50%),
+    linear-gradient(rgba(166, 134, 89, 0.06) 50%, transparent 50%),
+    linear-gradient(180deg, #f5ead4, #ead9ba);
+  background-size: auto, 120px 120px, 120px 120px, auto;
+  color: hsl(var(--foreground));
+}
+
+.board-theme .page-eyebrow,
+.board-theme h1,
+.board-theme h2,
+.board-theme h3,
+.board-theme h4 {
+  color: hsl(var(--foreground));
+  text-shadow: none;
+}
+
+.board-theme .page-shell {
+  position: relative;
+}
+
+.board-theme .page-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.28), transparent 18%),
+    radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.2), transparent 16%);
+  opacity: 0.8;
+}
+
+.board-theme .page-hero {
+  border-bottom-color: rgba(140, 118, 95, 0.35);
+}
+
+.board-theme .surface-panel,
+.board-theme .surface-panel-muted,
+.board-theme .bento-card {
+  background: rgba(253, 251, 247, 0.86);
+  border-color: rgba(140, 118, 95, 0.28);
+  box-shadow:
+    0 18px 36px -28px rgba(92, 64, 51, 0.45),
+    0 2px 0 rgba(140, 118, 95, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.board-theme .surface-panel-muted {
+  background: rgba(250, 244, 234, 0.76);
+}
+
+.board-theme .interactive-frame {
+  background: rgba(74, 55, 43, 0.22);
+  border-color: rgba(140, 118, 95, 0.35);
+}
+
+.board-theme .action-pill {
+  background: rgba(255, 251, 245, 0.92);
+  border-color: rgba(140, 118, 95, 0.3);
+  color: hsl(var(--foreground));
+  box-shadow: 0 10px 24px -22px rgba(92, 64, 51, 0.45);
+}
+
+.board-theme .action-pill::before {
+  background: linear-gradient(45deg, rgba(204, 102, 64, 0.08), rgba(166, 134, 89, 0.12));
+}
+
+.board-theme .action-pill:hover {
+  border-color: rgba(140, 64, 48, 0.34);
+  box-shadow: 0 16px 32px -24px rgba(140, 64, 48, 0.42);
+}
+
+.board-theme .gradient-text {
+  background: linear-gradient(90deg, #8c4030, #b88746);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.board-theme ::-webkit-scrollbar-track {
+  background: rgba(255, 248, 236, 0.3);
+}
+
+.board-theme ::-webkit-scrollbar-thumb {
+  background: rgba(92, 64, 51, 0.22);
+}
+
+.board-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(92, 64, 51, 0.34);
+}
+
 .flat-theme .bento-card,
 .flat-theme .surface-panel,
 .flat-theme .interactive-frame {
