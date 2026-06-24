@@ -10,6 +10,7 @@ import {
   communitySideToTurn,
   ensureCommunityGame,
   ensureSyntheticVotes,
+  executeCommunityRound,
   getCommunitySideLabel,
   groupCommunityVotes,
 } from "@/lib/community-chess";
@@ -30,7 +31,26 @@ function formatDate(value: Date) {
 
 export default async function CommunityPage() {
   if (!hasSupabaseBrowserEnv()) {
-    return <div className="container mx-auto p-4">Configura Supabase para cargar la partida comunal.</div>;
+    return (
+      <div className="page-shell flex min-h-screen items-center justify-center px-4">
+        <div className="surface-panel w-full max-w-2xl p-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Ajedrez comunal</p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
+            La partida comunal está en pausa
+          </h1>
+          <p className="mt-4 text-sm leading-7 text-muted-foreground">
+            Este modo necesita una sesión compartida para coordinar equipos, votos y rondas. Puedes volver al club o
+            explorar el resto de modos mientras se prepara la siguiente partida.
+          </p>
+          <Link
+            href="/chess"
+            className="mt-8 inline-flex rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background"
+          >
+            Volver al club
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const cookieStore = cookies();
@@ -62,7 +82,13 @@ export default async function CommunityPage() {
   }
 
   const profile = await ensureProfileForUserSafely(user);
-  const game = await ensureCommunityGame();
+  let game = await ensureCommunityGame();
+
+  if (new Date() >= game.nextMoveDue) {
+    await executeCommunityRound();
+    game = await ensureCommunityGame();
+  }
+
   await ensureSyntheticVotes(game.id, game.fen);
 
   const [votes, sideCounts] = await Promise.all([

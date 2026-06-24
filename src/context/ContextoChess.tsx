@@ -77,7 +77,7 @@ async function ensureProfileAndLoadUser() {
 export function ProveedorContextoChess({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<UsuarioChess | null>(null);
   const [error, setError] = useState<string | null>(
-    supabase ? null : 'Las variables publicas de Supabase no estan configuradas.'
+    supabase ? null : 'La zona online no está disponible en esta versión.'
   );
   const [estaInicializando, setEstaInicializando] = useState(Boolean(supabase));
   const router = useRouter();

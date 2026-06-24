@@ -69,7 +69,7 @@ export default function DetalleProyecto({ proyecto }: { proyecto: ProyectoCore }
                 <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-between gap-3 border-b border-border/80 pb-3 text-sm text-foreground">
                   <span className="inline-flex items-center gap-2">
                     <ExternalLink size={16} />
-                    Ver demo
+                    Abrir experiencia
                   </span>
                   <ExternalLink size={14} />
                 </a>

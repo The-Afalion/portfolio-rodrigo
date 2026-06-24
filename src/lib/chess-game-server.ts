@@ -27,6 +27,18 @@ function getPlayerColor(game: NonNullable<DbGame>, userId: string) {
   return null;
 }
 
+function getOpponentId(game: NonNullable<DbGame>, userId: string) {
+  if (game.whitePlayerId === userId) {
+    return game.blackPlayerId;
+  }
+
+  if (game.blackPlayerId === userId) {
+    return game.whitePlayerId;
+  }
+
+  return null;
+}
+
 function getTimeoutResult(forPlayer: "w" | "b") {
   return forPlayer === "w" ? "0-1" : "1-0";
 }
@@ -146,6 +158,7 @@ export async function serializeChessGameForUser(gameId: string, userId: string) 
     blackPlayerId: game.blackPlayerId,
     whitePlayerName: game.whitePlayerId ? names.get(game.whitePlayerId) ?? "Blancas" : "Blancas",
     blackPlayerName: game.blackPlayerId ? names.get(game.blackPlayerId) ?? "Negras" : "Negras",
+    opponentId: getOpponentId(game, userId),
     modeKey: game.modeKey,
     modeLabel: game.modeLabel,
     modeDescription: modeConfig.description,
@@ -164,6 +177,9 @@ export async function serializeChessGameForUser(gameId: string, userId: string) 
         ? formatRemainingDays(deadlineAt.getTime() - Date.now())
         : null,
     currentTurnStartedAt: game.currentTurnStartedAt?.toISOString() ?? null,
+    drawOfferById: game.drawOfferById,
+    drawOfferByCurrentUser: game.drawOfferById === userId,
+    drawOfferByOpponent: Boolean(game.drawOfferById && game.drawOfferById !== userId),
     createdAt: game.createdAt.toISOString(),
     updatedAt: game.updatedAt.toISOString(),
   };
@@ -282,6 +298,107 @@ export async function applyMoveToGame(gameId: string, userId: string, moveInput:
       whiteTimeMs: nextWhiteTime,
       blackTimeMs: nextBlackTime,
       currentTurnStartedAt: isGameOver ? null : now,
+      drawOfferById: null,
+    },
+  });
+
+  return { success: true as const };
+}
+
+export async function resignChessGame(gameId: string, userId: string) {
+  const existingGame = await loadGame(gameId);
+
+  if (!existingGame) {
+    return { error: "Partida no encontrada.", status: 404 as const };
+  }
+
+  const game = await expireGameIfNeeded(existingGame);
+  const playerColor = getPlayerColor(game, userId);
+
+  if (!playerColor) {
+    return { error: "No perteneces a esta partida.", status: 403 as const };
+  }
+
+  if (game.status !== "IN_PROGRESS") {
+    return { error: "La partida ya no está en curso.", status: 409 as const };
+  }
+
+  await prisma.chessGame.update({
+    where: { id: game.id },
+    data: {
+      status: "COMPLETED",
+      result: getTimeoutResult(playerColor),
+      currentTurnStartedAt: null,
+      drawOfferById: null,
+    },
+  });
+
+  return { success: true as const };
+}
+
+export async function offerOrAcceptDraw(gameId: string, userId: string) {
+  const existingGame = await loadGame(gameId);
+
+  if (!existingGame) {
+    return { error: "Partida no encontrada.", status: 404 as const };
+  }
+
+  const game = await expireGameIfNeeded(existingGame);
+  const playerColor = getPlayerColor(game, userId);
+
+  if (!playerColor) {
+    return { error: "No perteneces a esta partida.", status: 403 as const };
+  }
+
+  if (game.status !== "IN_PROGRESS") {
+    return { error: "La partida ya no está en curso.", status: 409 as const };
+  }
+
+  if (game.drawOfferById && game.drawOfferById !== userId) {
+    await prisma.chessGame.update({
+      where: { id: game.id },
+      data: {
+        status: "COMPLETED",
+        result: "1/2-1/2",
+        currentTurnStartedAt: null,
+        drawOfferById: null,
+      },
+    });
+
+    return { success: true as const, accepted: true as const };
+  }
+
+  await prisma.chessGame.update({
+    where: { id: game.id },
+    data: {
+      drawOfferById: userId,
+    },
+  });
+
+  return { success: true as const, offered: true as const };
+}
+
+export async function cancelDrawOffer(gameId: string, userId: string) {
+  const existingGame = await loadGame(gameId);
+
+  if (!existingGame) {
+    return { error: "Partida no encontrada.", status: 404 as const };
+  }
+
+  const playerColor = getPlayerColor(existingGame, userId);
+
+  if (!playerColor) {
+    return { error: "No perteneces a esta partida.", status: 403 as const };
+  }
+
+  if (existingGame.drawOfferById !== userId) {
+    return { error: "No tienes una oferta de tablas activa.", status: 409 as const };
+  }
+
+  await prisma.chessGame.update({
+    where: { id: existingGame.id },
+    data: {
+      drawOfferById: null,
     },
   });
 

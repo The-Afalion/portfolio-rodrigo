@@ -7,7 +7,7 @@ export function getSupabaseAdminClient() {
   const env = getSupabaseAdminEnv();
 
   if (!env) {
-    throw new Error('Faltan las credenciales admin de Supabase en el entorno del servidor.');
+    throw new Error('La zona privada no está disponible ahora mismo.');
   }
 
   return createClient(env.url, env.key, {

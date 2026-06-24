@@ -88,7 +88,7 @@ export default function SocialHubClient({ currentUser, initialMessages, initialF
                <div className="flex gap-2 bg-[#f4ead5] p-1.5 rounded-sm border border-[#d6c4a5]">
                  <input 
                    type="text" 
-                   placeholder="Escriba un ID..." 
+                   placeholder="Correo o alias..." 
                    value={friendSearch}
                    onChange={e => setFriendSearch(e.target.value)}
                    className="flex-1 bg-transparent px-2 py-1 text-sm font-mono text-[#453628] outline-none placeholder-[#a6967c]" 

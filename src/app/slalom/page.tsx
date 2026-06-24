@@ -56,8 +56,18 @@ async function getCourses() {
 export default async function SlalomPage() {
   if (!hasSupabaseAdminEnv()) {
     return (
-      <main className="min-h-screen bg-background text-foreground p-6 md:p-12">
-        Configura `SUPABASE_SERVICE_ROLE_KEY` para cargar los circuitos de slalom.
+      <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground md:p-12">
+        <section className="surface-panel max-w-2xl p-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Slalom Architect</p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">La galería de circuitos está en pausa</h1>
+          <p className="mt-4 text-sm leading-7 text-muted-foreground">
+            El editor sigue disponible para explorar el flujo de diseño. La galería compartida volverá cuando haya
+            circuitos publicados.
+          </p>
+          <Link href="/slalom/editor" className="mt-8 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background">
+            <Plus size={16} /> Abrir editor
+          </Link>
+        </section>
       </main>
     );
   }
@@ -116,7 +126,7 @@ export default async function SlalomPage() {
           </div>
         ) : (
           <div className="text-center py-12 border border-dashed border-border rounded-xl">
-            <p className="text-muted-foreground">Aún no hay diseños. ¡Sé el primero en crear uno!</p>
+            <p className="text-muted-foreground">La galería está lista para recibir los primeros circuitos publicados.</p>
           </div>
         )}
       </div>

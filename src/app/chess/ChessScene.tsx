@@ -1,6 +1,7 @@
 "use client";
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars, Float, Plane } from '@react-three/drei';
+import { Stars, Float, Plane } from '@react-three/drei';
+import OrbitControls from '@/components/three/OrbitControlsCompat';
 import { ChessPiece } from '@/components/ChessPiece';
 
 export default function ChessScene() {

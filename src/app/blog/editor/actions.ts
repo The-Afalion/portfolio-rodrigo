@@ -73,7 +73,7 @@ export async function inviteAdmin(emailToInvite: string) {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!serviceRoleKey) {
-      return { error: 'Falta la clave SUPABASE_SERVICE_ROLE_KEY en el entorno para poder invitar usuarios.' };
+      return { error: 'Las invitaciones privadas no están disponibles ahora mismo.' };
     }
 
     const supabaseAdmin = createSupabaseAdminClient(
@@ -95,7 +95,7 @@ export async function inviteAdmin(emailToInvite: string) {
     );
 
     if (inviteError) {
-      return { error: 'Error al invitar desde Supabase Auth: ' + inviteError.message };
+      return { error: 'No se ha podido enviar la invitación. Revisa el correo e inténtalo de nuevo.' };
     }
 
     if (inviteData && inviteData.user) {

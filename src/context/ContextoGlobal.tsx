@@ -58,3 +58,7 @@ export function useContextoGlobal() {
   }
   return contexto;
 }
+
+export function useContextoGlobalOpcional() {
+  return useContext(ContextoGlobal);
+}

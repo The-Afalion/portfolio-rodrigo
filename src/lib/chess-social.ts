@@ -7,19 +7,24 @@ import { getUserDisplayName } from "@/lib/profile";
 import { listAllSupabaseUsers, listSupabaseUsersByIds } from "@/lib/supabase-admin";
 
 export async function getAuthenticatedChessUser() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  try {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  if (error || !user) {
+    if (error || !user) {
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.warn("No se pudo autenticar al usuario de ajedrez online.", error);
     return null;
   }
-
-  return user;
 }
 
 export async function buildDisplayNameMap(userIds: string[]) {

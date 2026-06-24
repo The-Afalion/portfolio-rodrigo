@@ -14,11 +14,11 @@ export { hasSupabaseAdminEnv, hasSupabaseBrowserEnv };
 
 export const supabase = browserEnv
   ? createClient(browserEnv.url, browserEnv.key)
-  : createMissingSupabaseClient('FATAL: NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY deben estar configuradas.');
+  : createMissingSupabaseClient('La zona online no está disponible en esta versión.');
 
 export const supabaseAdmin = adminEnv
   ? createClient(adminEnv.url, adminEnv.key)
-  : createMissingSupabaseClient('FATAL: SUPABASE_SERVICE_ROLE_KEY debe estar configurada en el entorno del servidor.');
+  : createMissingSupabaseClient('La zona online no está disponible en esta versión.');
 
 export function isMissingSupabaseTableError(error: { message?: string | null; code?: string | null } | null | undefined) {
   if (!error) {

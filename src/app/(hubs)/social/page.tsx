@@ -20,8 +20,8 @@ export default async function SocialHubPage() {
           <p className="mt-2 text-xs font-bold uppercase tracking-widest text-[#8a765f]">Tablón Comunal</p>
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#3e3024] md:text-4xl">Sala social no disponible aún</h1>
           <p className="mx-auto mt-6 max-w-xl text-sm leading-7 text-[#5c4033]">
-            Esta sección depende de Supabase para autenticación y mensajería en tiempo real. En esta copia local faltan
-            las variables públicas necesarias, así que en vez de romper la página mostramos este estado de espera.
+            La sala social está en pausa en esta versión del portfolio. Mientras tanto puedes explorar los juegos,
+            proyectos y notas públicas desde el resto del tablón.
           </p>
           <div className="mt-8 grid gap-4 text-left md:grid-cols-3">
             <div className="border border-[#e3d5b8] bg-[#fffaf1] p-4">

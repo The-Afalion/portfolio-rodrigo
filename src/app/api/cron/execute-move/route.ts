@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { executeCommunityRound } from '@/lib/community-chess';
+import { playTournamentMove } from '@/lib/ai-tournament-server';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,15 +18,37 @@ export async function GET(request: Request) {
     });
   }
 
-  // 2. Ejecutar la lógica del movimiento
+  // 2. Ejecutar la lógica de ajedrez con el único cron disponible en Vercel.
   try {
-    const result = await executeCommunityRound();
-    if (result.error) {
-      console.error('Cron Job Error:', result.error);
-      return NextResponse.json({ error: result.error }, { status: 500 });
+    const [communityResult, tournamentResult] = await Promise.allSettled([
+      executeCommunityRound(),
+      playTournamentMove(),
+    ]);
+
+    const community =
+      communityResult.status === 'fulfilled'
+        ? communityResult.value
+        : { error: communityResult.reason instanceof Error ? communityResult.reason.message : 'No se pudo resolver la ronda comunitaria.' };
+
+    const tournament =
+      tournamentResult.status === 'fulfilled'
+        ? tournamentResult.value
+        : { message: tournamentResult.reason instanceof Error ? tournamentResult.reason.message : 'No se pudo avanzar el torneo.' };
+
+    if ('error' in community && community.error) {
+      console.error('Cron community error:', community.error);
     }
-    console.log('Cron Job Success:', result.message);
-    return NextResponse.json({ success: true, message: result.message, move: result.move ?? null });
+
+    console.log('Cron Job Success:', {
+      community: 'message' in community ? community.message : null,
+      tournament: tournament.message,
+    });
+
+    return NextResponse.json({
+      success: !('error' in community && community.error) && tournamentResult.status === 'fulfilled',
+      community,
+      tournament,
+    });
   } catch (error: any) {
     console.error('Cron Job Failed:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });

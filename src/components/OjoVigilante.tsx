@@ -107,6 +107,8 @@ function Ojo({ colorPupila }: { colorPupila: string }) {
 
 // --- Componente del Falso Pop-up Realista (Estilo Chrome) ---
 function FalsoPopup({ onPermitir, onBloquear }: { onPermitir: () => void; onBloquear: () => void; }) {
+  const host = typeof window === "undefined" ? "localhost" : window.location.host;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: -20 }} 
@@ -123,9 +125,9 @@ function FalsoPopup({ onPermitir, onBloquear }: { onPermitir: () => void; onBloq
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <p className="text-[14px] leading-5 text-gray-900">
-              <span className="font-semibold">localhost:3000</span> quiere
+              <span className="font-semibold">{host}</span> quiere
             </p>
-            <button onClick={onBloquear} className="text-gray-400 hover:text-gray-600">
+            <button type="button" onMouseDown={onBloquear} onClick={onBloquear} className="text-gray-400 hover:text-gray-600">
               <X size={16} />
             </button>
           </div>
@@ -136,12 +138,16 @@ function FalsoPopup({ onPermitir, onBloquear }: { onPermitir: () => void; onBloq
           
           <div className="flex justify-end gap-2">
             <button 
+              type="button"
+              onMouseDown={onBloquear}
               onClick={onBloquear} 
               className="px-3 py-1.5 text-[13px] font-medium text-blue-600 hover:bg-blue-50 rounded border border-transparent transition-colors"
             >
               Bloquear
             </button>
             <button 
+              type="button"
+              onMouseDown={onPermitir}
               onClick={onPermitir} 
               className="px-3 py-1.5 text-[13px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded shadow-sm transition-colors"
             >

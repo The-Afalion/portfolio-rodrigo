@@ -26,6 +26,8 @@ model Post {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   tags        Tag[]
+
+  @@index([authorId])
 }
 
 model Tag {
@@ -40,6 +42,7 @@ model Tag {
 model Profile {
   id                  String           @id // Coincide con el ID de `auth.users`
   elo                 Int              @default(1000)
+  rodes               Int              @default(1000)
   role                String           @default("USER") // "USER" | "ADMIN"
   communitySide       String?
   createdAt           DateTime         @default(now())
@@ -54,6 +57,7 @@ model Profile {
   sentFriendMessages  FriendDirectMessage[] @relation("FriendMessagesSent")
   arcadeQueues        ArcadeQueue[]
   posts               Post[]
+  bets                TournamentBet[]
 }
 
 model ChessBot {
@@ -61,8 +65,18 @@ model ChessBot {
   name        String      @unique
   personality String?
   elo         Int         @default(1200)
+  winsTotal   Int         @default(0)
+  matchesPlayed Int       @default(0)
+  matchWins     Int       @default(0)
+  matchLosses   Int       @default(0)
   profileIcon String?
   gamesAsBot  ChessGame[] @relation("BotGames")
+  matchesAsPlayer1 AITournamentMatch[] @relation("TournamentPlayer1")
+  matchesAsPlayer2 AITournamentMatch[] @relation("TournamentPlayer2")
+  matchesWon       AITournamentMatch[] @relation("TournamentMatchWinner")
+  tournamentsWon   AITournament[]      @relation("TournamentWinner")
+  memoriesAsBot    AIBotMatchupMemory[] @relation("BotMemoryOwner")
+  memoriesAsOpponent AIBotMatchupMemory[] @relation("BotMemoryOpponent")
   createdAt   DateTime    @default(now())
 }
 
@@ -87,6 +101,7 @@ model ChessGame {
   blackTimeMs   Int?
   correspondenceTurnMs Int?
   currentTurnStartedAt DateTime?
+  drawOfferById String?
 
   // Link to the invitation that started this game
   invitationId  String?      @unique
@@ -99,6 +114,7 @@ model ChessGame {
   @@index([whitePlayerId])
   @@index([blackPlayerId])
   @@index([botId])
+  @@index([status, updatedAt])
 }
 
 // --- MODELOS DE CHAT Y NOTIFICACIONES ---
@@ -165,6 +181,7 @@ model GameInvitation {
 
   @@index([inviterId])
   @@index([inviteeId])
+  @@index([friendshipId])
   @@index([status, modeKey])
 }
 
@@ -202,12 +219,94 @@ model FriendDirectMessage {
 
 model AITournament {
   id          String @id @default(cuid())
-  name        String
-  description String
-  startDate   DateTime
-  endDate     DateTime
-  status      String
-  winner      String?
+  name        String @default("Torneo de Titanes")
+  description String @default("Bracket automático entre motores de ajedrez.")
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  status      String @default("PENDING")
+  winnerId    String?
+  winner      ChessBot? @relation("TournamentWinner", fields: [winnerId], references: [id])
+  matches     AITournamentMatch[]
+  bets        TournamentBet[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  endedAt     DateTime?
+
+  @@index([status, createdAt])
+  @@index([winnerId])
+}
+
+model AITournamentMatch {
+  id           String @id @default(cuid())
+  tournamentId String
+  tournament   AITournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  round        Int
+  player1Id    String
+  player1      ChessBot @relation("TournamentPlayer1", fields: [player1Id], references: [id])
+  player2Id    String
+  player2      ChessBot @relation("TournamentPlayer2", fields: [player2Id], references: [id])
+  winnerId     String?
+  winner       ChessBot? @relation("TournamentMatchWinner", fields: [winnerId], references: [id])
+  bets         TournamentBet[]
+  status       String @default("PENDING")
+  fen          String @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  moves        Json @default("[]")
+  pgn          String @default("")
+  lastMoveAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tournamentId, round, status])
+  @@index([player1Id])
+  @@index([player2Id])
+  @@index([winnerId])
+}
+
+model AIBotMatchupMemory {
+  id            String @id @default(cuid())
+  botId         String
+  bot           ChessBot @relation("BotMemoryOwner", fields: [botId], references: [id], onDelete: Cascade)
+  opponentId    String
+  opponent      ChessBot @relation("BotMemoryOpponent", fields: [opponentId], references: [id], onDelete: Cascade)
+  games         Int @default(0)
+  wins          Int @default(0)
+  losses        Int @default(0)
+  draws         Int @default(0)
+  styleBias     Json @default("{}")
+  openingBias   Json @default("{}")
+  tacticalNotes Json @default("{}")
+  lastFen       String?
+  lastUpdatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  @@unique([botId, opponentId])
+  @@index([opponentId])
+}
+
+model TournamentBet {
+  id              String @id @default(cuid())
+  profileId       String
+  profile         Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tournamentId    String
+  tournament      AITournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matchId         String?
+  match           AITournamentMatch? @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  type            String
+  marketLabel     String
+  selections      Json
+  stake           Int
+  odds            Float
+  potentialPayout Int
+  status          String @default("PENDING")
+  payout          Int @default(0)
+  settledAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([profileId, status])
+  @@index([tournamentId, status])
+  @@index([matchId, status])
+  @@index([type, status])
 }
 
 model SlalomCourse {
@@ -268,5 +367,6 @@ model ArcadeQueue {
   matched   Boolean  @default(false)
   matchId   String?
   
+  @@index([userId])
   @@index([gameKey, matched])
 }

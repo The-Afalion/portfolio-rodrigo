@@ -59,7 +59,7 @@ export default function NexusClient({ playerEmail }: { playerEmail: string }) {
 
   useEffect(() => {
     if (!supabase) return;
-    const channel = supabase.channel('nexus-hub', { config: { presence: { key: playerEmail } } });
+    const channel: any = supabase.channel('nexus-hub', { config: { presence: { key: playerEmail } } });
     channelRef.current = channel;
 
     channel
@@ -108,7 +108,7 @@ export default function NexusClient({ playerEmail }: { playerEmail: string }) {
     setNewMessage('');
   };
 
-  if (!supabase) return <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4"><AlertTriangle className="w-16 h-16 text-red-500 mb-4" /><h1 className="text-2xl font-bold mb-2">Configuración Incompleta</h1><p className="text-neutral-400 text-center max-w-md">Las variables de entorno de Supabase no están configuradas.</p></div>;
+  if (!supabase) return <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4"><AlertTriangle className="w-16 h-16 text-amber-300 mb-4" /><h1 className="text-2xl font-bold mb-2">Nexus está en modo lectura</h1><p className="text-neutral-400 text-center max-w-md">La sala en tiempo real no está activa en esta versión. Puedes volver al portfolio y explorar la simulación principal.</p></div>;
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col">

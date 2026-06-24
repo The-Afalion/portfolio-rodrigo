@@ -15,31 +15,50 @@ export default function GameChat({
 }) {
   const [messages, setMessages] = useState<Array<{ id: string; senderId: string; content: string }>>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     const fetchMessages = async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("gameId", gameId)
-        .order("createdAt", { ascending: true });
-      setMessages((data as Array<{ id: string; senderId: string; content: string }>) ?? []);
+      const response = await fetch(`/api/chess/games/${gameId}/messages`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = await response.json().catch(() => null);
+      setMessages((payload?.messages as Array<{ id: string; senderId: string; content: string }> | undefined) ?? []);
     };
 
     void fetchMessages();
+
+    const fallbackInterval = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void fetchMessages();
+      }
+    }, 12000);
 
     const channel = supabase
       .channel(`chat:${gameId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter: `gameId=eq.${gameId}` },
+        { event: "INSERT", schema: "public", table: "Message", filter: `gameId=eq.${gameId}` },
         (payload: { new: { id: string; senderId: string; content: string } }) => {
-          setMessages((prev) => [...prev, payload.new]);
+          setMessages((prev) => {
+            if (prev.some((message) => message.id === payload.new.id)) {
+              return prev;
+            }
+
+            return [...prev, payload.new];
+          });
         }
       )
       .subscribe();
 
     return () => {
+      window.clearInterval(fallbackInterval);
       void supabase.removeChannel(channel);
     };
   }, [gameId, supabase]);
@@ -51,8 +70,33 @@ export default function GameChat({
       return;
     }
 
-    await supabase.from("messages").insert({ gameId, content: newMessage, senderId: userId });
-    setNewMessage("");
+    setIsSending(true);
+
+    try {
+      const response = await fetch(`/api/chess/games/${gameId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ content: newMessage }),
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (response.ok && payload?.message) {
+        setMessages((prev) => {
+          if (prev.some((message) => message.id === payload.message.id)) {
+            return prev;
+          }
+
+          return [...prev, payload.message];
+        });
+        setNewMessage("");
+      }
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -70,10 +114,10 @@ export default function GameChat({
           value={newMessage}
           onChange={(event) => setNewMessage(event.target.value)}
           className="input input-bordered flex-grow"
-          placeholder="Type a message..."
+          placeholder="Escribe un mensaje..."
         />
-        <button type="submit" className="btn btn-primary ml-2">
-          Send
+        <button type="submit" disabled={isSending || !newMessage.trim()} className="btn btn-primary ml-2">
+          {isSending ? "..." : "Enviar"}
         </button>
       </form>
     </div>

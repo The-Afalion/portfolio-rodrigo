@@ -1,37 +1,11 @@
-import { hasSupabaseAdminEnv, isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import Link from 'next/link';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import FondoAjedrez from '@/components/FondoAjedrez';
+import { getFinishedTournaments } from '@/lib/ai-tournament-server';
 
-async function getFinishedTournaments() {
-  const { data, error } = await supabaseAdmin
-    .from('AITournament')
-    .select(`
-      id,
-      createdAt,
-      winner:winnerId ( name )
-    `)
-    .eq('status', 'FINISHED')
-    .order('createdAt', { ascending: false });
-
-  if (error) {
-    if (!isMissingSupabaseTableError(error)) {
-      console.error("Error fetching finished tournaments:", error.message);
-    }
-    return [];
-  }
-  return data;
-}
+export const dynamic = 'force-dynamic';
 
 export default async function ArchivePage() {
-  if (!hasSupabaseAdminEnv()) {
-    return (
-      <main className="min-h-screen bg-background text-foreground p-8">
-        Configura `SUPABASE_SERVICE_ROLE_KEY` para cargar el archivo de torneos.
-      </main>
-    );
-  }
-
   const tournaments = await getFinishedTournaments();
 
   return (
@@ -58,22 +32,22 @@ export default async function ArchivePage() {
               <div className="bg-secondary/50 backdrop-blur-sm border border-border rounded-lg p-4 flex justify-between items-center hover:border-blue-500 transition-colors">
                 <div>
                   <p className="font-mono text-sm text-muted-foreground">
-                    {new Date(t.createdAt).toLocaleDateString()}
+                    {t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Sin fecha'}
                   </p>
                   <p className="font-bold text-lg flex items-center gap-2">
                     <Trophy size={16} className="text-amber-400" />
-                    Campeón: {(t.winner as any)?.name || 'Desconocido'}
+                    Campeón: {(t.winner as any)?.name || 'Por confirmar'}
                   </p>
                 </div>
                 <div className="font-mono text-xs bg-background px-2 py-1 rounded">
-                  Ver Bracket
+                  Ver bracket
                 </div>
               </div>
             </Link>
           ))
         ) : (
           <div className="text-center text-muted-foreground font-mono">
-            Aún no ha finalizado ningún torneo.
+            El archivo se llenará cuando termine el primer torneo.
           </div>
         )}
       </div>

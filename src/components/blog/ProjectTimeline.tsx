@@ -1,7 +1,8 @@
 "use client";
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Html } from '@react-three/drei';
+import { Text, Html } from '@react-three/drei';
+import OrbitControls from '@/components/three/OrbitControlsCompat';
 import { useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 

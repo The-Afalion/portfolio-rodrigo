@@ -139,7 +139,7 @@ export default function GameLauncher() {
                       <Shield size={16} className="text-cyan-200" />
                       <div>
                         <p className="text-sm font-medium text-white">Experiencia protegida</p>
-                        <p className="mt-1 text-sm text-slate-300">Mantenemos la parte pesada fuera del primer render sin perder la demo completa.</p>
+                        <p className="mt-1 text-sm text-slate-300">La escena completa se activa al entrar para mantener la primera carga ligera.</p>
                       </div>
                     </div>
                   </div>

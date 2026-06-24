@@ -2,7 +2,7 @@ import "server-only";
 
 import { Chess } from "chess.js";
 import prisma from "@/lib/prisma";
-import { evaluarTablero } from "@/utils/chessAI";
+import { rankMoves } from "@/lib/chess-engine";
 import type { CommunitySide } from "@/lib/profile";
 
 export const COMMUNITY_GAME_ID = "main_game";
@@ -11,15 +11,6 @@ export const COMMUNITY_MOVE_INTERVAL_HOURS = 24;
 
 const DEFAULT_FAKE_VOTES_PER_ROUND = 18;
 const BASE_FAKE_DISTRIBUTION = [0.4, 0.25, 0.18, 0.1, 0.07];
-const PIECE_WEIGHTS: Record<string, number> = {
-  p: 1,
-  n: 3,
-  b: 3,
-  r: 5,
-  q: 9,
-  k: 0,
-};
-
 type RankedMove = {
   san: string;
   score: number;
@@ -91,37 +82,10 @@ export async function ensureCommunityGame() {
 }
 
 export function getRankedCommunityMoves(fen: string): RankedMove[] {
-  const game = new Chess(fen);
-  const turn = game.turn();
-  const legalMoves = game.moves({ verbose: true }) as Array<{
-    san: string;
-    captured?: string;
-    promotion?: string;
-  }>;
-
-  return legalMoves
-    .map((move) => {
-      const simulation = new Chess(fen);
-      const moveResult = simulation.move(move.san);
-      if (!moveResult) {
-        return null;
-      }
-
-      const boardEvaluation = evaluarTablero(simulation);
-      const turnAdjustedScore = turn === "w" ? boardEvaluation : -boardEvaluation;
-      const tacticalBonus =
-        (move.captured ? PIECE_WEIGHTS[move.captured] ?? 0 : 0) +
-        (move.promotion ? 8 : 0) +
-        (simulation.isCheck() ? 0.75 : 0) +
-        (simulation.isCheckmate() ? 10000 : 0);
-
-      return {
-        san: move.san,
-        score: turnAdjustedScore + tacticalBonus,
-      };
-    })
-    .filter((move): move is RankedMove => move !== null)
-    .sort((left, right) => right.score - left.score);
+  return rankMoves(fen, { depth: 3 }).map((move) => ({
+    san: move.move,
+    score: move.score,
+  }));
 }
 
 function allocateIntegerVotes(weights: number[], totalVotes: number) {

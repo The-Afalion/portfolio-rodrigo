@@ -2,7 +2,8 @@
 
 import { useState, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, TorusKnot, Icosahedron } from "@react-three/drei";
+import { TorusKnot, Icosahedron } from "@react-three/drei";
+import OrbitControls from "@/components/three/OrbitControlsCompat";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import KayakerModel from "./KayakerModel";
 

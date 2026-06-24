@@ -5,7 +5,7 @@ export async function uploadMedia(file: File, bucket: string = 'blog-media') {
   const env = getSupabaseBrowserEnv();
 
   if (!env) {
-    throw new Error('Faltan las variables públicas de Supabase para subir archivos.');
+    throw new Error('La subida de archivos no está disponible ahora mismo.');
   }
 
   const supabase = createClient(env.url, env.key);

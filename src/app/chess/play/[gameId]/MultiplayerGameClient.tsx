@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
-import { ArrowLeft, Clock3, Swords, Trophy, XCircle } from "lucide-react";
+import { ArrowLeft, Clock3, Flag, Handshake, History, Loader2, Swords, Trophy, UserPlus, XCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import { createClient } from "@/utils/supabase/client";
 import { useChess } from "@/context/ContextoChess";
 import { formatDurationMs, formatRemainingDays } from "@/lib/chess-modes";
@@ -34,6 +35,10 @@ type MultiplayerSnapshot = {
   blackTimeMs: number | null;
   deadlineAt: string | null;
   currentTurnStartedAt: string | null;
+  opponentId: string | null;
+  drawOfferById: string | null;
+  drawOfferByCurrentUser: boolean;
+  drawOfferByOpponent: boolean;
 };
 
 export default function MultiplayerGameClient({ gameId }: { gameId: string }) {
@@ -43,6 +48,7 @@ export default function MultiplayerGameClient({ gameId }: { gameId: string }) {
   const [snapshot, setSnapshot] = useState<MultiplayerSnapshot | null>(null);
   const [loadingGame, setLoadingGame] = useState(true);
   const [submittingMove, setSubmittingMove] = useState(false);
+  const [submittingAction, setSubmittingAction] = useState<string | null>(null);
   const [syncedAt, setSyncedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
@@ -166,6 +172,8 @@ export default function MultiplayerGameClient({ gameId }: { gameId: string }) {
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
+        toast.error(typeof payload?.error === "string" ? payload.error : "No se pudo aplicar el movimiento.");
+        await fetchGame();
         return false;
       }
 
@@ -179,6 +187,85 @@ export default function MultiplayerGameClient({ gameId }: { gameId: string }) {
       return true;
     } finally {
       setSubmittingMove(false);
+    }
+  }
+
+  async function runGameAction(action: "resign" | "offer_draw" | "cancel_draw") {
+    if (!snapshot || snapshot.status !== "IN_PROGRESS") {
+      return;
+    }
+
+    if (action === "resign" && !window.confirm("¿Seguro que quieres rendirte? La partida terminará inmediatamente.")) {
+      return;
+    }
+
+    setSubmittingAction(action);
+
+    try {
+      const response = await fetch(`/api/chess/games/${gameId}/action`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ action }),
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        toast.error(typeof payload?.error === "string" ? payload.error : "No se pudo completar la acción.");
+        return;
+      }
+
+      if (payload?.accepted) {
+        toast.success("Tablas aceptadas.");
+      } else if (payload?.offered) {
+        toast.success("Oferta de tablas enviada.");
+      } else if (action === "cancel_draw") {
+        toast.success("Oferta de tablas cancelada.");
+      } else {
+        toast.success("Acción registrada.");
+      }
+
+      if (payload?.game) {
+        setSnapshot(payload.game as MultiplayerSnapshot);
+        setSyncedAt(Date.now());
+      } else {
+        await fetchGame();
+      }
+    } finally {
+      setSubmittingAction(null);
+    }
+  }
+
+  async function addOpponentAsFriend() {
+    if (!snapshot?.opponentId) {
+      return;
+    }
+
+    setSubmittingAction("friend");
+
+    try {
+      const response = await fetch("/api/chess/friends", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ targetUserId: snapshot.opponentId }),
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        toast.error(typeof payload?.error === "string" ? payload.error : "No se pudo enviar la solicitud.");
+        return;
+      }
+
+      toast.success("Solicitud de amistad enviada.");
+    } finally {
+      setSubmittingAction(null);
     }
   }
 
@@ -360,6 +447,61 @@ export default function MultiplayerGameClient({ gameId }: { gameId: string }) {
             <p className="mt-2 text-sm text-zinc-400">
               Tú juegas con {snapshot.playerColor === "w" ? "blancas" : "negras"}.
             </p>
+          </div>
+
+          <div className="mt-6 rounded-[28px] border border-zinc-800 bg-zinc-950/70 p-6">
+            <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Acciones</p>
+            {snapshot.drawOfferByOpponent ? (
+              <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
+                Tu rival ha ofrecido tablas.
+              </div>
+            ) : null}
+            {snapshot.drawOfferByCurrentUser ? (
+              <div className="mt-4 rounded-2xl border border-sky-400/30 bg-sky-400/10 p-4 text-sm text-sky-100">
+                Tu oferta de tablas está pendiente.
+              </div>
+            ) : null}
+            <div className="mt-4 grid gap-3">
+              <button
+                onClick={() => void runGameAction(snapshot.drawOfferByCurrentUser ? "cancel_draw" : "offer_draw")}
+                disabled={snapshot.status !== "IN_PROGRESS" || Boolean(submittingAction)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submittingAction === "offer_draw" || submittingAction === "cancel_draw" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Handshake size={16} />
+                )}
+                {snapshot.drawOfferByOpponent
+                  ? "Aceptar tablas"
+                  : snapshot.drawOfferByCurrentUser
+                    ? "Cancelar tablas"
+                    : "Ofrecer tablas"}
+              </button>
+              <button
+                onClick={() => void runGameAction("resign")}
+                disabled={snapshot.status !== "IN_PROGRESS" || Boolean(submittingAction)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-100 transition-colors hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submittingAction === "resign" ? <Loader2 size={16} className="animate-spin" /> : <Flag size={16} />}
+                Rendirse
+              </button>
+              <button
+                onClick={() => void addOpponentAsFriend()}
+                disabled={!snapshot.opponentId || Boolean(submittingAction)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submittingAction === "friend" ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+                Añadir rival
+              </button>
+              <Link
+                href="/chess/history"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
+              >
+                <History size={16} />
+                Historial
+              </Link>
+            </div>
           </div>
 
           {snapshot.status !== "COMPLETED" ? null : (

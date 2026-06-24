@@ -5,6 +5,8 @@ import { Mail, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { primaryNavigation, siteConfig } from "@/config/site";
+import OrwellEyeO from "@/components/OrwellEyeO";
+import HomeStyleControls from "@/components/home/HomeStyleControls";
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -13,6 +15,7 @@ function isActive(pathname: string, href: string) {
 export default function SiteHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isHome = pathname === "/";
 
   useEffect(() => {
     setMobileOpen(false);
@@ -26,7 +29,7 @@ export default function SiteHeader() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-md ${
-        pathname === "/"
+        isHome
           ? "border-border/80 bg-background/88"
           : "border-[#d6c4a5]/60 bg-[#fdfbf7]/90 font-serif"
       }`}
@@ -35,10 +38,10 @@ export default function SiteHeader() {
         <Link href="/" className="min-w-0">
           <p
             className={`truncate text-lg font-semibold tracking-tight ${
-              pathname === "/" ? "font-display text-foreground" : "font-serif font-bold text-[#3e3024]"
+              isHome ? "font-display text-foreground" : "font-serif font-bold text-[#3e3024]"
             }`}
           >
-            {siteConfig.name}
+            R<OrwellEyeO className="orwell-eye-o-header" />drigo Alonso
           </p>
         </Link>
 
@@ -48,7 +51,7 @@ export default function SiteHeader() {
               key={item.href}
               href={item.href}
               className={`text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors ${
-                pathname === "/"
+                isHome
                   ? item.active
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -66,7 +69,7 @@ export default function SiteHeader() {
           <a
             href={`mailto:${siteConfig.email}`}
             className={`hidden text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors lg:inline-flex ${
-              pathname === "/" ? "text-muted-foreground hover:text-foreground" : "text-[#8a765f] hover:text-[#3e3024]"
+              isHome ? "text-muted-foreground hover:text-foreground" : "text-[#8a765f] hover:text-[#3e3024]"
             }`}
           >
             <span className="inline-flex items-center gap-2">
@@ -78,8 +81,10 @@ export default function SiteHeader() {
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors lg:hidden ${
-              pathname === "/"
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+              isHome ? "" : "lg:hidden"
+            } ${
+              isHome
                 ? "border-border/80 text-muted-foreground hover:text-foreground"
                 : "border-[#d6c4a5] text-[#8a765f] hover:text-[#3e3024]"
             }`}
@@ -93,34 +98,43 @@ export default function SiteHeader() {
 
       {mobileOpen ? (
         <div
-          className={`border-t lg:hidden ${
-            pathname === "/" ? "border-border/80 bg-background" : "border-[#d6c4a5] bg-[#fdfbf7]"
+          className={`border-t ${isHome ? "" : "lg:hidden"} ${
+            isHome ? "border-border/80 bg-background" : "border-[#d6c4a5] bg-[#fdfbf7]"
           }`}
         >
-          <div className="mx-auto grid max-w-7xl gap-2 px-4 py-4 sm:px-6">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`py-3 text-sm font-medium ${
-                  pathname === "/"
-                    ? item.active
-                      ? "text-foreground"
-                      : "text-muted-foreground"
-                    : item.active
-                      ? "font-bold text-[#8c4030]"
-                      : "text-[#8a765f]"
-                }`}
+          <div className="mx-auto grid max-w-7xl gap-2 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
+            <div className="grid gap-2">
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`py-3 text-sm font-medium ${
+                    isHome
+                      ? item.active
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                      : item.active
+                        ? "font-bold text-[#8c4030]"
+                        : "text-[#8a765f]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <a
+                href={`mailto:${siteConfig.email}`}
+                className={`py-3 text-sm font-medium ${isHome ? "text-foreground" : "text-[#3e3024]"}`}
               >
-                {item.label}
-              </Link>
-            ))}
-            <a
-              href={`mailto:${siteConfig.email}`}
-              className={`py-3 text-sm font-medium ${pathname === "/" ? "text-foreground" : "text-[#3e3024]"}`}
-            >
-              {siteConfig.email}
-            </a>
+                {siteConfig.email}
+              </a>
+            </div>
+
+            {isHome ? (
+              <div className="home-menu-style-panel">
+                <p>Estilo</p>
+                <HomeStyleControls />
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}

@@ -1,29 +1,15 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import { qstash } from "@/lib/qstash";
 import { ensureProfileForUserSafely } from "@/lib/profile";
-import { findFriendshipBetweenUsers } from "@/lib/chess-social";
+import { findFriendshipBetweenUsers, getAuthenticatedChessUser } from "@/lib/chess-social";
 import { getChessModeConfig } from "@/lib/chess-modes";
 
-export async function POST(request: Request) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function POST(request: Request) {
+  const user = await getAuthenticatedChessUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

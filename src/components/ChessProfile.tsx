@@ -59,11 +59,11 @@ export default function ChessProfile({ username }: { username: string }) {
         <div className="flex gap-4 mt-2 text-sm">
           <div className="flex flex-col items-center p-2 bg-white/5 rounded">
             <span className="text-gray-400 text-[10px] uppercase">Rapid</span>
-            <span className="font-mono text-white">{stats?.chess_rapid?.last?.rating || "N/A"}</span>
+            <span className="font-mono text-white">{stats?.chess_rapid?.last?.rating || "Sin dato"}</span>
           </div>
           <div className="flex flex-col items-center p-2 bg-white/5 rounded">
             <span className="text-gray-400 text-[10px] uppercase">Blitz</span>
-            <span className="font-mono text-white">{stats?.chess_blitz?.last?.rating || "N/A"}</span>
+            <span className="font-mono text-white">{stats?.chess_blitz?.last?.rating || "Sin dato"}</span>
           </div>
         </div>
       </div>

@@ -1,31 +1,23 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
+import { getAuthenticatedChessUser } from "@/lib/chess-social";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedChessUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { invitationId } = await request.json();
+  const payload = await request.json().catch(() => null);
+  const invitationId = typeof payload?.invitationId === "string" ? payload.invitationId : "";
+
+  if (!invitationId) {
+    return NextResponse.json({ error: "Falta la invitación." }, { status: 400 });
+  }
 
   try {
     const result = await prisma.gameInvitation.updateMany({

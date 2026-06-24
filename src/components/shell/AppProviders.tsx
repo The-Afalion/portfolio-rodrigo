@@ -15,6 +15,8 @@ function shouldUseChessSessionProvider(pathname: string) {
   return (
     pathname === "/chess" ||
     pathname === "/chess/invitations" ||
+    pathname === "/chess/history" ||
+    pathname === "/chess/community" ||
     pathname.startsWith("/chess/play/") ||
     pathname === "/nexus" ||
     pathname.startsWith("/nexus/")
@@ -22,7 +24,13 @@ function shouldUseChessSessionProvider(pathname: string) {
 }
 
 function shouldUseRealtimeProvider(pathname: string) {
-  return pathname === "/chess" || pathname === "/chess/invitations" || pathname === "/nexus" || pathname.startsWith("/nexus/");
+  return (
+    pathname === "/chess" ||
+    pathname === "/chess/invitations" ||
+    pathname === "/chess/history" ||
+    pathname === "/nexus" ||
+    pathname.startsWith("/nexus/")
+  );
 }
 
 function ProvidersWithOptionalInteractiveContexts({ children }: { children: ReactNode }) {

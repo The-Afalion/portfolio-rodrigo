@@ -2,7 +2,8 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Stage, OrbitControls, useGLTF, Loader } from '@react-three/drei';
+import { Stage, useGLTF, Loader } from '@react-three/drei';
+import OrbitControls from '@/components/three/OrbitControlsCompat';
 
 // --- Componente que carga el modelo ---
 // Suspense se encargará de mostrar el Loader mientras el modelo carga.

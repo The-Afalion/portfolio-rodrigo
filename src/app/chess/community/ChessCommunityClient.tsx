@@ -7,6 +7,7 @@ import { Chessboard } from "react-chessboard";
 import { motion } from "framer-motion";
 import { EyeOff, Loader2, Shield, Vote, Trophy } from "lucide-react";
 import toast from "react-hot-toast";
+import { createClient } from "@/utils/supabase/client";
 import { submitVote } from "./actions";
 
 type CommunityPlayer = {
@@ -50,6 +51,34 @@ export default function ChessCommunityClient({
   const [board, setBoard] = useState(() => new Chess(game.fen));
   const [selectedMove, setSelectedMove] = useState<string>(player.currentVote ?? "");
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("community-chess-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "CommunityChessGame" },
+        () => router.refresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "CommunityVote", filter: "gameId=eq.main_game" },
+        () => router.refresh()
+      )
+      .subscribe();
+
+    const fallbackInterval = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        router.refresh();
+      }
+    }, 45000);
+
+    return () => {
+      window.clearInterval(fallbackInterval);
+      void supabase.removeChannel(channel);
+    };
+  }, [router]);
 
   useEffect(() => {
     setBoard(new Chess(game.fen));

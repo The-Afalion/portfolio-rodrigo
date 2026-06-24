@@ -72,6 +72,7 @@ export default function GamePage() {
   }, [gameId, playerEmail, playerSide, router]);
 
   function onDrop(sourceSquare: string, targetSquare: string) {
+    if (!supabase) return false;
     if (game.turn() !== playerSide?.[0] || !playerSide) return false;
 
     const gameCopy = new Chess(game.fen());

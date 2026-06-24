@@ -184,6 +184,13 @@ function Dashboard() {
       title: "Bandeja de invitaciones",
       description: "Revisa invitaciones pendientes y entra rápido en tus partidas activas.",
     },
+    {
+      href: "/chess/history",
+      icon: Swords,
+      eyebrow: "Historial",
+      title: "Mis partidas",
+      description: "Reanuda partidas activas y revisa resultados recientes contra otros jugadores.",
+    },
   ];
 
   return (

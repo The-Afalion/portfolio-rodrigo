@@ -4,7 +4,10 @@ import { Chess } from "chess.js";
 export type ChessMoveLike = {
   san: string;
   flags: string;
+  from?: string;
+  to?: string;
   captured?: string;
+  promotion?: string;
 };
 
 export type SquareStyleMap = Record<string, CSSProperties>;
@@ -31,5 +34,5 @@ export function buildMoveHintStyles(selectedSquare: string | null, legalTargets:
 }
 
 export function getLegalTargets(game: Chess, square: string) {
-  return game.moves({ square, verbose: true }).map((move) => move.to);
+  return ((game as any).moves({ square, verbose: true }) as Array<{ to: string }>).map((move) => move.to);
 }

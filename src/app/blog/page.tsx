@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import { ArrowUpRight, PenSquare } from "lucide-react";
 import { PageHero, PageShell, SectionInset } from "@/components/shell/PagePrimitives";
+import type { Post, Tag } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,7 +22,7 @@ export default async function PaginaBlog({
 }) {
   const query = searchParams?.q || "";
 
-  let posts: any[] = [];
+  let posts: Array<Post & { tags: Tag[] }> = [];
   try {
     posts = await prisma.post.findMany({
       where: {
@@ -51,7 +52,7 @@ export default async function PaginaBlog({
             </div>
             <Link href="/admin" prefetch={false} className="action-pill">
               <PenSquare size={16} />
-              <span>Acceso editores</span>
+              <span>Área privada</span>
             </Link>
           </>
         }
@@ -127,8 +128,8 @@ export default async function PaginaBlog({
         </section>
       ) : (
         <SectionInset className="py-16 text-center">
-          <h2 className="text-2xl font-semibold">No hay publicaciones todavía</h2>
-          <p className="mt-3 text-muted-foreground">Este espacio se irá llenando con notas y artículos nuevos.</p>
+          <h2 className="text-2xl font-semibold">El archivo está preparando sus primeras notas</h2>
+          <p className="mt-3 text-muted-foreground">Pronto aparecerán artículos, diarios de proyecto y apuntes técnicos.</p>
         </SectionInset>
       )}
     </PageShell>

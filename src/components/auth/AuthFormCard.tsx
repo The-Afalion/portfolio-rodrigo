@@ -183,11 +183,11 @@ export function AuthFormCard({
       setLoading(false);
 
       if (oauthError.message.includes("Unsupported provider")) {
-        setError("Google no está habilitado ahora mismo en Supabase para este proyecto.");
+        setError("El acceso con Google no está disponible ahora mismo. Usa el correo y contraseña.");
         return;
       }
 
-      setError(`No se pudo iniciar el acceso con Google: ${oauthError.message}`);
+      setError("No se pudo iniciar el acceso con Google. Inténtalo de nuevo o usa correo y contraseña.");
     }
   }
 

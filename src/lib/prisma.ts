@@ -18,7 +18,7 @@ function createMissingPrismaClient() {
     {},
     {
       get() {
-        throw new Error('FATAL: DATABASE_URL no está configurada en el entorno del servidor.');
+        throw new Error('La zona de contenidos no está disponible ahora mismo.');
       },
     }
   ) as PrismaClient;

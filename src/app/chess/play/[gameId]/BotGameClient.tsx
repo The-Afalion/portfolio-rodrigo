@@ -158,7 +158,7 @@ export default function BotGameClient({ botId }: { botId: string }) {
       }) as ChessMoveLike | null;
 
       if (!move) {
-        const fallbackMove = snapshot.moves({ verbose: true })[0];
+        const fallbackMove = (snapshot.moves({ verbose: true }) as Array<{ from: string; to: string; promotion?: string }>)[0];
 
         if (!fallbackMove) {
           setPensando(false);

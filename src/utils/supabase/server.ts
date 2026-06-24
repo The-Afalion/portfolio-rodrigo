@@ -13,7 +13,7 @@ export function createClient(cookieStore: ReturnType<typeof cookies>) {
 
   if (!env) {
     return createMissingSupabaseClient(
-      "FALTAN NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY para inicializar Supabase en el servidor."
+      "La zona online no está disponible en esta versión."
     );
   }
 

@@ -135,7 +135,7 @@ export function shouldShowChat(pathname: string) {
 }
 
 export function shouldEnableHomeEffects(pathname: string) {
-  return pathname === '/';
+  return pathname === '/' || pathname.startsWith('/easter-eggs');
 }
 
 export function shouldUsePlainShell(pathname: string) {

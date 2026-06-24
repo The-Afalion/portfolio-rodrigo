@@ -441,7 +441,9 @@ function MiningBelt({ world }: { world: WorldState }) {
   const veinDummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_, delta) => {
-    if (!rockRef.current || !veinRef.current) return;
+    const rockMesh = rockRef.current;
+    const veinMesh = veinRef.current;
+    if (!rockMesh || !veinMesh) return;
 
     world.asteroids.forEach((asteroid, index) => {
       if (asteroid.active) {
@@ -476,12 +478,12 @@ function MiningBelt({ world }: { world: WorldState }) {
 
       dummy.updateMatrix();
       veinDummy.updateMatrix();
-      rockRef.current.setMatrixAt(index, dummy.matrix);
-      veinRef.current.setMatrixAt(index, veinDummy.matrix);
+      rockMesh.setMatrixAt(index, dummy.matrix);
+      veinMesh.setMatrixAt(index, veinDummy.matrix);
     });
 
-    rockRef.current.instanceMatrix.needsUpdate = true;
-    veinRef.current.instanceMatrix.needsUpdate = true;
+    rockMesh.instanceMatrix.needsUpdate = true;
+    veinMesh.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -512,7 +514,8 @@ function PickupField({
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_, delta) => {
-    if (!meshRef.current) return;
+    const mesh = meshRef.current;
+    if (!mesh) return;
 
     world.pickups.forEach((pickup, index) => {
       if (pickup.active && pickup.type === type) {
@@ -534,10 +537,10 @@ function PickupField({
       }
 
       dummy.updateMatrix();
-      meshRef.current.setMatrixAt(index, dummy.matrix);
+      mesh.setMatrixAt(index, dummy.matrix);
     });
 
-    meshRef.current.instanceMatrix.needsUpdate = true;
+    mesh.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -563,7 +566,8 @@ function ProjectileLayer({
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_, delta) => {
-    if (!meshRef.current) return;
+    const mesh = meshRef.current;
+    if (!mesh) return;
 
     projectiles.forEach((projectile, index) => {
       if (projectile.active) {
@@ -583,10 +587,10 @@ function ProjectileLayer({
       }
 
       dummy.updateMatrix();
-      meshRef.current.setMatrixAt(index, dummy.matrix);
+      mesh.setMatrixAt(index, dummy.matrix);
     });
 
-    meshRef.current.instanceMatrix.needsUpdate = true;
+    mesh.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -604,7 +608,9 @@ function EnemySquadron({ world }: { world: WorldState }) {
   const coreDummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_, delta) => {
-    if (!hullRef.current || !glowRef.current) return;
+    const hullMesh = hullRef.current;
+    const glowMesh = glowRef.current;
+    if (!hullMesh || !glowMesh) return;
 
     world.enemies.forEach((enemy, index) => {
       if (enemy.active) {
@@ -625,12 +631,12 @@ function EnemySquadron({ world }: { world: WorldState }) {
 
       dummy.updateMatrix();
       coreDummy.updateMatrix();
-      hullRef.current.setMatrixAt(index, dummy.matrix);
-      glowRef.current.setMatrixAt(index, coreDummy.matrix);
+      hullMesh.setMatrixAt(index, dummy.matrix);
+      glowMesh.setMatrixAt(index, coreDummy.matrix);
     });
 
-    hullRef.current.instanceMatrix.needsUpdate = true;
-    glowRef.current.instanceMatrix.needsUpdate = true;
+    hullMesh.instanceMatrix.needsUpdate = true;
+    glowMesh.instanceMatrix.needsUpdate = true;
   });
 
   return (

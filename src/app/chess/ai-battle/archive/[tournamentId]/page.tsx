@@ -1,54 +1,18 @@
-import { hasSupabaseAdminEnv, isMissingSupabaseTableError, supabaseAdmin } from '@/lib/db';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import FondoAjedrez from '@/components/FondoAjedrez';
 import dynamicImport from 'next/dynamic';
+import { getArchivedTournament } from '@/lib/ai-tournament-server';
 
 // Corregimos la ruta de importación para que apunte al directorio padre
 const ArchiveClient = dynamicImport(() => import('../ArchiveClient'), {
   ssr: false,
-  loading: () => <div className="text-center font-mono animate-pulse">Cargando Archivo...</div>,
+  loading: () => <div className="text-center font-mono animate-pulse">Preparando archivo...</div>,
 });
 
 export const dynamic = 'force-dynamic';
 
-async function getArchivedTournament(id: string) {
-  const { data, error } = await supabaseAdmin
-    .from('AITournament')
-    .select(`
-      id,
-      createdAt,
-      status,
-      winner:winnerId ( name ),
-      matches:AITournamentMatch (
-        *,
-        player1:player1Id ( id, name ),
-        player2:player2Id ( id, name ),
-        winner:winnerId ( id, name )
-      )
-    `)
-    .eq('id', id)
-    .eq('status', 'FINISHED')
-    .single();
-
-  if (error) {
-    if (!isMissingSupabaseTableError(error)) {
-      console.error(`Error fetching archived tournament ${id}:`, error.message);
-    }
-    return null;
-  }
-  return data;
-}
-
 export default async function ArchivedTournamentPage({ params }: { params: { tournamentId: string } }) {
-  if (!hasSupabaseAdminEnv()) {
-    return (
-      <main className="min-h-screen bg-background text-foreground p-8">
-        Configura `SUPABASE_SERVICE_ROLE_KEY` para cargar este archivo.
-      </main>
-    );
-  }
-
   const tournament = await getArchivedTournament(params.tournamentId);
 
   return (

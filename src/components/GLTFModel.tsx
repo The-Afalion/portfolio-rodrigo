@@ -1,7 +1,8 @@
 "use client";
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Stage } from "@react-three/drei";
+import { useGLTF, Stage } from "@react-three/drei";
+import OrbitControls from "@/components/three/OrbitControlsCompat";
 
 // Componente interno que carga el modelo
 function Model({ url }: { url: string }) {

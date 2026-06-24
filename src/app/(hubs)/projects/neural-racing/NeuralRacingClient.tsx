@@ -287,7 +287,7 @@ export default function NeuralRacingClient() {
                         </div>
                         <div className="flex justify-between items-center bg-white/5 p-3">
                             <span className="text-xs text-secondary-foreground font-bold tracking-widest uppercase leading-none">Tráfico</span>
-                            <span className="text-red-400 font-mono text-xl">{level === 3 || level === 5 || level === 7 ? "N/A" : "Masivo"}</span>
+                            <span className="text-red-400 font-mono text-xl">{level === 3 || level === 5 || level === 7 ? "Libre" : "Masivo"}</span>
                         </div>
                     </div>
                 </div>
@@ -317,4 +317,3 @@ export default function NeuralRacingClient() {
         </main>
     );
 }
-

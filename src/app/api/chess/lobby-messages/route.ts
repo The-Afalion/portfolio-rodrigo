@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { ensureProfileForUserSafely, getUserDisplayName } from "@/lib/profile";
+import { getAuthenticatedChessUser } from "@/lib/chess-social";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -26,24 +25,8 @@ function serializeMessage(message: {
   };
 }
 
-async function getAuthenticatedUser() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return null;
-  }
-
-  return user;
-}
-
 export async function GET() {
-  const user = await getAuthenticatedUser();
+  const user = await getAuthenticatedChessUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,7 +45,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthenticatedUser();
+  const user = await getAuthenticatedChessUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

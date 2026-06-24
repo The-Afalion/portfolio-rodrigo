@@ -1,7 +1,8 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Stars, OrbitControls, Text, Float } from "@react-three/drei";
+import { Stars, Text, Float } from "@react-three/drei";
+import OrbitControls from "@/components/three/OrbitControlsCompat";
 import { useRef, useState, useEffect, useMemo } from "react";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { PROYECTOS_CORE } from "@/datos/proyectos";

@@ -26,7 +26,7 @@ export async function saveCourse(name: string, layout: any[]) {
 
     if (error) {
       if (isMissingSupabaseTableError(error)) {
-        return { error: "La tabla de circuitos de slalom todavia no existe en Supabase." };
+        return { error: "La galería compartida no está disponible ahora mismo." };
       }
       throw new Error(error.message);
     }
