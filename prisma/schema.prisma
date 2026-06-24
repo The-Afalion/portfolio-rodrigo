@@ -310,10 +310,14 @@ model TournamentBet {
 }
 
 model SlalomCourse {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  description String
+  description String   @default("")
   bestTime    Float?
+  authorName  String   @default("Invitado")
+  layout      Json     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // --- COMMUNICATION AND MAILING ---
