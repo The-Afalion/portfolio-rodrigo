@@ -31,14 +31,14 @@ export default function SiteHeader() {
       className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-md ${
         isHome
           ? "border-border/80 bg-background/88"
-          : "border-[#d6c4a5]/60 bg-[#fdfbf7]/90 font-serif"
+          : "border-[hsl(var(--border))]/80 bg-[hsl(var(--surface-elevated))]/90"
       }`}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="min-w-0">
           <p
             className={`truncate text-lg font-semibold tracking-tight ${
-              isHome ? "font-display text-foreground" : "font-serif font-bold text-[#3e3024]"
+              isHome ? "font-display text-foreground" : "font-display text-foreground"
             }`}
           >
             R<OrwellEyeO className="orwell-eye-o-header" />drigo Alonso
@@ -56,8 +56,8 @@ export default function SiteHeader() {
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                   : item.active
-                    ? "text-[#8c4030]"
-                    : "text-[#8a765f] hover:text-[#3e3024]"
+                    ? "text-[hsl(var(--primary))]"
+                    : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {item.label}
@@ -69,7 +69,7 @@ export default function SiteHeader() {
           <a
             href={`mailto:${siteConfig.email}`}
             className={`hidden text-[11px] font-semibold uppercase tracking-[0.26em] transition-colors lg:inline-flex ${
-              isHome ? "text-muted-foreground hover:text-foreground" : "text-[#8a765f] hover:text-[#3e3024]"
+              isHome ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className="inline-flex items-center gap-2">
@@ -86,7 +86,7 @@ export default function SiteHeader() {
             } ${
               isHome
                 ? "border-border/80 text-muted-foreground hover:text-foreground"
-                : "border-[#d6c4a5] text-[#8a765f] hover:text-[#3e3024]"
+                : "border-border text-muted-foreground hover:text-foreground"
             }`}
             aria-label="Abrir navegación"
             aria-expanded={mobileOpen}
@@ -99,7 +99,7 @@ export default function SiteHeader() {
       {mobileOpen ? (
         <div
           className={`border-t ${isHome ? "" : "lg:hidden"} ${
-            isHome ? "border-border/80 bg-background" : "border-[#d6c4a5] bg-[#fdfbf7]"
+            isHome ? "border-border/80 bg-background" : "border-border bg-[hsl(var(--surface-elevated))]"
           }`}
         >
           <div className="mx-auto grid max-w-7xl gap-2 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
@@ -114,8 +114,8 @@ export default function SiteHeader() {
                         ? "text-foreground"
                         : "text-muted-foreground"
                       : item.active
-                        ? "font-bold text-[#8c4030]"
-                        : "text-[#8a765f]"
+                        ? "font-bold text-[hsl(var(--primary))]"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {item.label}
@@ -123,7 +123,7 @@ export default function SiteHeader() {
               ))}
               <a
                 href={`mailto:${siteConfig.email}`}
-                className={`py-3 text-sm font-medium ${isHome ? "text-foreground" : "text-[#3e3024]"}`}
+                className="py-3 text-sm font-medium text-foreground"
               >
                 {siteConfig.email}
               </a>
