@@ -59,28 +59,36 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const invitations = await loadPendingInvitations(user.id);
-  const participantIds = Array.from(
-    new Set(
-      invitations.flatMap((invitation) => [invitation.inviterId, invitation.inviteeId])
-    )
-  );
-
-  const displayNames = new Map<string, string>();
-
   try {
-    const supabaseUsers = await listSupabaseUsersByIds(participantIds);
-    supabaseUsers.forEach((supabaseUser) => {
-      displayNames.set(supabaseUser.id, getUserDisplayName(supabaseUser));
+    const invitations = await loadPendingInvitations(user.id);
+    const participantIds = Array.from(
+      new Set(
+        invitations.flatMap((invitation) => [invitation.inviterId, invitation.inviteeId])
+      )
+    );
+
+    const displayNames = new Map<string, string>();
+
+    try {
+      const supabaseUsers = await listSupabaseUsersByIds(participantIds);
+      supabaseUsers.forEach((supabaseUser) => {
+        displayNames.set(supabaseUser.id, getUserDisplayName(supabaseUser));
+      });
+    } catch (resolveError) {
+      console.warn("No se pudieron resolver todos los nombres del lobby de ajedrez.", resolveError);
+    }
+
+    const serialized = invitations.map((invitation) => serializeInvitation(invitation, displayNames));
+
+    return NextResponse.json({
+      incoming: serialized.filter((invitation) => invitation.inviteeId === user.id),
+      outgoing: serialized.filter((invitation) => invitation.inviterId === user.id),
     });
-  } catch (resolveError) {
-    console.warn("No se pudieron resolver todos los nombres del lobby de ajedrez.", resolveError);
+  } catch (dbError) {
+    console.warn("Database error fetching game invitations, returning empty list:", dbError);
+    return NextResponse.json({
+      incoming: [],
+      outgoing: [],
+    });
   }
-
-  const serialized = invitations.map((invitation) => serializeInvitation(invitation, displayNames));
-
-  return NextResponse.json({
-    incoming: serialized.filter((invitation) => invitation.inviteeId === user.id),
-    outgoing: serialized.filter((invitation) => invitation.inviterId === user.id),
-  });
 }

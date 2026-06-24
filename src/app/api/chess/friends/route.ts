@@ -19,72 +19,81 @@ export async function GET() {
 
   await ensureProfileForUserSafely(user);
 
-  const friendships = await prisma.friendship.findMany({
-    where: {
-      OR: [{ requesterId: user.id }, { addresseeId: user.id }],
-    },
-    include: {
-      requester: true,
-      addressee: true,
-      messages: {
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: 1,
+  try {
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [{ requesterId: user.id }, { addresseeId: user.id }],
       },
-    },
-    orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
-  });
-
-  const counterpartIds = friendships.map((friendship) =>
-    friendship.requesterId === user.id ? friendship.addresseeId : friendship.requesterId
-  );
-  const nameMap = await buildDisplayNameMap(counterpartIds);
-
-  const friends = friendships
-    .filter((friendship) => friendship.status === "ACCEPTED")
-    .map((friendship) => {
-      const isRequester = friendship.requesterId === user.id;
-      const counterpart = isRequester ? friendship.addressee : friendship.requester;
-      const lastMessage = friendship.messages[0] ?? null;
-
-      return {
-        id: friendship.id,
-        friendId: counterpart.id,
-        friendName: nameMap.get(counterpart.id) ?? `Jugador ${counterpart.id.slice(0, 6)}`,
-        friendElo: counterpart.elo,
-        createdAt: friendship.createdAt.toISOString(),
-        acceptedAt: serializeTimestamp(friendship.acceptedAt),
-        lastMessageAt: serializeTimestamp(friendship.lastMessageAt ?? lastMessage?.createdAt),
-        lastMessagePreview: lastMessage?.content ?? null,
-      };
+      include: {
+        requester: true,
+        addressee: true,
+        messages: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+      orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
     });
 
-  const incomingRequests = friendships
-    .filter((friendship) => friendship.status === "PENDING" && friendship.addresseeId === user.id)
-    .map((friendship) => ({
-      id: friendship.id,
-      userId: friendship.requester.id,
-      name: nameMap.get(friendship.requester.id) ?? `Jugador ${friendship.requester.id.slice(0, 6)}`,
-      elo: friendship.requester.elo,
-      createdAt: friendship.createdAt.toISOString(),
-    }));
+    const counterpartIds = friendships.map((friendship) =>
+      friendship.requesterId === user.id ? friendship.addresseeId : friendship.requesterId
+    );
+    const nameMap = await buildDisplayNameMap(counterpartIds);
 
-  const outgoingRequests = friendships
-    .filter((friendship) => friendship.status === "PENDING" && friendship.requesterId === user.id)
-    .map((friendship) => ({
-      id: friendship.id,
-      userId: friendship.addressee.id,
-      name: nameMap.get(friendship.addressee.id) ?? `Jugador ${friendship.addressee.id.slice(0, 6)}`,
-      elo: friendship.addressee.elo,
-      createdAt: friendship.createdAt.toISOString(),
-    }));
+    const friends = friendships
+      .filter((friendship) => friendship.status === "ACCEPTED")
+      .map((friendship) => {
+        const isRequester = friendship.requesterId === user.id;
+        const counterpart = isRequester ? friendship.addressee : friendship.requester;
+        const lastMessage = friendship.messages[0] ?? null;
 
-  return NextResponse.json({
-    friends,
-    incomingRequests,
-    outgoingRequests,
-  });
+        return {
+          id: friendship.id,
+          friendId: counterpart.id,
+          friendName: nameMap.get(counterpart.id) ?? `Jugador ${counterpart.id.slice(0, 6)}`,
+          friendElo: counterpart.elo,
+          createdAt: friendship.createdAt.toISOString(),
+          acceptedAt: serializeTimestamp(friendship.acceptedAt),
+          lastMessageAt: serializeTimestamp(friendship.lastMessageAt ?? lastMessage?.createdAt),
+          lastMessagePreview: lastMessage?.content ?? null,
+        };
+      });
+
+    const incomingRequests = friendships
+      .filter((friendship) => friendship.status === "PENDING" && friendship.addresseeId === user.id)
+      .map((friendship) => ({
+        id: friendship.id,
+        userId: friendship.requester.id,
+        name: nameMap.get(friendship.requester.id) ?? `Jugador ${friendship.requester.id.slice(0, 6)}`,
+        elo: friendship.requester.elo,
+        createdAt: friendship.createdAt.toISOString(),
+      }));
+
+    const outgoingRequests = friendships
+      .filter((friendship) => friendship.status === "PENDING" && friendship.requesterId === user.id)
+      .map((friendship) => ({
+        id: friendship.id,
+        userId: friendship.addressee.id,
+        name: nameMap.get(friendship.addressee.id) ?? `Jugador ${friendship.addressee.id.slice(0, 6)}`,
+        elo: friendship.addressee.elo,
+        createdAt: friendship.createdAt.toISOString(),
+      }));
+
+    return NextResponse.json({
+      friends,
+      incomingRequests,
+      outgoingRequests,
+    });
+  } catch (error) {
+    console.warn("Database error fetching friends, returning empty list:", error);
+    return NextResponse.json({
+      friends: [],
+      incomingRequests: [],
+      outgoingRequests: [],
+    });
+  }
 }
 
 export async function POST(request: Request) {
