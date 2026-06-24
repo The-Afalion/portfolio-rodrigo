@@ -97,18 +97,14 @@ export async function ensureProfileForUserSafely(user: Pick<User, 'id' | 'email'
   try {
     return await ensureProfileForUser(user);
   } catch (error) {
-    if (isMissingProfileTableError(error)) {
-      console.warn('Profile table unavailable, using fallback profile.', error);
-      return {
-        id: user.id,
-        elo: 1000,
-        role: isAdminEmail(user.email) ? 'ADMIN' : 'USER',
-        communitySide: getRandomCommunitySide(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-    }
-
-    throw error;
+    console.warn('Database error in ensureProfileForUser, using fallback profile.', error);
+    return {
+      id: user.id,
+      elo: 1000,
+      role: isAdminEmail(user.email) ? 'ADMIN' : 'USER',
+      communitySide: getRandomCommunitySide(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
   }
 }
