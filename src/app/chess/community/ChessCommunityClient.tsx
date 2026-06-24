@@ -9,6 +9,7 @@ import { EyeOff, Loader2, Shield, Vote, Trophy } from "lucide-react";
 import toast from "react-hot-toast";
 import { createClient } from "@/utils/supabase/client";
 import { submitVote } from "./actions";
+import { useUserBoardTheme } from "@/utils/chessThemes";
 
 type CommunityPlayer = {
   id: string;
@@ -47,6 +48,7 @@ export default function ChessCommunityClient({
   game: CommunityGame;
   voteResults: VoteResult[];
 }) {
+  const theme = useUserBoardTheme();
   const router = useRouter();
   const [board, setBoard] = useState(() => new Chess(game.fen));
   const [selectedMove, setSelectedMove] = useState<string>(player.currentVote ?? "");
@@ -153,8 +155,8 @@ export default function ChessCommunityClient({
             position={board.fen()}
             onPieceDrop={onDrop}
             boardOrientation={boardOrientation}
-            customDarkSquareStyle={{ backgroundColor: "#5e6b4f" }}
-            customLightSquareStyle={{ backgroundColor: "#ede3c8" }}
+            customDarkSquareStyle={{ backgroundColor: theme.dark }}
+            customLightSquareStyle={{ backgroundColor: theme.light }}
             customBoardStyle={{ borderRadius: "20px", boxShadow: "0 20px 60px rgba(0,0,0,0.28)" }}
           />
         </div>

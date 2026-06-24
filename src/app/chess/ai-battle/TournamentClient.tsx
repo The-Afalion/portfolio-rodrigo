@@ -8,6 +8,7 @@ import { Crown, Play, Coins, Wand2, ChevronDown, Trophy, Layers3, Activity, Time
 import { placeBetAction, startNewTournament } from './actions';
 import toast from 'react-hot-toast';
 import { AI_DATA } from './ai-data';
+import { getBotBoardTheme } from '@/utils/chessThemes';
 
 // --- COMPONENTES DE UI ---
 // (Los componentes pequeños como AiCard, Champions, etc. no cambian)
@@ -555,7 +556,12 @@ export default function TournamentClient({ initialTournament, initialLeaderboard
         <div className="lg:col-span-2">
           <AnimatePresence mode="wait">
             <motion.div key={activeMatch?.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Chessboard position={game.fen()} boardOrientation={boardOrientation} />
+              <Chessboard 
+                position={game.fen()} 
+                boardOrientation={boardOrientation} 
+                customDarkSquareStyle={{ backgroundColor: activeMatch?.player1?.id ? getBotBoardTheme(activeMatch.player1.id).dark : "#5e6b4f" }}
+                customLightSquareStyle={{ backgroundColor: activeMatch?.player1?.id ? getBotBoardTheme(activeMatch.player1.id).light : "#ede3c8" }}
+              />
             </motion.div>
           </AnimatePresence>
         </div>

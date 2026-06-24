@@ -16,10 +16,34 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isHome = pathname === "/";
+  const [isVisible, setIsVisible] = useState(!isHome);
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isHome) {
+      setIsVisible(true);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 2000);
+
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsVisible(true);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isHome]);
 
   const navigation = primaryNavigation.map((item) => ({
     ...item,
@@ -28,10 +52,12 @@ export default function SiteHeader() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-md ${
+      className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-md transition-all duration-700 ease-in-out ${
         isHome
           ? "border-border/80 bg-background/88"
           : "border-[hsl(var(--border))]/80 bg-[hsl(var(--surface-elevated))]/90"
+      } ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
       }`}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">

@@ -15,6 +15,9 @@ import Link from "next/link";
 import { useChess } from "@/context/ContextoChess";
 import { BOTS } from "@/datos/bots";
 import { buildLoginPath, buildSignupPath } from "@/lib/auth";
+import { BOARD_THEMES, applyUserBoardTheme } from "@/utils/chessThemes";
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 const ChessFriendsPanel = dynamic(() => import("./ChessFriendsPanel"), {
   ssr: false,
@@ -153,6 +156,18 @@ function AuthGate() {
 
 function Dashboard() {
   const { usuario, cerrarSesion } = useChess();
+  const [activeBoardTheme, setActiveBoardTheme] = useState("clasico");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("chess-board-theme") || "clasico";
+    setActiveBoardTheme(saved);
+  }, []);
+
+  const handleSelectTheme = (id: string) => {
+    setActiveBoardTheme(id);
+    applyUserBoardTheme(id);
+    toast.success(`Tablero cambiado a: ${BOARD_THEMES.find(t => t.id === id)?.name}`);
+  };
 
   const defeatedBots = usuario?.botsDefeated ?? [];
   const unlockedBotCount = BOTS.reduce((count, bot, index) => {
@@ -223,6 +238,34 @@ function Dashboard() {
               </button>
             </div>
           </header>
+
+          <div className="surface-panel mb-6 p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-200/70 mb-4">Estilo de Tablero Preferido</h3>
+            <div className="flex flex-wrap gap-3">
+              {BOARD_THEMES.map((theme) => {
+                const isCurrent = activeBoardTheme === theme.id;
+                return (
+                  <button
+                    key={theme.id}
+                    onClick={() => handleSelectTheme(theme.id)}
+                    className={`flex items-center gap-3 rounded-full border px-4 py-2.5 text-xs font-semibold transition-all duration-200 ${
+                      isCurrent
+                        ? "border-amber-300 bg-amber-300/10 text-white"
+                        : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <div className="grid grid-cols-2 h-4 w-4 rounded overflow-hidden shadow-sm shrink-0">
+                      <span className={theme.previewLight} />
+                      <span className={theme.previewDark} />
+                      <span className={theme.previewDark} />
+                      <span className={theme.previewLight} />
+                    </div>
+                    <span>{theme.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="surface-panel overflow-hidden p-6 sm:p-8">

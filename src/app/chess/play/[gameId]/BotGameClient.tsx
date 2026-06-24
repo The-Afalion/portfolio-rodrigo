@@ -8,6 +8,7 @@ import { Chessboard } from "react-chessboard";
 import { ArrowLeft, Brain, Flag, RefreshCw, Shield, Swords, Trophy, XCircle } from "lucide-react";
 import { useChess } from "@/context/ContextoChess";
 import { BOTS, type BotAjedrez } from "@/datos/bots";
+import { getBotBoardTheme } from "@/utils/chessThemes";
 import { analizarMovimientoIA, evaluarTablero } from "@/utils/chessAI";
 import { buildMoveHintStyles, getLegalTargets, type ChessMoveLike } from "./shared";
 
@@ -100,6 +101,7 @@ export default function BotGameClient({ botId }: { botId: string }) {
   const router = useRouter();
   const { usuario, estaInicializando, registrarVictoria } = useChess();
   const bot = useMemo(() => BOTS.find((candidate) => candidate.id === botId) ?? null, [botId]);
+  const botTheme = useMemo(() => bot ? getBotBoardTheme(bot.id) : { dark: "#475569", light: "#d6d3d1" }, [bot]);
   const [fen, setFen] = useState(() => new Chess().fen());
   const [dialogo, setDialogo] = useState("");
   const [lecturaPosicional, setLecturaPosicional] = useState("Esperando el primer movimiento.");
@@ -498,8 +500,8 @@ export default function BotGameClient({ botId }: { botId: string }) {
                   boardOrientation="white"
                   snapToCursor
                   customSquareStyles={moveHintStyles}
-                  customDarkSquareStyle={{ backgroundColor: "#475569" }}
-                  customLightSquareStyle={{ backgroundColor: "#d6d3d1" }}
+                  customDarkSquareStyle={{ backgroundColor: botTheme.dark }}
+                  customLightSquareStyle={{ backgroundColor: botTheme.light }}
                   animationDuration={220}
                   customBoardStyle={{
                     borderRadius: "20px",

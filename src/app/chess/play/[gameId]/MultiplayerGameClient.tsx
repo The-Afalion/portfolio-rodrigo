@@ -12,6 +12,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useChess } from "@/context/ContextoChess";
 import { formatDurationMs, formatRemainingDays } from "@/lib/chess-modes";
 import { buildMoveHintStyles, getLegalTargets } from "./shared";
+import { useUserBoardTheme } from "@/utils/chessThemes";
 
 const GameChat = dynamic(() => import("./GameChat"), {
   ssr: false,
@@ -42,6 +43,7 @@ type MultiplayerSnapshot = {
 };
 
 export default function MultiplayerGameClient({ gameId }: { gameId: string }) {
+  const theme = useUserBoardTheme();
   const supabase = useRef(createClient()).current;
   const router = useRouter();
   const { usuario, estaInicializando } = useChess();
@@ -563,8 +565,8 @@ export default function MultiplayerGameClient({ gameId }: { gameId: string }) {
                   arePiecesDraggable={snapshot.status === "IN_PROGRESS" && snapshot.turn === snapshot.playerColor && !submittingMove}
                   snapToCursor
                   customSquareStyles={moveHintStyles}
-                  customDarkSquareStyle={{ backgroundColor: "#475569" }}
-                  customLightSquareStyle={{ backgroundColor: "#d6d3d1" }}
+                  customDarkSquareStyle={{ backgroundColor: theme.dark }}
+                  customLightSquareStyle={{ backgroundColor: theme.light }}
                   animationDuration={220}
                   customBoardStyle={{
                     borderRadius: "20px",

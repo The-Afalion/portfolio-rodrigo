@@ -244,6 +244,7 @@ function ProjectPlanet({
 export default function GalaxyScene() {
   const router = useRouter();
   const [isShipMode, setIsShipMode] = useState(false);
+  const [hasMoved, setHasMoved] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [warpTarget, setWarpTarget] = useState<THREE.Vector3 | null>(null);
@@ -253,6 +254,28 @@ export default function GalaxyScene() {
   useEffect(() => {
     setIsReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!isShipMode) {
+      setHasMoved(false);
+      return;
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["KeyW", "KeyS", "KeyA", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+        setHasMoved(true);
+      }
+    };
+    const handleTouchOrClick = () => {
+      setHasMoved(true);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("pointerdown", handleTouchOrClick);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("pointerdown", handleTouchOrClick);
+    };
+  }, [isShipMode]);
 
   const asteroidData = useMemo(() => {
     return Array.from({ length: 250 }, () => {
@@ -296,9 +319,9 @@ export default function GalaxyScene() {
               }
             }
           }}
-          className="border border-[#8c673d]/40 bg-[#1a120e]/72 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-[#e8dcc4] shadow-[0_14px_30px_rgba(0,0,0,0.26)] backdrop-blur-md transition-all duration-300 hover:bg-[#8c673d] hover:text-[#fdfbf7]"
+          className="border border-cyan-500/30 bg-black/70 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-[0.22em] text-cyan-400 shadow-[0_4px_30px_rgba(6,182,212,0.2)] backdrop-blur-md transition-all duration-300 hover:border-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 rounded-md hover:scale-105"
         >
-          {isShipMode ? "Desmontar Nave" : "Tomar el Timón"}
+          {isShipMode ? "Salir de la Nave" : "Pilotar Nave"}
         </button>
       </div>
 
@@ -346,12 +369,12 @@ export default function GalaxyScene() {
         )}
       </Canvas>
 
-      {isShipMode && !isWarping && (
-        <div className="pointer-events-none absolute bottom-6 right-6 z-40 hidden border border-[#8c673d]/30 bg-[#1a120e]/50 px-4 py-3 font-mono text-[10px] text-right text-[#a68659] shadow-[0_18px_40px_rgba(0,0,0,0.24)] backdrop-blur md:block">
-          <p className="mb-1 font-bold text-[#e8dcc4]">Modo nave activo</p>
-          <p>W / S acelerar y frenar</p>
-          <p>A / D girar</p>
-          <p className="mt-2 text-[#b8a991]">Toca un orbe para entrar</p>
+      {isShipMode && !isWarping && !hasMoved && (
+        <div className="pointer-events-none absolute bottom-6 right-6 z-40 hidden border border-cyan-500/20 bg-black/75 px-5 py-4 font-mono text-[11px] text-right text-cyan-300/80 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md rounded-lg md:block animate-pulse">
+          <p className="mb-2 font-bold uppercase tracking-wider text-cyan-400">Controles de Vuelo</p>
+          <p>W / S &middot; Acelerar / Frenar</p>
+          <p>A / D &middot; Girar Nave</p>
+          <p className="mt-2 text-cyan-500/50 font-sans italic">Empieza a moverte para cerrar esta guía</p>
         </div>
       )}
 

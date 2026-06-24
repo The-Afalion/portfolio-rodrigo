@@ -5,6 +5,7 @@ import { Chessboard } from "react-chessboard";
 import { motion } from "framer-motion";
 import { RefreshCw, Cpu, Zap, Shield, Brain } from "lucide-react";
 import { obtenerMovimientoIA, evaluarTablero } from "@/utils/chessAI";
+import { useUserBoardTheme } from "@/utils/chessThemes";
 
 type Dificultad = "Fácil" | "Medio" | "Difícil";
 
@@ -24,6 +25,7 @@ const aiConfigByDifficulty: Record<
 };
 
 export default function ChessGame() {
+  const theme = useUserBoardTheme();
   const [partida, setPartida] = useState(new Chess());
   const [estado, setEstado] = useState("Tu turno (Blancas)");
   const [dificultad, setDificultad] = useState<Dificultad>("Medio");
@@ -89,8 +91,8 @@ export default function ChessGame() {
         <Chessboard
           position={partida.fen()}
           onPieceDrop={alSoltarPieza}
-          customDarkSquareStyle={{ backgroundColor: "#B58863" }}
-          customLightSquareStyle={{ backgroundColor: "#F0D9B5" }}
+          customDarkSquareStyle={{ backgroundColor: theme.dark }}
+          customLightSquareStyle={{ backgroundColor: theme.light }}
         />
       </div>
       <div className="w-full lg:w-1/3 p-6 bg-secondary rounded-lg border border-border">
