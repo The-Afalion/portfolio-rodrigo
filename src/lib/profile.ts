@@ -44,6 +44,8 @@ export function getUserDisplayName(user: Pick<User, 'email' | 'user_metadata'>) 
   return email.split('@')[0];
 }
 
+
+
 function isMissingProfileTableError(error: unknown) {
   if (!(error instanceof Error)) {
     return false;
@@ -53,7 +55,8 @@ function isMissingProfileTableError(error: unknown) {
     error.message.includes('does not exist') ||
     error.message.includes('The table `public.Profile` does not exist') ||
     error.message.includes('Could not find the table') ||
-    error.message.includes('P2021')
+    error.message.includes('P2021') ||
+    error.message.includes('La zona de contenidos no está disponible')
   );
 }
 
