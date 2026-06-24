@@ -81,33 +81,64 @@ export default async function CommunityPage() {
     );
   }
 
-  const profile = await ensureProfileForUserSafely(user);
-  let game = await ensureCommunityGame();
+  let profile;
+  let game;
+  let votes;
+  let sideCounts;
 
-  if (new Date() >= game.nextMoveDue) {
-    await executeCommunityRound();
+  try {
+    profile = await ensureProfileForUserSafely(user);
     game = await ensureCommunityGame();
-  }
 
-  await ensureSyntheticVotes(game.id, game.fen);
+    if (new Date() >= game.nextMoveDue) {
+      await executeCommunityRound();
+      game = await ensureCommunityGame();
+    }
 
-  const [votes, sideCounts] = await Promise.all([
-    prisma.communityVote.findMany({
-      where: { gameId: game.id },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.profile.groupBy({
-      by: ["communitySide"],
-      where: {
-        communitySide: {
-          not: null,
+    await ensureSyntheticVotes(game.id, game.fen);
+
+    const results = await Promise.all([
+      prisma.communityVote.findMany({
+        where: { gameId: game.id },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.profile.groupBy({
+        by: ["communitySide"],
+        where: {
+          communitySide: {
+            not: null,
+          },
         },
-      },
-      _count: {
-        _all: true,
-      },
-    }),
-  ]);
+        _count: {
+          _all: true,
+        },
+      }),
+    ]);
+    votes = results[0];
+    sideCounts = results[1];
+  } catch (error) {
+    console.error("Error cargando el ajedrez comunal de la base de datos:", error);
+    return (
+      <div className="page-shell flex min-h-screen items-center justify-center px-4">
+        <div className="surface-panel w-full max-w-2xl p-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Ajedrez comunal</p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
+            La partida comunal está en pausa
+          </h1>
+          <p className="mt-4 text-sm leading-7 text-muted-foreground">
+            Este modo necesita conexión activa con la base de datos para coordinar los bandos, votos y rondas. Puedes volver al club o
+            explorar el resto de modos en solitario mientras tanto.
+          </p>
+          <Link
+            href="/chess"
+            className="mt-8 inline-flex rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background"
+          >
+            Volver al club
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const chess = new Chess(game.fen);
   const playerTurn = communitySideToTurn(profile.communitySide);
