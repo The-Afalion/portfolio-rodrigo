@@ -77,6 +77,50 @@ type ArcadeGameStats = {
   leaderboard: LeaderboardEntry[];
 };
 
+type ChatInvite = {
+  id: string;
+  gameId: string;
+  gameTitle: string;
+  path: string;
+  targetId: string | null;
+  status: "pending" | "accepted" | "declined";
+};
+
+const INVITE_PREFIX = "__arcade_invite__:";
+
+function encodeInviteContent(invite: ChatInvite) {
+  return `${INVITE_PREFIX}${JSON.stringify({
+    i: invite.id,
+    g: invite.gameId,
+    t: invite.gameTitle,
+    p: invite.path,
+    r: invite.targetId,
+    s: invite.status,
+  })}`;
+}
+
+function decodeInviteContent(content: string): { content: string; invite?: ChatInvite; targetId?: string | null } {
+  if (!content.startsWith(INVITE_PREFIX)) return { content };
+  try {
+    const payload = JSON.parse(content.slice(INVITE_PREFIX.length));
+    const invite: ChatInvite = {
+      id: String(payload.i ?? `invite-${Date.now()}`),
+      gameId: String(payload.g ?? "unknown"),
+      gameTitle: String(payload.t ?? "Reto"),
+      path: String(payload.p ?? "/social"),
+      targetId: typeof payload.r === "string" ? payload.r : null,
+      status: payload.s === "accepted" || payload.s === "declined" ? payload.s : "pending",
+    };
+    return {
+      content: `Reto para ${invite.gameTitle}`,
+      invite,
+      targetId: invite.targetId,
+    };
+  } catch {
+    return { content };
+  }
+}
+
 const SIMULATED_RANKINGS: ArcadeGameStats[] = [
   {
     gameKey: "chrono-dasher",
@@ -113,8 +157,11 @@ const SIMULATED_RANKINGS: ArcadeGameStats[] = [
 
 export default function ProjectsSocialClient({ currentUser, initialMessages, initialFriendships, isDbOffline }: any) {
   const router = useRouter();
-  const [friends, setFriends] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [friends, setFriends] = useState<any[]>(() => isDbOffline ? SIMULATED_CREW : []);
+  const [messages, setMessages] = useState<any[]>(() => isDbOffline ? [
+    { id: "msg-init-1", senderId: "system", senderName: "Estación", content: "MÓDULO SOCIAL OFFLINE: Conexión local simulada.", timestamp: Date.now() - 600000 },
+    { id: "msg-init-2", senderId: "crew-2", senderName: "Major Tom", content: "¡Hola! Estoy orbitando tu portfolio Rodrigo, listo para jugar si me envías un reto.", timestamp: Date.now() - 300000 }
+  ] : []);
   const [chatInput, setChatInput] = useState("");
   const [chatTarget, setChatTarget] = useState<any>(null); // Null means global chat
   const [selectedGame, setSelectedGame] = useState(AVAILABLE_GAMES[0]);
@@ -158,13 +205,18 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
         };
       });
       setFriends(formattedFriends);
-      setMessages(initialMessages.map((m: any) => ({
-        id: m.id,
-        senderId: m.senderId,
-        senderName: m.senderName,
-        content: m.content,
-        timestamp: m.timestamp
-      })));
+      setMessages(initialMessages.map((m: any) => {
+        const parsed = decodeInviteContent(m.content);
+        return {
+          id: m.id,
+          senderId: m.senderId,
+          senderName: m.senderName,
+          content: parsed.content,
+          timestamp: m.timestamp,
+          targetId: parsed.targetId ?? null,
+          invite: parsed.invite,
+        };
+      }));
     }
   }, [isSimulatedMode, initialFriendships, initialMessages, currentUser.id]);
 
@@ -181,13 +233,18 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
         const res = await fetch("/api/chess/lobby-messages");
         if (res.ok) {
           const data = await res.json();
-          setMessages(data.messages.map((m: any) => ({
-            id: m.id,
-            senderId: m.senderId,
-            senderName: m.senderName,
-            content: m.content,
-            timestamp: m.timestamp
-          })));
+          setMessages(data.messages.map((m: any) => {
+            const parsed = decodeInviteContent(m.content);
+            return {
+              id: m.id,
+              senderId: m.senderId,
+              senderName: m.senderName,
+              content: parsed.content,
+              timestamp: m.timestamp,
+              targetId: parsed.targetId ?? null,
+              invite: parsed.invite,
+            };
+          }));
         }
       } catch (e) {}
     }, 5000);
@@ -297,19 +354,26 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
   };
 
   // Dispatch Invitation sequence
-  const handleDispatchInvite = () => {
+  const handleDispatchInvite = async () => {
     if (!selectedGame.online) {
       playBeep(1050, "sine", 0.12, 0.05);
       router.push(selectedGame.path);
       return;
     }
 
-    const target = inviteTarget || friends[0];
-    if (!target) return;
+    const target = chatTarget || null;
+    const invite: ChatInvite = {
+      id: `invite-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      gameId: selectedGame.id,
+      gameTitle: selectedGame.title,
+      path: selectedGame.path,
+      targetId: target?.id ?? null,
+      status: "pending",
+    };
 
     playBeep(1200, "square", 0.1, 0.05);
     setActiveNotification(null);
-    setTransmissionStatus(`Transmitiendo reto a ${target.name}...`);
+    setTransmissionStatus(target ? `Transmitiendo reto a ${target.name}...` : "Transmitiendo reto al canal público...");
     setTransmissionProgress(10);
 
     const timer = setInterval(() => {
@@ -317,21 +381,7 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
         if (prev >= 100) {
           clearInterval(timer);
           playBeep(1400, "sine", 0.25, 0.06);
-          setTransmissionStatus(`Reto enviado a ${target.name}. Esperando aceptación...`);
-
-          // Simulate acceptance
-          setTimeout(() => {
-            playBeep(950, "sine", 0.3, 0.07);
-            setTransmissionStatus(null);
-            setTransmissionProgress(0);
-            
-            setActiveNotification({
-              title: "Reto aceptado",
-              message: `${target.name} ha aceptado ${selectedGame.title}. Al abrir la sala, ambos entraréis al matchmaking de este juego.`,
-              actionLabel: "Entrar en sala",
-              path: selectedGame.path
-            });
-          }, 2500);
+          setTransmissionStatus(target ? `Reto enviado a ${target.name}. Esperando respuesta en el canal privado...` : "Reto enviado al canal público. Esperando respuesta...");
 
           return 100;
         }
@@ -339,6 +389,32 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
         return prev + 15;
       });
     }, 200);
+
+    const inviteMessage = {
+      id: invite.id,
+      senderId: currentUser.id,
+      senderName: currentUser.name,
+      content: `Reto para ${selectedGame.title}`,
+      timestamp: Date.now(),
+      targetId: invite.targetId,
+      invite,
+    };
+
+    setMessages(prev => [...prev, inviteMessage]);
+    if (!target) setChatTarget(null);
+
+    if (!isSimulatedMode) {
+      await fetch("/api/chess/lobby-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: encodeInviteContent(invite) }),
+      }).catch(() => null);
+    }
+
+    window.setTimeout(() => {
+      setTransmissionStatus(null);
+      setTransmissionProgress(0);
+    }, 1400);
   };
 
   // Interactive Radar Canvas Renderer
@@ -546,6 +622,46 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
 
     return () => clearInterval(timer);
   }, [isSimulatedMode, friends, activeNotification, transmissionStatus]);
+
+  const updateInviteStatus = (inviteId: string, status: ChatInvite["status"]) => {
+    setMessages(prev => prev.map((message: any) => {
+      if (message.invite?.id !== inviteId) return message;
+      return {
+        ...message,
+        invite: {
+          ...message.invite,
+          status,
+        },
+      };
+    }));
+  };
+
+  const acceptInvite = (invite: ChatInvite) => {
+    playBeep(1050, "sine", 0.22, 0.06);
+    updateInviteStatus(invite.id, "accepted");
+    setMessages(prev => [...prev, {
+      id: `invite-accepted-${Date.now()}`,
+      senderId: "system",
+      senderName: "Estación",
+      content: `Reto aceptado. Entrando en ${invite.gameTitle}...`,
+      timestamp: Date.now(),
+      targetId: invite.targetId,
+    }]);
+    window.setTimeout(() => router.push(invite.path), 450);
+  };
+
+  const declineInvite = (invite: ChatInvite) => {
+    playBeep(420, "sawtooth", 0.12, 0.05);
+    updateInviteStatus(invite.id, "declined");
+    setMessages(prev => [...prev, {
+      id: `invite-declined-${Date.now()}`,
+      senderId: "system",
+      senderName: "Estación",
+      content: `Reto rechazado: ${invite.gameTitle}.`,
+      timestamp: Date.now(),
+      targetId: invite.targetId,
+    }]);
+  };
 
   return (
     <div className="flex flex-col gap-4 h-full max-h-full">
@@ -798,11 +914,64 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
             .map((m: any) => {
               const isMe = m.senderId === currentUser.id;
               const isSystem = m.senderId === "system";
+              const invite = m.invite as ChatInvite | undefined;
 
               if (isSystem) {
                 return (
                   <div key={m.id} className="text-center py-1.5 px-3 border border-cyan-500/10 bg-cyan-500/5 rounded text-[10px] text-cyan-400 tracking-wider">
                     {m.content}
+                  </div>
+                );
+              }
+
+              if (invite) {
+                const isForMe = !invite.targetId || invite.targetId === currentUser.id;
+                const canRespond = !isMe && isForMe && invite.status === "pending";
+                return (
+                  <div key={m.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                    <span className={`text-[9px] uppercase tracking-wider mb-1 ${isMe ? "text-cyan-400" : "text-cyan-500/60"}`}>
+                      {isMe ? "Reto enviado" : m.senderName}
+                    </span>
+                    <div className={`max-w-[90%] rounded-xl border p-4 text-xs shadow-[0_0_18px_rgba(6,182,212,0.12)] ${
+                      invite.status === "accepted"
+                        ? "border-emerald-500/45 bg-emerald-500/10 text-emerald-100"
+                        : invite.status === "declined"
+                          ? "border-red-500/35 bg-red-500/10 text-red-100"
+                          : "border-cyan-500/35 bg-cyan-500/10 text-cyan-100"
+                    }`}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-cyan-300/80">
+                            {invite.targetId ? "Reto privado" : "Reto público"}
+                          </p>
+                          <h3 className="mt-2 text-sm font-bold text-white">{invite.gameTitle}</h3>
+                          <p className="mt-2 text-[11px] leading-relaxed text-cyan-100/75">
+                            {invite.status === "pending"
+                              ? "Esperando respuesta del canal."
+                              : invite.status === "accepted"
+                                ? "Reto aceptado."
+                                : "Reto rechazado."}
+                          </p>
+                        </div>
+                        <Radio size={16} className={invite.status === "pending" ? "text-cyan-300 animate-pulse" : "text-white/50"} />
+                      </div>
+                      {canRespond ? (
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            onClick={() => acceptInvite(invite)}
+                            className="flex-1 rounded border border-emerald-400/50 bg-emerald-500/20 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition hover:bg-emerald-500/35"
+                          >
+                            Aceptar
+                          </button>
+                          <button
+                            onClick={() => declineInvite(invite)}
+                            className="rounded border border-red-400/40 bg-red-500/15 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-red-100 transition hover:bg-red-500/30"
+                          >
+                            Rechazar
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 );
               }
@@ -880,10 +1049,10 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
             ))}
           </div>
 
-          {/* Invitation sender deck */}
+            {/* Invitation sender deck */}
           <div className="border-t border-cyan-500/10 pt-4 shrink-0">
             <div className="text-[10px] text-cyan-500/60 uppercase mb-2">
-              Transmitir: <span className="text-white font-bold">{inviteTarget ? inviteTarget.name : "Selecciona un amigo..."}</span>
+              Transmitir: <span className="text-white font-bold">{chatTarget ? chatTarget.name : "Canal público"}</span>
             </div>
             
             {transmissionStatus ? (
@@ -896,7 +1065,6 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
             ) : (
               <button 
                 onClick={handleDispatchInvite}
-                disabled={selectedGame.online && !inviteTarget && friends.length === 0}
                 className="w-full bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-500/40 text-white py-2.5 rounded-lg text-xs uppercase tracking-widest font-bold transition-all disabled:opacity-40 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center justify-center gap-2 hover:scale-[1.02]"
               >
                 {selectedGame.online ? (

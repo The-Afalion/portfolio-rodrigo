@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
 import { ensureMemoryArcadeMatch, ensureMemoryArtilleryMatch, getArcadeMemoryStore, pruneArcadeMemory } from "@/lib/arcade-memory";
+import { ensureProfileForUserSafely } from "@/lib/profile";
 
 const ONLINE_ARCADE_GAMES = new Set(["artillery", "checkers", "battleship", "aetheria"]);
 
@@ -20,11 +21,13 @@ export async function POST(req: Request) {
     }
 
     let userId = "";
+    let authUser: Awaited<ReturnType<ReturnType<typeof createClient>["auth"]["getUser"]>>["data"]["user"] | null = null;
     let hasSupabaseUser = false;
     try {
       const supabase = createClient(cookies());
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.id) {
+        authUser = user;
         userId = user.id;
         hasSupabaseUser = true;
       }
@@ -37,6 +40,10 @@ export async function POST(req: Request) {
     }
 
     if (!userId) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    if (hasSupabaseUser && authUser) {
+      await ensureProfileForUserSafely(authUser);
+    }
 
     if (!hasSupabaseUser) {
       pruneArcadeMemory();

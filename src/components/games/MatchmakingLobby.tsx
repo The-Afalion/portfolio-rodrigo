@@ -15,6 +15,7 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
 
   useEffect(() => {
     let pollingInterval: NodeJS.Timeout;
+    let matched = false;
     const getGuestId = () => {
       const key = "arcadeGuestId";
       const existing = window.localStorage.getItem(key);
@@ -33,12 +34,15 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
           body: JSON.stringify({ gameKey, action: "join", guestId })
         });
         if (!res.ok) {
-           setStatus("Servidor no disponible. Cancelando...");
+           const data = await res.json().catch(() => null);
+           setStatus(data?.error ? `Servidor no disponible: ${data.error}` : "Servidor no disponible. Reintentando...");
+           pollingInterval = setInterval(pollQueue, 3000);
            return;
         }
         const data = await res.json();
         
         if (data.matched) {
+          matched = true;
           onMatchFound(data.matchId, data.role);
         } else {
           setStatus("Buscando oponentes en línea...");
@@ -58,12 +62,13 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
           body: JSON.stringify({ gameKey, action: "join", guestId })
         });
         if (!res.ok) {
-           clearInterval(pollingInterval);
-           setStatus("Conexión perdida. Escaneo abortado.");
+           const data = await res.json().catch(() => null);
+           setStatus(data?.error ? `Conexión perdida: ${data.error}` : "Conexión perdida. Reintentando...");
            return;
         }
         const data = await res.json();
         if (data.matched) {
+          matched = true;
           clearInterval(pollingInterval);
           setStatus("¡Oponente encontrado! Conectando...");
           setTimeout(() => onMatchFound(data.matchId, data.role), 1500);
@@ -75,6 +80,7 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
 
     return () => {
       clearInterval(pollingInterval);
+      if (matched) return;
       // Salir de cola al desmontar
       fetch("/api/arcade/queue", {
         method: "POST",
