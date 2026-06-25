@@ -17,6 +17,9 @@ function shouldUseChessSessionProvider(pathname: string) {
     pathname === "/chess/invitations" ||
     pathname === "/chess/history" ||
     pathname === "/chess/community" ||
+    pathname === "/chess/ai-battle" ||
+    pathname.startsWith("/chess/ai-battle/") ||
+    pathname === "/chess/human-vs-ai" ||
     pathname.startsWith("/chess/play/") ||
     pathname === "/nexus" ||
     pathname.startsWith("/nexus/")
@@ -28,6 +31,8 @@ function shouldUseRealtimeProvider(pathname: string) {
     pathname === "/chess" ||
     pathname === "/chess/invitations" ||
     pathname === "/chess/history" ||
+    pathname === "/chess/ai-battle" ||
+    pathname.startsWith("/chess/ai-battle/") ||
     pathname === "/nexus" ||
     pathname.startsWith("/nexus/")
   );

@@ -56,6 +56,8 @@ model Profile {
   receivedFriendRequests Friendship[]  @relation("FriendRequestsReceived")
   sentFriendMessages  FriendDirectMessage[] @relation("FriendMessagesSent")
   arcadeQueues        ArcadeQueue[]
+  arcadeMatchesAsPlayer1 ArcadeMatch[] @relation("ArcadeMatchPlayer1")
+  arcadeMatchesAsPlayer2 ArcadeMatch[] @relation("ArcadeMatchPlayer2")
   arcadeScores        ArcadeScore[]
   posts               Post[]
   bets                TournamentBet[]
@@ -374,6 +376,25 @@ model ArcadeQueue {
   
   @@index([userId])
   @@index([gameKey, matched])
+}
+
+model ArcadeMatch {
+  id        String   @id
+  gameKey   String
+  player1Id String
+  player1   Profile  @relation("ArcadeMatchPlayer1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player2Id String
+  player2   Profile  @relation("ArcadeMatchPlayer2", fields: [player2Id], references: [id], onDelete: Cascade)
+  snapshot  Json?
+  version   Int      @default(0)
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gameKey, status])
+  @@index([player1Id])
+  @@index([player2Id])
+  @@index([updatedAt])
 }
 
 model ArcadeScore {

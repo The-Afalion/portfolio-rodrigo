@@ -3,7 +3,9 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
-import { ensureMemoryArtilleryMatch, getArcadeMemoryStore, pruneArcadeMemory } from "@/lib/arcade-memory";
+import { ensureMemoryArcadeMatch, ensureMemoryArtilleryMatch, getArcadeMemoryStore, pruneArcadeMemory } from "@/lib/arcade-memory";
+
+const ONLINE_ARCADE_GAMES = new Set(["artillery", "checkers", "battleship", "aetheria"]);
 
 // Unir a cola o comprobar estado de colas
 export async function POST(req: Request) {
@@ -12,6 +14,9 @@ export async function POST(req: Request) {
 
     if (!gameKey) {
       return NextResponse.json({ error: "Falta gameKey" }, { status: 400 });
+    }
+    if (!ONLINE_ARCADE_GAMES.has(gameKey)) {
+      return NextResponse.json({ error: "Este minijuego no tiene modo online." }, { status: 400 });
     }
 
     let userId = "";
@@ -44,14 +49,20 @@ export async function POST(req: Request) {
 
       const myExistingQueue = store.queue.find((entry) => entry.userId === userId && entry.gameKey === gameKey);
       if (myExistingQueue) {
+        if (myExistingQueue.matched && myExistingQueue.matchId) {
+          store.queue = store.queue.filter((entry) => entry !== myExistingQueue);
+          return NextResponse.json({ matchId: myExistingQueue.matchId, matched: true, role: "player1", mode: "memory" });
+        }
         return NextResponse.json({ status: "waiting", matched: false, mode: "memory" });
       }
 
-      const opponent = store.queue.find((entry) => entry.gameKey === gameKey && entry.userId !== userId);
+      const opponent = store.queue.find((entry) => entry.gameKey === gameKey && entry.userId !== userId && !entry.matched);
       if (opponent) {
         const matchId = uuidv4();
-        store.queue = store.queue.filter((entry) => entry !== opponent);
-        ensureMemoryArtilleryMatch(matchId, opponent.userId, userId, gameKey);
+        opponent.matched = true;
+        opponent.matchId = matchId;
+        ensureMemoryArcadeMatch(matchId, opponent.userId, userId, gameKey);
+        if (gameKey === "artillery") ensureMemoryArtilleryMatch(matchId, opponent.userId, userId, gameKey);
         return NextResponse.json({ matchId, matched: true, role: "player2", mode: "memory" });
       }
 
@@ -82,7 +93,10 @@ export async function POST(req: Request) {
       if (myExistingQueue.matched) {
         // Fuimos emparejados! Borramos nuestra entrada porque ya entramos al juego
         await prisma.arcadeQueue.delete({ where: { id: myExistingQueue.id } });
-        if (myExistingQueue.matchId) ensureMemoryArtilleryMatch(myExistingQueue.matchId, userId, "pending-player2", gameKey);
+        if (myExistingQueue.matchId) {
+          ensureMemoryArcadeMatch(myExistingQueue.matchId, userId, "pending-player2", gameKey);
+          if (gameKey === "artillery") ensureMemoryArtilleryMatch(myExistingQueue.matchId, userId, "pending-player2", gameKey);
+        }
         return NextResponse.json({ matchId: myExistingQueue.matchId, matched: true, role: "player1" });
       } else {
         return NextResponse.json({ status: "waiting", matched: false });
@@ -103,8 +117,17 @@ export async function POST(req: Request) {
         where: { id: opponent.id },
         data: { matched: true, matchId }
       });
+      await prisma.arcadeMatch.create({
+        data: {
+          id: matchId,
+          gameKey,
+          player1Id: opponent.userId,
+          player2Id: userId,
+        },
+      });
 
-      ensureMemoryArtilleryMatch(matchId, opponent.userId, userId, gameKey);
+      ensureMemoryArcadeMatch(matchId, opponent.userId, userId, gameKey);
+      if (gameKey === "artillery") ensureMemoryArtilleryMatch(matchId, opponent.userId, userId, gameKey);
       return NextResponse.json({ matchId, matched: true, role: "player2" });
     } else {
       // Nos ponemos en la cola

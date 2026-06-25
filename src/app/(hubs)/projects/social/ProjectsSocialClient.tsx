@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Send, Gamepad2, Users, MessageSquare, Radio, ShieldAlert, Sparkles, Play, Trophy, BarChart3 } from "lucide-react";
+import { Send, Gamepad2, Users, MessageSquare, Radio, ShieldAlert, Sparkles, Play, Trophy, Menu, X } from "lucide-react";
 
 // Web Audio API Synthesizer for high-fidelity sci-fi sounds
 const playBeep = (freq = 800, type = "sine", duration = 0.08, volume = 0.05) => {
@@ -52,13 +52,13 @@ const SIMULATED_CREW = [
 ];
 
 const AVAILABLE_GAMES = [
-  { id: "chess", title: "Ajedrez Clásico", path: "/chess", desc: "Duelo de reyes ennogrecido por el tiempo.", category: "Tablero" },
-  { id: "checkers", title: "Damas Estelares", path: "/games/checkers", desc: "Clásico táctico de saltos y capturas.", category: "Tablero" },
-  { id: "battleship", title: "Batalla de Flotas", path: "/games/battleship", desc: "Ubica tu flota espacial y destruye al rival.", category: "Estrategia" },
-  { id: "artillery", title: "Artillería", path: "/games/artillery", desc: "Cálculo de trayectorias en gravedades variables.", category: "Cálculo" },
-  { id: "chrono", title: "Chrono Dasher 3D", path: "/chrono-dasher", desc: "Supervivencia de reflejos en el hiperespacio.", category: "Acción" },
-  { id: "aetheria", title: "Aetheria Tactics", path: "/projects/aetheria", desc: "Combate estratégico de cartas sobre rejilla 4x4.", category: "Cartas" },
-  { id: "sandbox", title: "Deep Space Sandbox", path: "/projects/sandbox", desc: "Explora la órbita en simulación de vuelo libre.", category: "Simulador" }
+  { id: "chess", title: "Ajedrez Clásico", path: "/chess", desc: "Duelo de reyes ennogrecido por el tiempo.", category: "Tablero", online: true },
+  { id: "checkers", title: "Damas Estelares", path: "/games/checkers", desc: "Clásico táctico de saltos y capturas por turnos.", category: "Duelo", online: true },
+  { id: "battleship", title: "Batalla de Flotas", path: "/games/battleship", desc: "Combate naval con flotas ocultas y disparos alternos.", category: "Duelo", online: true },
+  { id: "artillery", title: "Artillería", path: "/games/artillery", desc: "Duelos online por turnos con trayectorias y viento.", category: "Online", online: true },
+  { id: "chrono", title: "Chrono Dasher 3D", path: "/chrono-dasher", desc: "Runner de puntuación personal sin invitación.", category: "Arcade", online: false },
+  { id: "aetheria", title: "Aetheria Tactics", path: "/projects/aetheria", desc: "Combate estratégico de cartas sobre rejilla 4x4.", category: "Duelo", online: true },
+  { id: "sandbox", title: "Deep Space Sandbox", path: "/projects/sandbox", desc: "Exploración y duelos contra IA dentro de la estación.", category: "Simulador", online: false }
 ];
 
 type LeaderboardEntry = {
@@ -131,6 +131,7 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
   const [rankingStats, setRankingStats] = useState<ArcadeGameStats[]>(SIMULATED_RANKINGS);
   const [rankingLoading, setRankingLoading] = useState(false);
   const [rankingError, setRankingError] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -297,11 +298,18 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
 
   // Dispatch Invitation sequence
   const handleDispatchInvite = () => {
+    if (!selectedGame.online) {
+      playBeep(1050, "sine", 0.12, 0.05);
+      router.push(selectedGame.path);
+      return;
+    }
+
     const target = inviteTarget || friends[0];
     if (!target) return;
 
     playBeep(1200, "square", 0.1, 0.05);
-    setTransmissionStatus("Iniciando conexión láser de banda ancha...");
+    setActiveNotification(null);
+    setTransmissionStatus(`Transmitiendo reto a ${target.name}...`);
     setTransmissionProgress(10);
 
     const timer = setInterval(() => {
@@ -309,7 +317,7 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
         if (prev >= 100) {
           clearInterval(timer);
           playBeep(1400, "sine", 0.25, 0.06);
-          setTransmissionStatus("¡TELEMETRÍA ENVIADA! Esperando confirmación del receptor...");
+          setTransmissionStatus(`Reto enviado a ${target.name}. Esperando aceptación...`);
 
           // Simulate acceptance
           setTimeout(() => {
@@ -318,9 +326,9 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
             setTransmissionProgress(0);
             
             setActiveNotification({
-              title: "¡Invitación Aceptada!",
-              message: `${target.name} ha aceptado tu invitación para jugar a ${selectedGame.title}. Las coordenadas de la cabina de juego están listas.`,
-              actionLabel: "Iniciar Partida",
+              title: "Reto aceptado",
+              message: `${target.name} ha aceptado ${selectedGame.title}. Al abrir la sala, ambos entraréis al matchmaking de este juego.`,
+              actionLabel: "Entrar en sala",
               path: selectedGame.path
             });
           }, 2500);
@@ -522,7 +530,8 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
       // 15% chance to trigger an invite alert every 15 seconds
       if (Math.random() < 0.15 && friends.length > 0) {
         const randomFriend = friends[Math.floor(Math.random() * friends.length)];
-        const randomGame = AVAILABLE_GAMES[Math.floor(Math.random() * AVAILABLE_GAMES.length)];
+        const onlineGames = AVAILABLE_GAMES.filter((game) => game.online);
+        const randomGame = onlineGames[Math.floor(Math.random() * onlineGames.length)];
 
         playBeep(450, "square", 0.4, 0.08);
         setActiveNotification({
@@ -540,6 +549,84 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
 
   return (
     <div className="flex flex-col gap-4 h-full max-h-full">
+      <div className="flex justify-end">
+        <button
+          onClick={() => {
+            playBeep(1180, "triangle", 0.08, 0.04);
+            setIsMenuOpen(true);
+          }}
+          className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/25 bg-black/45 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-500/10"
+        >
+          <Menu size={15} /> Menu
+        </button>
+      </div>
+
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}>
+          <aside
+            className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto border-l border-cyan-500/25 bg-[#020812] p-5 shadow-[0_0_45px_rgba(6,182,212,0.18)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-5 flex items-center justify-between border-b border-cyan-500/15 pb-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-cyan-400">Menu social</p>
+                <h2 className="mt-2 text-lg font-bold text-white">Ranking</h2>
+              </div>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="rounded border border-cyan-500/20 p-2 text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-500/10"
+                aria-label="Cerrar menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {rankingLoading ? (
+              <p className="rounded border border-cyan-500/15 bg-cyan-500/5 p-3 text-[10px] uppercase tracking-[0.2em] text-cyan-300">Sincronizando rankings...</p>
+            ) : null}
+            {rankingError ? (
+              <p className="mb-3 rounded border border-amber-500/30 bg-amber-500/5 p-3 text-[11px] text-amber-300">{rankingError}</p>
+            ) : null}
+
+            <div className="space-y-3">
+              {rankingStats.map((game) => {
+                const champion = game.leaderboard[0];
+                return (
+                  <section key={game.gameKey} className="rounded-lg border border-cyan-500/15 bg-black/45 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-white">{game.label}</h3>
+                        <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-cyan-500/60">
+                          Tu récord: <span className="text-cyan-100">{game.personalBest}</span> · {game.attempts} intentos
+                        </p>
+                      </div>
+                      <Trophy size={15} className="text-amber-300" />
+                    </div>
+                    <div className="mt-3 rounded border border-amber-300/20 bg-amber-300/5 p-2">
+                      <p className="text-[8px] uppercase tracking-[0.18em] text-amber-200/70">Mejor actual</p>
+                      <p className="mt-1 truncate text-xs font-bold text-amber-100">{champion?.name ?? "Sin datos"}</p>
+                      <p className="font-mono text-sm text-white">{champion?.bestScore ?? 0}</p>
+                    </div>
+                    <div className="mt-3 space-y-1.5">
+                      {game.leaderboard.length === 0 ? (
+                        <p className="rounded border border-dashed border-cyan-500/15 p-2 text-center text-[10px] text-cyan-500/50">Aún no hay puntuaciones guardadas.</p>
+                      ) : (
+                        game.leaderboard.slice(0, 5).map((entry) => (
+                          <div key={`${game.gameKey}-${entry.userId}`} className="flex items-center justify-between gap-2 rounded border border-cyan-500/10 bg-cyan-500/[0.03] px-2 py-1.5">
+                            <span className="truncate text-[11px] font-bold text-cyan-100">#{entry.rank} {entry.name}</span>
+                            <span className="font-mono text-xs font-bold text-white">{entry.bestScore}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </aside>
+        </div>
+      )}
+
       {/* DB Offline/Simulated Mode Warning Indicator */}
       {isDbOffline && (
         <div className="flex items-center gap-3 border border-amber-500/30 bg-amber-500/5 px-4 py-3 rounded-lg text-xs text-amber-400/90 shadow-[0_0_15px_rgba(245,158,11,0.05)] shrink-0 select-none">
@@ -762,77 +849,6 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
 
       {/* RIGHT COLUMN: Game Dispatch and Active Invites */}
       <div className="lg:col-span-3 flex flex-col gap-6 min-h-0">
-        {/* RANKING SUMMARY */}
-        <details
-          open
-          className="group border border-cyan-500/20 bg-black/40 rounded-xl p-4 shadow-[0_0_20px_rgba(0,0,0,0.35)] transition open:border-cyan-400/60 open:bg-cyan-500/10"
-          onToggle={() => playBeep(1180, "triangle", 0.08, 0.04)}
-        >
-          <summary className="cursor-pointer list-none text-left marker:hidden">
-            <div className="flex items-center justify-between">
-              <span className="text-xs uppercase font-bold text-white tracking-widest flex items-center gap-2">
-                <Trophy size={14} className="text-amber-300" /> Ranking
-              </span>
-              <BarChart3 size={16} className="text-cyan-400/70 transition group-hover:text-cyan-200" />
-            </div>
-            <p className="mt-2 text-[10px] leading-relaxed text-cyan-500/70">
-              Récords personales, mejores pilotos y estadísticas de arcade.
-            </p>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-              {rankingStats.slice(0, 3).map((game) => (
-                <div key={game.gameKey} className="rounded border border-cyan-500/10 bg-black/35 px-2 py-1.5">
-                  <p className="truncate text-[8px] uppercase tracking-wider text-cyan-500/60">{game.label}</p>
-                  <p className="font-mono text-xs font-bold text-cyan-100">{game.personalBest}</p>
-                </div>
-              ))}
-            </div>
-          </summary>
-
-          <div className="mt-4 max-h-80 overflow-y-auto border-t border-cyan-500/15 pt-4">
-            {rankingLoading ? (
-              <p className="rounded border border-cyan-500/15 bg-cyan-500/5 p-3 text-[10px] uppercase tracking-[0.2em] text-cyan-300">Sincronizando rankings...</p>
-            ) : null}
-            {rankingError ? (
-              <p className="mb-3 rounded border border-amber-500/30 bg-amber-500/5 p-3 text-[11px] text-amber-300">{rankingError}</p>
-            ) : null}
-            <div className="space-y-3">
-              {rankingStats.map((game) => {
-                const champion = game.leaderboard[0];
-                return (
-                  <section key={game.gameKey} className="rounded-lg border border-cyan-500/15 bg-black/45 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-white">{game.label}</h3>
-                        <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-cyan-500/60">
-                          Tu récord: <span className="text-cyan-100">{game.personalBest}</span> · {game.attempts} intentos
-                        </p>
-                      </div>
-                      <Trophy size={15} className="text-amber-300" />
-                    </div>
-                    <div className="mt-3 rounded border border-amber-300/20 bg-amber-300/5 p-2">
-                      <p className="text-[8px] uppercase tracking-[0.18em] text-amber-200/70">Mejor actual</p>
-                      <p className="mt-1 truncate text-xs font-bold text-amber-100">{champion?.name ?? "Sin datos"}</p>
-                      <p className="font-mono text-sm text-white">{champion?.bestScore ?? 0}</p>
-                    </div>
-                    <div className="mt-3 space-y-1.5">
-                      {game.leaderboard.length === 0 ? (
-                        <p className="rounded border border-dashed border-cyan-500/15 p-2 text-center text-[10px] text-cyan-500/50">Aún no hay puntuaciones guardadas.</p>
-                      ) : (
-                        game.leaderboard.slice(0, 5).map((entry) => (
-                          <div key={`${game.gameKey}-${entry.userId}`} className="flex items-center justify-between gap-2 rounded border border-cyan-500/10 bg-cyan-500/[0.03] px-2 py-1.5">
-                            <span className="truncate text-[11px] font-bold text-cyan-100">#{entry.rank} {entry.name}</span>
-                            <span className="font-mono text-xs font-bold text-white">{entry.bestScore}</span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          </div>
-        </details>
-        
         {/* GAME DISPATCHER */}
         <div className="border border-cyan-500/20 bg-black/40 rounded-xl p-5 flex-1 flex flex-col min-h-0 shadow-[0_0_20px_rgba(0,0,0,0.4)]">
           <h2 className="text-xs uppercase font-bold text-white tracking-widest flex items-center gap-2 border-b border-cyan-500/10 pb-2.5 mb-4 shrink-0">
@@ -867,7 +883,7 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
           {/* Invitation sender deck */}
           <div className="border-t border-cyan-500/10 pt-4 shrink-0">
             <div className="text-[10px] text-cyan-500/60 uppercase mb-2">
-              Destinatario: <span className="text-white font-bold">{inviteTarget ? inviteTarget.name : "Selecciona un amigo..."}</span>
+              Transmitir: <span className="text-white font-bold">{inviteTarget ? inviteTarget.name : "Selecciona un amigo..."}</span>
             </div>
             
             {transmissionStatus ? (
@@ -880,10 +896,18 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
             ) : (
               <button 
                 onClick={handleDispatchInvite}
-                disabled={!inviteTarget && friends.length === 0}
+                disabled={selectedGame.online && !inviteTarget && friends.length === 0}
                 className="w-full bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-500/40 text-white py-2.5 rounded-lg text-xs uppercase tracking-widest font-bold transition-all disabled:opacity-40 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center justify-center gap-2 hover:scale-[1.02]"
               >
-                <Radio size={14} className="animate-pulse" /> Transmitir Reto
+                {selectedGame.online ? (
+                  <>
+                    <Radio size={14} className="animate-pulse" /> Transmitir Reto
+                  </>
+                ) : (
+                  <>
+                    <Play size={14} /> Abrir Juego
+                  </>
+                )}
               </button>
             )}
           </div>
