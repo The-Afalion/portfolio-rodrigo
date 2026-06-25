@@ -58,8 +58,7 @@ export default async function ProjectsSocialPage() {
       {/* Background radial glow */}
       <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.08)_0%,transparent_70%)]" />
 
-      {/* Retro Sci-fi CRT Scanline overlays (subtle opacity for readability) */}
-      <div className="pointer-events-none absolute inset-0 z-40 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.06)_50%)] bg-[length:100%_6px]" />
+
 
       <header className="relative z-30 flex items-center justify-between border-b border-cyan-500/20 bg-black/40 px-6 py-4 backdrop-blur-md">
         <div className="flex items-center gap-4">

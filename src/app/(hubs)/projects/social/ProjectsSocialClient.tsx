@@ -454,7 +454,18 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
   }, [isSimulatedMode, friends, activeNotification, transmissionStatus]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full max-h-full">
+    <div className="flex flex-col gap-4 h-full max-h-full">
+      {/* DB Offline/Simulated Mode Warning Indicator */}
+      {isDbOffline && (
+        <div className="flex items-center gap-3 border border-amber-500/30 bg-amber-500/5 px-4 py-3 rounded-lg text-xs text-amber-400/90 shadow-[0_0_15px_rgba(245,158,11,0.05)] shrink-0 select-none">
+          <ShieldAlert size={16} className="text-amber-500 animate-pulse shrink-0" />
+          <div className="flex-1">
+            <span className="font-bold uppercase tracking-wider">Base de datos no disponible:</span> El sistema no ha podido establecer conexión con el servidor central de perfiles compartidos. Se ha activado el <strong>Modo Simulado local</strong>; la tripulación, retos y telecomunicaciones son recreados localmente por la estación.
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
       
       {/* LEFT COLUMN: Orbital Radar and Friends */}
       <div className="lg:col-span-4 flex flex-col gap-6 min-h-0">
@@ -761,9 +772,9 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
             </div>
           </div>
         )}
-
       </div>
 
+    </div>
     </div>
   );
 }
