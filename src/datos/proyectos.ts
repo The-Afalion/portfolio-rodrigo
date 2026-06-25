@@ -144,7 +144,7 @@ export const PROYECTOS_CORE: ProyectoCore[] = [
     tech: ['Prisma', 'Supabase', 'Serverless'],
     color: '#ff00ff',
     position: [0, 15, 0] as [number, number, number],
-    link: '/social'
+    link: '/projects/social'
   }
 ];
 
