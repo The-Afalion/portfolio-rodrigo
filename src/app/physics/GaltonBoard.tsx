@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Matter from "matter-js";
-import { Play, Pause, RefreshCw, Plus, Gamepad2, ChevronRight, HelpCircle, Star, Trophy } from "lucide-react";
+import { Play, Pause, RefreshCw, Plus, Gamepad2, ChevronRight, Star, Trophy, Sparkles } from "lucide-react";
 
 // Web Audio API Synthesizer for retro arcade sound effects
-const playArcadeSound = (type: "launch" | "peg" | "bumper" | "score" | "jackpot") => {
+const playArcadeSound = (type: "launch" | "peg" | "bumper" | "score" | "jackpot" | "flipper" | "target") => {
   if (typeof window === "undefined") return;
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -15,45 +15,59 @@ const playArcadeSound = (type: "launch" | "peg" | "bumper" | "score" | "jackpot"
     gain.connect(ctx.destination);
 
     const now = ctx.currentTime;
-    gain.gain.setValueAtTime(0.04, now);
+    gain.gain.setValueAtTime(0.03, now);
 
     if (type === "launch") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(700, now + 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
       osc.start(now);
-      osc.stop(now + 0.18);
+      osc.stop(now + 0.22);
     } else if (type === "peg") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(900 + Math.random() * 200, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      osc.frequency.setValueAtTime(800 + Math.random() * 300, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
       osc.start(now);
-      osc.stop(now + 0.05);
+      osc.stop(now + 0.04);
     } else if (type === "bumper") {
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(250, now);
+      osc.frequency.setValueAtTime(500, now + 0.05);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else if (type === "target") {
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.setValueAtTime(600, now + 0.05);
-      gain.gain.setValueAtTime(0.08, now);
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.setValueAtTime(1000, now + 0.06);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
       osc.start(now);
       osc.stop(now + 0.15);
+    } else if (type === "flipper") {
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(180, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
     } else if (type === "score") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(1200, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+      osc.frequency.setValueAtTime(1100, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
       osc.start(now);
-      osc.stop(now + 0.1);
+      osc.stop(now + 0.08);
     } else if (type === "jackpot") {
       osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(523.25, now); // C5
-      osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
-      osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
-      osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      osc.frequency.setValueAtTime(1318.51, now + 0.32);
+      gain.gain.setValueAtTime(0.07, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
       osc.start(now);
-      osc.stop(now + 0.4);
+      osc.stop(now + 0.5);
     }
   } catch (e) {}
 };
@@ -70,20 +84,18 @@ export default function PhysicsLab() {
   const engineRef = useRef<Matter.Engine | null>(null);
   const runnerRef = useRef<Matter.Runner | null>(null);
   
-  // Simulation and Game state
+  // Game states
   const [activeMode, setActiveMode] = useState<"galton" | "pachinko" | "pinball">("galton");
   const [ballCount, setBallCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [arcadeScore, setArcadeScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
 
-  // Flipper keys active trackers (using refs for the Matter.js frame loop)
   const keysPressedRef = useRef<{ left: boolean; right: boolean }>({ left: false, right: false });
 
   const setup = (mode = activeMode) => {
     if (!sceneRef.current) return;
 
-    // Reset Matter.js
     if (engineRef.current) {
       Matter.World.clear(engineRef.current.world, false);
       Matter.Engine.clear(engineRef.current);
@@ -95,11 +107,10 @@ export default function PhysicsLab() {
     const engine = Engine.create();
     engineRef.current = engine;
 
-    // Apply gravity
-    engine.world.gravity.y = mode === "pinball" ? 1.5 : 1.2;
+    engine.world.gravity.y = mode === "pinball" ? 1.6 : 1.25;
 
     const width = sceneRef.current.clientWidth || 700;
-    const height = sceneRef.current.clientHeight || 600;
+    const height = sceneRef.current.clientHeight || 650;
 
     const render = Render.create({
       element: sceneRef.current,
@@ -117,53 +128,56 @@ export default function PhysicsLab() {
 
     // --- MODE 1: GALTON BOARD ---
     if (mode === "galton") {
-      // 1. Funnel (Embudo) & Neck at the top to guide balls in a straight line
-      const funnelLeft = Bodies.rectangle(width / 2 - 55, 55, 110, 6, {
+      // Glow-themed Funnel
+      const funnelLeft = Bodies.rectangle(width / 2 - 58, 60, 120, 8, {
         isStatic: true,
-        angle: Math.PI / 6, // 30 degrees
-        render: { fillStyle: "#67e8f9", strokeStyle: "#22d3ee", lineWidth: 1 },
+        angle: Math.PI / 5.5,
+        render: { fillStyle: "rgba(6, 182, 212, 0.2)", strokeStyle: "#06b6d4", lineWidth: 2 },
       });
-      const funnelRight = Bodies.rectangle(width / 2 + 55, 55, 110, 6, {
+      const funnelRight = Bodies.rectangle(width / 2 + 58, 60, 120, 8, {
         isStatic: true,
-        angle: -Math.PI / 6,
-        render: { fillStyle: "#67e8f9", strokeStyle: "#22d3ee", lineWidth: 1 },
+        angle: -Math.PI / 5.5,
+        render: { fillStyle: "rgba(6, 182, 212, 0.2)", strokeStyle: "#06b6d4", lineWidth: 2 },
       });
-      const neckLeft = Bodies.rectangle(width / 2 - 12, 100, 4, 30, {
+      const neckLeft = Bodies.rectangle(width / 2 - 13, 110, 5, 40, {
         isStatic: true,
-        render: { fillStyle: "#67e8f9" },
+        render: { fillStyle: "#06b6d4" },
       });
-      const neckRight = Bodies.rectangle(width / 2 + 12, 100, 4, 30, {
+      const neckRight = Bodies.rectangle(width / 2 + 13, 110, 5, 40, {
         isStatic: true,
-        render: { fillStyle: "#67e8f9" },
+        render: { fillStyle: "#06b6d4" },
       });
 
       bodiesToAdd.push(funnelLeft, funnelRight, neckLeft, neckRight);
 
-      // 2. Triangular Peg grid
-      const pegRadius = 3;
-      const startY = 135;
+      // Peg grid with neon glow coloring
+      const startY = 145;
       for (let row = 0; row < rows; row++) {
         const cols = row + 3;
         const rowWidth = (cols - 1) * pegSpacing;
         const startX = (width - rowWidth) / 2;
+        
+        // Colors mapping representing temperature probability
+        const rowColor = row < 4 ? "#38bdf8" : row < 8 ? "#a855f7" : "#ec4899";
+
         for (let col = 0; col < cols; col++) {
           const x = startX + col * pegSpacing;
           const y = startY + row * pegSpacing;
           bodiesToAdd.push(
-            Bodies.circle(x, y, pegRadius, {
+            Bodies.circle(x, y, 3.5, {
               isStatic: true,
-              restitution: 0.6,
-              friction: 0.01,
+              restitution: 0.62,
+              friction: 0.008,
               label: "peg",
-              render: { fillStyle: "#cbd5e1" },
+              render: { fillStyle: rowColor, strokeStyle: "#ffffff", lineWidth: 0.5 },
             })
           );
         }
       }
 
-      // 3. Collecting Buckets at the bottom
-      const bucketWidth = 6;
-      const bucketHeight = 160;
+      // Colorful collecting channels
+      const bucketWidth = 5;
+      const bucketHeight = 170;
       const numBuckets = rows + 2;
       const totalBucketsWidth = numBuckets * pegSpacing;
       const startBucketX = (width - totalBucketsWidth) / 2;
@@ -174,7 +188,7 @@ export default function PhysicsLab() {
         bodiesToAdd.push(
           Bodies.rectangle(x, bucketY, bucketWidth, bucketHeight, {
             isStatic: true,
-            render: { fillStyle: "#334155" },
+            render: { fillStyle: "#1e293b", strokeStyle: "rgba(56, 189, 248, 0.2)", lineWidth: 1 },
           })
         );
       }
@@ -185,209 +199,309 @@ export default function PhysicsLab() {
 
     // --- MODE 2: PACHINKO GAME ---
     else if (mode === "pachinko") {
-      // Boundaries & Plunger launcher channel
-      const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#1e293b" } });
-      const rightLauncherWall = Bodies.rectangle(width - 50, height / 2 + 40, 8, height - 80, { isStatic: true, render: { fillStyle: "#475569" } });
-      const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#1e293b" } });
+      const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
+      const rightLauncherWall = Bodies.rectangle(width - 50, height / 2 + 50, 8, height - 100, { isStatic: true, render: { fillStyle: "#334155" } });
+      const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
+      
+      // Bottom plunger floor supporting launching balls
+      const launcherPlungerFloor = Bodies.rectangle(width - 30, height - 15, 30, 10, {
+        isStatic: true,
+        render: { fillStyle: "#334155" },
+      });
+
       const ground = Bodies.rectangle(width / 2, height + 10, width, 20, { isStatic: true });
+      bodiesToAdd.push(leftWall, rightLauncherWall, rightWall, launcherPlungerFloor, ground);
 
-      bodiesToAdd.push(leftWall, rightLauncherWall, rightWall, ground);
-
-      // Angled entry guide at top right to push balls from launcher into main board
-      const upperRightGuide = Bodies.rectangle(width - 60, 40, 100, 6, {
+      const upperRightGuide = Bodies.rectangle(width - 60, 45, 110, 8, {
         isStatic: true,
         angle: Math.PI / 4,
-        render: { fillStyle: "#f43f5e" },
+        render: { fillStyle: "#d946ef", strokeStyle: "#f472b6", lineWidth: 1 },
       });
       bodiesToAdd.push(upperRightGuide);
 
-      // Pins layout with fun circular obstacles and bumpers
-      const startX = 30;
-      const endX = width - 70;
-      const startY = 80;
-      const endY = height - 120;
+      // Pins layout
+      const startX = 35;
+      const endX = width - 75;
+      const startY = 90;
+      const endY = height - 130;
 
       for (let y = startY; y < endY; y += 45) {
         const isOffset = (y / 45) % 2 === 0;
         const spacingX = 40;
         const initialX = isOffset ? startX + 20 : startX;
         for (let x = initialX; x < endX; x += spacingX) {
-          // Leave room for spinner centers or special pegs
-          if (Math.abs(x - width / 2) < 30 && Math.abs(y - height / 2) < 40) continue;
+          if (Math.abs(x - width / 2) < 40 && Math.abs(y - height / 2) < 50) continue;
 
           bodiesToAdd.push(
             Bodies.circle(x, y, 3, {
               isStatic: true,
               restitution: 0.8,
               label: "peg",
-              render: { fillStyle: "#e2e8f0" },
+              render: { fillStyle: "#94a3b8" },
             })
           );
         }
       }
 
-      // Add two animated static spinners (rotates in collision tick)
-      const spinner1 = Bodies.rectangle(width / 2 - 80, height / 2 - 20, 60, 6, {
+      // Animating rotating windmills
+      const spinner1 = Bodies.rectangle(width / 2 - 80, height / 2 - 20, 65, 6, {
         isStatic: true,
         label: "spinner",
-        render: { fillStyle: "#f59e0b" },
+        render: { fillStyle: "#ec4899", strokeStyle: "#fbcfe8", lineWidth: 1 },
       });
-      const spinner2 = Bodies.rectangle(width / 2 + 80, height / 2 - 20, 60, 6, {
+      const spinner2 = Bodies.rectangle(width / 2 + 80, height / 2 - 20, 65, 6, {
         isStatic: true,
         label: "spinner",
-        render: { fillStyle: "#f59e0b" },
+        render: { fillStyle: "#ec4899", strokeStyle: "#fbcfe8", lineWidth: 1 },
       });
       bodiesToAdd.push(spinner1, spinner2);
 
-      // Catch cups with different scores at the bottom
+      // Catch cups with different scores
       const scoreCups = [
-        { x: 60, width: 80, label: "cup-10", score: 10, fill: "#334155" },
-        { x: 150, width: 80, label: "cup-50", score: 50, fill: "#f59e0b" },
-        { x: width / 2 - 15, width: 80, label: "cup-jackpot", score: 500, fill: "#ec4899" }, // Jackpot central
-        { x: width - 180, width: 80, label: "cup-50", score: 50, fill: "#f59e0b" },
-        { x: width - 90, width: 80, label: "cup-10", score: 10, fill: "#334155" },
+        { x: 60, width: 75, label: "cup-20", score: 20, fill: "rgba(51, 65, 85, 0.6)" },
+        { x: 145, width: 75, label: "cup-100", score: 100, fill: "rgba(245, 158, 11, 0.25)" },
+        { x: width / 2 - 15, width: 75, label: "cup-jackpot", score: 500, fill: "rgba(236, 72, 153, 0.3)" },
+        { x: width - 180, width: 75, label: "cup-100", score: 100, fill: "rgba(245, 158, 11, 0.25)" },
+        { x: width - 95, width: 75, label: "cup-20", score: 20, fill: "rgba(51, 65, 85, 0.6)" },
       ];
 
       scoreCups.forEach(cup => {
-        // Cup bottom triggers score
-        const bottom = Bodies.rectangle(cup.x, height - 15, cup.width - 10, 8, {
+        const bottom = Bodies.rectangle(cup.x, height - 15, cup.width - 12, 8, {
           isStatic: true,
           isSensor: true,
           label: cup.label,
-          render: { fillStyle: cup.fill },
+          render: { fillStyle: cup.fill, strokeStyle: "#cbd5e1", lineWidth: 1 },
         });
-        // Cup side walls
         const leftWall = Bodies.rectangle(cup.x - cup.width / 2, height - 35, 6, 40, { isStatic: true, render: { fillStyle: "#475569" } });
         const rightWall = Bodies.rectangle(cup.x + cup.width / 2, height - 35, 6, 40, { isStatic: true, render: { fillStyle: "#475569" } });
         bodiesToAdd.push(bottom, leftWall, rightWall);
       });
 
-      // Update spinner rotations on every tick
       Events.on(engine, "beforeUpdate", () => {
-        Body.rotate(spinner1, 0.04);
-        Body.rotate(spinner2, -0.04);
+        Body.rotate(spinner1, 0.045);
+        Body.rotate(spinner2, -0.045);
       });
     }
 
-    // --- MODE 3: PINBALL TABLE ---
+    // --- MODE 3: NEON ADVANCED PINBALL ---
     else if (mode === "pinball") {
-      // Slanted bottom guides directing balls to flippers
-      const leftGuide = Bodies.rectangle(110, height - 110, 180, 8, {
+      // 1. Slanted Guides directing balls to flippers
+      const leftGuide = Bodies.rectangle(120, height - 120, 190, 10, {
         isStatic: true,
-        angle: Math.PI / 8,
-        render: { fillStyle: "#3b82f6" },
+        angle: Math.PI / 8.5,
+        render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 2 },
       });
-      const rightGuide = Bodies.rectangle(width - 160, height - 110, 180, 8, {
+      const rightGuide = Bodies.rectangle(width - 180, height - 120, 190, 10, {
         isStatic: true,
-        angle: -Math.PI / 8,
-        render: { fillStyle: "#3b82f6" },
-      });
-
-      // Plunger lane wall on the right
-      const rightLaneWall = Bodies.rectangle(width - 45, height / 2 + 50, 6, height - 100, {
-        isStatic: true,
-        render: { fillStyle: "#475569" },
+        angle: -Math.PI / 8.5,
+        render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 2 },
       });
 
-      // Outer frame
-      const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#1e293b" } });
-      const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#1e293b" } });
-      const topWall = Bodies.rectangle(width / 2, 10, width, 20, { isStatic: true, render: { fillStyle: "#1e293b" } });
+      // 2. Plunger Lane Walls and Plunger Floor
+      const plungerLaneWall = Bodies.rectangle(width - 45, height / 2 + 50, 8, height - 100, {
+        isStatic: true,
+        render: { fillStyle: "#334155" },
+      });
+      const plungerFloor = Bodies.rectangle(width - 25, height - 15, 35, 12, {
+        isStatic: true,
+        render: { fillStyle: "#1e293b", strokeStyle: "#475569", lineWidth: 1 },
+      });
+
+      // Outer Cabin Boundaries
+      const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
+      const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
+      const topWall = Bodies.rectangle(width / 2, 10, width, 20, { isStatic: true, render: { fillStyle: "#0f172a" } });
+      
       const drainSensor = Bodies.rectangle(width / 2, height + 15, width, 10, {
         isStatic: true,
         isSensor: true,
         label: "drain",
       });
 
-      bodiesToAdd.push(leftGuide, rightGuide, rightLaneWall, leftWall, rightWall, topWall, drainSensor);
+      bodiesToAdd.push(leftGuide, rightGuide, plungerLaneWall, plungerFloor, leftWall, rightWall, topWall, drainSensor);
 
-      // Curved launcher guide at top right
-      const topRightAngled = Bodies.rectangle(width - 65, 55, 120, 8, {
+      // Launcher launcher curved exit guide
+      const topRightAngled = Bodies.rectangle(width - 65, 50, 110, 8, {
         isStatic: true,
         angle: Math.PI / 4,
         render: { fillStyle: "#3b82f6" },
       });
       bodiesToAdd.push(topRightAngled);
 
-      // Three big glowing bumpers near the top
-      const bumper1 = Bodies.circle(width / 2 - 75, 130, 24, {
+      // 3. TOP ZONE: Bumpers with different properties and colors
+      const bumperLeft = Bodies.circle(width / 2 - 80, 140, 26, {
         isStatic: true,
-        label: "bumper",
-        render: { fillStyle: "#10b981", strokeStyle: "#34d399", lineWidth: 3 },
+        label: "bumper-emerald",
+        render: { fillStyle: "#047857", strokeStyle: "#10b981", lineWidth: 4 },
       });
-      const bumper2 = Bodies.circle(width / 2 + 20, 110, 24, {
+      const bumperRight = Bodies.circle(width / 2 + 30, 120, 26, {
         isStatic: true,
-        label: "bumper",
-        render: { fillStyle: "#10b981", strokeStyle: "#34d399", lineWidth: 3 },
+        label: "bumper-emerald",
+        render: { fillStyle: "#047857", strokeStyle: "#10b981", lineWidth: 4 },
       });
-      const bumper3 = Bodies.circle(width / 2 - 25, 200, 24, {
+      // Super bumper at bottom center (glowing pink)
+      const bumperSuper = Bodies.circle(width / 2 - 25, 230, 30, {
         isStatic: true,
-        label: "bumper",
-        render: { fillStyle: "#10b981", strokeStyle: "#34d399", lineWidth: 3 },
+        label: "bumper-super",
+        render: { fillStyle: "#be185d", strokeStyle: "#f43f5e", lineWidth: 5 },
       });
-      bodiesToAdd.push(bumper1, bumper2, bumper3);
+      bodiesToAdd.push(bumperLeft, bumperRight, bumperSuper);
 
-      // Flipper bodies (Left and Right)
-      const leftFlipper = Bodies.rectangle(width / 2 - 95, height - 70, 75, 14, {
+      // 4. MID ZONE: Slingshot kickers directly above flippers
+      // Left slingshot
+      const slingshotLeft = Bodies.polygon(100, height - 240, 3, 35, {
+        isStatic: true,
+        angle: Math.PI / 3,
+        label: "slingshot-left",
+        render: { fillStyle: "#a21caf", strokeStyle: "#d946ef", lineWidth: 2 },
+      });
+      // Right slingshot
+      const slingshotRight = Bodies.polygon(width - 160, height - 240, 3, 35, {
+        isStatic: true,
+        angle: -Math.PI / 3,
+        label: "slingshot-right",
+        render: { fillStyle: "#a21caf", strokeStyle: "#d946ef", lineWidth: 2 },
+      });
+      bodiesToAdd.push(slingshotLeft, slingshotRight);
+
+      // 5. UPPER ZONE: Rollover Lanes and Target Pins
+      const rollLanes = [width / 2 - 140, width / 2 - 80, width / 2, width / 2 + 60];
+      rollLanes.forEach((laneX, i) => {
+        // Drop guides separating lanes
+        bodiesToAdd.push(
+          Bodies.rectangle(laneX - 18, 55, 4, 30, {
+            isStatic: true,
+            render: { fillStyle: "#475569" },
+          })
+        );
+        // Rollover trigger sensor
+        bodiesToAdd.push(
+          Bodies.rectangle(laneX, 55, 20, 6, {
+            isStatic: true,
+            isSensor: true,
+            label: `rollover-${i}`,
+            render: { fillStyle: "rgba(56, 189, 248, 0.25)" },
+          })
+        );
+      });
+
+      // 6. Target buttons on upper sides that add huge bonuses
+      const targetLeft = Bodies.rectangle(35, 180, 8, 30, {
+        isStatic: true,
+        label: "target-left",
+        render: { fillStyle: "#e11d48", strokeStyle: "#fb7185", lineWidth: 2 },
+      });
+      const targetRight = Bodies.rectangle(width - 80, 180, 8, 30, {
+        isStatic: true,
+        label: "target-right",
+        render: { fillStyle: "#e11d48", strokeStyle: "#fb7185", lineWidth: 2 },
+      });
+      bodiesToAdd.push(targetLeft, targetRight);
+
+      // 7. Flippers (Left and Right)
+      const leftFlipper = Bodies.rectangle(width / 2 - 95, height - 72, 80, 15, {
         isStatic: true,
         label: "left-flipper",
-        render: { fillStyle: "#ef4444" },
+        render: { fillStyle: "#d946ef", strokeStyle: "#fdf4ff", lineWidth: 1.5 },
       });
-      const rightFlipper = Bodies.rectangle(width / 2 + 45, height - 70, 75, 14, {
+      const rightFlipper = Bodies.rectangle(width / 2 + 45, height - 72, 80, 15, {
         isStatic: true,
         label: "right-flipper",
-        render: { fillStyle: "#ef4444" },
+        render: { fillStyle: "#d946ef", strokeStyle: "#fdf4ff", lineWidth: 1.5 },
       });
       bodiesToAdd.push(leftFlipper, rightFlipper);
 
-      // Setup flippers motion on update
-      let leftAngle = 0.3;
-      let rightAngle = -0.3;
+      // Flipper physics updates
+      let leftAngle = 0.32;
+      let rightAngle = -0.32;
 
       Events.on(engine, "beforeUpdate", () => {
-        // Left flipper rotation target
-        const leftTarget = keysPressedRef.current.left ? -0.4 : 0.3;
-        leftAngle += (leftTarget - leftAngle) * 0.35;
+        const leftTarget = keysPressedRef.current.left ? -0.42 : 0.32;
+        leftAngle += (leftTarget - leftAngle) * 0.38;
         Body.setAngle(leftFlipper, leftAngle);
 
-        // Right flipper rotation target
-        const rightTarget = keysPressedRef.current.right ? 0.4 : -0.3;
-        rightAngle += (rightTarget - rightAngle) * 0.35;
+        const rightTarget = keysPressedRef.current.right ? 0.42 : -0.32;
+        rightAngle += (rightTarget - rightAngle) * 0.38;
         Body.setAngle(rightFlipper, rightAngle);
       });
     }
 
     Composite.add(engine.world, bodiesToAdd);
 
-    // Bumper collision force and scoring triggers
+    // Collision behaviors
     Events.on(engine, "collisionStart", (event) => {
       event.pairs.forEach((pair) => {
         const bodyA = pair.bodyA;
         const bodyB = pair.bodyB;
 
-        // Check peg sound
         if (bodyA.label === "peg" || bodyB.label === "peg") {
           playArcadeSound("peg");
         }
 
-        // Bumper hit (Pinball)
-        if (bodyA.label === "bumper" || bodyB.label === "bumper") {
-          const bumper = bodyA.label === "bumper" ? bodyA : bodyB;
-          const ball = bodyA.label === "bumper" ? bodyB : bodyA;
+        // Standard Emerald Bumper collision
+        if (bodyA.label === "bumper-emerald" || bodyB.label === "bumper-emerald") {
+          const bumper = bodyA.label === "bumper-emerald" ? bodyA : bodyB;
+          const ball = bodyA.label === "bumper-emerald" ? bodyB : bodyA;
 
           playArcadeSound("bumper");
           
-          // Push ball away with high velocity
           const forceDir = Matter.Vector.normalise(Matter.Vector.sub(ball.position, bumper.position));
           Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 16));
 
-          // Visual bumper flash
           bumper.render.fillStyle = "#34d399";
-          setTimeout(() => {
-            bumper.render.fillStyle = "#10b981";
-          }, 100);
-
+          setTimeout(() => { bumper.render.fillStyle = "#047857"; }, 100);
           setArcadeScore(prev => prev + 100);
+        }
+
+        // Super Pink Bumper collision (high force bounce)
+        if (bodyA.label === "bumper-super" || bodyB.label === "bumper-super") {
+          const bumper = bodyA.label === "bumper-super" ? bodyA : bodyB;
+          const ball = bodyA.label === "bumper-super" ? bodyB : bodyA;
+
+          playArcadeSound("jackpot");
+          
+          const forceDir = Matter.Vector.normalise(Matter.Vector.sub(ball.position, bumper.position));
+          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 22)); // High-intensity kick
+
+          bumper.render.fillStyle = "#f43f5e";
+          setTimeout(() => { bumper.render.fillStyle = "#be185d"; }, 100);
+          setArcadeScore(prev => prev + 250);
+        }
+
+        // Slingshot kicker collisions
+        if (bodyA.label?.startsWith("slingshot") || bodyB.label?.startsWith("slingshot")) {
+          const slingshot = bodyA.label?.startsWith("slingshot") ? bodyA : bodyB;
+          const ball = bodyA.label?.startsWith("slingshot") ? bodyB : bodyA;
+
+          playArcadeSound("bumper");
+
+          // Bounce ball horizontally outwards
+          const xKickDir = slingshot.label.endsWith("left") ? 1 : -1;
+          Matter.Body.setVelocity(ball, { x: xKickDir * 12, y: -8 });
+
+          slingshot.render.fillStyle = "#f472b6";
+          setTimeout(() => { slingshot.render.fillStyle = "#a21caf"; }, 100);
+          setArcadeScore(prev => prev + 50);
+        }
+
+        // Rollover lane collision trigger
+        if (bodyA.label?.startsWith("rollover-") || bodyB.label?.startsWith("rollover-")) {
+          const sensor = bodyA.label?.startsWith("rollover-") ? bodyA : bodyB;
+          playArcadeSound("target");
+
+          sensor.render.fillStyle = "rgba(56, 189, 248, 0.85)";
+          setTimeout(() => { sensor.render.fillStyle = "rgba(56, 189, 248, 0.25)"; }, 250);
+          setArcadeScore(prev => prev + 150);
+        }
+
+        // Side Target hits
+        if (bodyA.label?.startsWith("target-") || bodyB.label?.startsWith("target-")) {
+          const target = bodyA.label?.startsWith("target-") ? bodyA : bodyB;
+          playArcadeSound("target");
+
+          target.render.fillStyle = "#fda4af";
+          setTimeout(() => { target.render.fillStyle = "#e11d48"; }, 100);
+          setArcadeScore(prev => prev + 300);
         }
 
         // Pachinko scoring buckets
@@ -395,11 +509,10 @@ export default function PhysicsLab() {
           const cup = bodyA.label?.startsWith("cup-") ? bodyA : bodyB;
           const ball = bodyA.label?.startsWith("cup-") ? bodyB : bodyA;
 
-          // Remove ball
           Matter.Composite.remove(engine.world, ball);
           setBallCount(c => Math.max(0, c - 1));
 
-          const scoreVal = parseInt(cup.label.split("-")[1]) || 10;
+          const scoreVal = parseInt(cup.label.split("-")[1]) || 20;
           if (scoreVal === 500) {
             playArcadeSound("jackpot");
           } else {
@@ -427,7 +540,6 @@ export default function PhysicsLab() {
     setIsPaused(false);
   };
 
-  // Setup initial load and keep high score synchronized
   useEffect(() => {
     setup();
     return () => {
@@ -436,14 +548,16 @@ export default function PhysicsLab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keyboard controls listener for Pinball flippers
+  // Flipper key event triggers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (activeMode !== "pinball") return;
       if (e.code === "ArrowLeft" || e.code === "KeyA") {
+        if (!keysPressedRef.current.left) playArcadeSound("flipper");
         keysPressedRef.current.left = true;
       }
       if (e.code === "ArrowRight" || e.code === "KeyD") {
+        if (!keysPressedRef.current.right) playArcadeSound("flipper");
         keysPressedRef.current.right = true;
       }
     };
@@ -466,64 +580,65 @@ export default function PhysicsLab() {
     };
   }, [activeMode]);
 
-  // Keep track of high score
   useEffect(() => {
     if (arcadeScore > highScore) {
       setHighScore(arcadeScore);
     }
   }, [arcadeScore, highScore]);
 
-  // Spawn balls sequentially (staggered stream) to prevent explosion/overlap
+  // Launches balls correctly and resolves plunger floor positioning
   const addBalls = (count: number) => {
     if (!engineRef.current || !sceneRef.current) return;
     const width = sceneRef.current.clientWidth || 700;
+    const height = sceneRef.current.clientHeight || 650;
 
     playArcadeSound("launch");
 
     if (activeMode === "galton") {
+      // Fancy randomized neon balls for Galton board
+      const colors = ["#ef4444", "#ec4899", "#f59e0b", "#10b981", "#06b6d4"];
       for (let i = 0; i < count; i++) {
-        // Spawn above the funnel, staggered in height
-        const x = width / 2 + (Math.random() - 0.5) * 60;
-        const y = 10 - i * 15; // Vertical spacing prevents initial overlaps
+        const x = width / 2 + (Math.random() - 0.5) * 50;
+        const y = 20 - i * 15;
         const ball = Matter.Bodies.circle(x, y, 6, {
-          restitution: 0.45,
-          friction: 0.005,
-          density: 0.001,
-          render: { fillStyle: "#ef4444" },
+          restitution: 0.4,
+          friction: 0.006,
+          density: 0.0012,
+          render: { fillStyle: colors[i % colors.length] },
         });
         Matter.Composite.add(engineRef.current.world, ball);
       }
       setBallCount(c => c + count);
     } 
     else if (activeMode === "pachinko") {
-      // Shoot balls up the launcher channel on the right
       for (let i = 0; i < count; i++) {
-        const x = width - 30 + (Math.random() - 0.5) * 6;
-        const y = height - 40 - i * 20;
+        // Shoot balls correctly in right lane
+        const x = width - 30 + (Math.random() - 0.5) * 4;
+        const y = height - 45 - i * 20;
         const ball = Matter.Bodies.circle(x, y, 6, {
           restitution: 0.5,
           friction: 0.005,
           density: 0.001,
           render: { fillStyle: "#38bdf8" },
         });
-        // Initial upward shoot force
         Matter.Body.setVelocity(ball, { x: 0, y: -16 });
         Matter.Composite.add(engineRef.current.world, ball);
       }
       setBallCount(c => c + count);
     }
     else if (activeMode === "pinball") {
-      // Spawn single pinball in plunger lane on right
-      const x = width - 30;
-      const y = height - 40;
-      const ball = Matter.Bodies.circle(x, y, 8, {
-        restitution: 0.4,
-        friction: 0.002,
-        density: 0.002,
-        render: { fillStyle: "#facc15" },
+      // CORRECTED: Spawns the steel ball safely above plunger floor to avoid instant drain
+      const x = width - 26;
+      const y = height - 45;
+      const ball = Matter.Bodies.circle(x, y, 7.5, {
+        restitution: 0.45,
+        friction: 0.001,
+        density: 0.0025,
+        render: { fillStyle: "#facc15", strokeStyle: "#ffffff", lineWidth: 1 },
       });
-      // Plunger launch upward velocity
-      Matter.Body.setVelocity(ball, { x: 0, y: -22 });
+      
+      // Plunger push velocity
+      Matter.Body.setVelocity(ball, { x: 0, y: -23 });
       Matter.Composite.add(engineRef.current.world, ball);
       setBallCount(c => c + 1);
     }
@@ -542,7 +657,6 @@ export default function PhysicsLab() {
     setIsPaused(!isPaused);
   };
 
-  // Gaussian path renderer data for Galton mode
   const numBuckets = rows + 2;
   const mean = numBuckets / 2;
   const stdDev = Math.sqrt(rows * 0.5 * 0.5);
@@ -556,16 +670,16 @@ export default function PhysicsLab() {
     const width = sceneRef.current?.clientWidth || 700;
     const totalBucketsWidth = numBuckets * pegSpacing;
     const startBucketX = (width - totalBucketsWidth) / 2;
-    return `${startBucketX + p.x * pegSpacing},${385 - (p.y / maxGaussianY) * 130}`;
+    return `${startBucketX + p.x * pegSpacing},${390 - (p.y / maxGaussianY) * 125}`;
   }).join(" L ");
 
   return (
-    <div className="w-full h-full relative flex flex-col justify-between bg-slate-950/80 rounded-xl overflow-hidden border border-white/5">
-      {/* Mode / Games Selector Toolbar */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-slate-900/50 p-4 shrink-0 select-none z-10">
+    <div className="w-full h-full relative flex flex-col justify-between bg-slate-950/90 rounded-xl overflow-hidden border border-cyan-500/10 shadow-[0_0_40px_rgba(6,182,212,0.1)]">
+      {/* Mode Toolbar */}
+      <div className="flex items-center justify-between border-b border-cyan-500/20 bg-slate-900/60 p-4 shrink-0 select-none z-10">
         <div className="flex items-center gap-3">
           <Gamepad2 className="text-cyan-400 animate-pulse" size={20} />
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-200">Módulos de Física</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-slate-200">Física Interactiva</span>
         </div>
         <div className="flex gap-2">
           <button
@@ -601,20 +715,20 @@ export default function PhysicsLab() {
         </div>
       </div>
 
-      {/* Main Physics Area */}
+      {/* Physics Area */}
       <div className="flex-1 relative min-h-0 bg-radial-grid">
         <div ref={sceneRef} className="w-full h-full" />
         
-        {/* Draw Gaussian curve ONLY on Galton Board Mode */}
+        {/* Galton gaussian probability path */}
         {activeMode === "galton" && (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox={`0 0 ${sceneRef.current?.clientWidth || 700} ${sceneRef.current?.clientHeight || 600}`}>
-            <path d={`M ${svgPath}`} fill="none" stroke="rgba(34, 211, 238, 0.45)" strokeWidth="2.5" strokeDasharray="6 6" />
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 animate-pulse" viewBox={`0 0 ${sceneRef.current?.clientWidth || 700} ${sceneRef.current?.clientHeight || 650}`}>
+            <path d={`M ${svgPath}`} fill="none" stroke="rgba(6, 182, 212, 0.4)" strokeWidth="2" strokeDasharray="5 5" />
           </svg>
         )}
 
-        {/* Score & High Score Indicators for Games */}
+        {/* Scoreboard display */}
         {activeMode !== "galton" && (
-          <div className="absolute top-4 right-4 flex items-center gap-4 bg-slate-900/95 border border-white/10 px-4 py-2 rounded-lg font-mono text-xs shadow-lg select-none z-10">
+          <div className="absolute top-4 right-4 flex items-center gap-4 bg-slate-900/90 border border-cyan-500/20 px-4 py-2 rounded-lg font-mono text-xs shadow-lg select-none z-10">
             <div className="flex items-center gap-1.5">
               <Star size={12} className="text-yellow-400" />
               <span className="text-slate-400">PUNTOS:</span>
@@ -629,19 +743,19 @@ export default function PhysicsLab() {
           </div>
         )}
 
-        {/* Active Ball Counter */}
+        {/* Interactive action controls */}
         <div className="absolute top-4 left-4 flex gap-2 z-10">
           <button 
             onClick={togglePause} 
-            className="p-2 bg-slate-900/90 hover:bg-slate-800 border border-white/10 hover:border-white/20 rounded-lg text-slate-300 transition-colors shadow-md"
-            title="Pausar Físicas"
+            className="p-2 bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/10 hover:border-cyan-500/30 rounded-lg text-slate-300 transition-colors shadow-md"
+            title="Pausar"
           >
             {isPaused ? <Play size={15} /> : <Pause size={15} />}
           </button>
           <button 
             onClick={() => setup(activeMode)} 
-            className="p-2 bg-slate-900/90 hover:bg-slate-800 border border-white/10 hover:border-white/20 rounded-lg text-slate-300 transition-colors shadow-md"
-            title="Reiniciar Tablero"
+            className="p-2 bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/10 hover:border-cyan-500/30 rounded-lg text-slate-300 transition-colors shadow-md"
+            title="Reiniciar"
           >
             <RefreshCw size={15} />
           </button>
@@ -662,39 +776,38 @@ export default function PhysicsLab() {
           )}
         </div>
 
-        {/* Dynamic Controls Info for Pinball */}
+        {/* Pinball HUD Controllers */}
         {activeMode === "pinball" && (
-          <div className="absolute bottom-4 left-4 bg-slate-900/95 border border-white/10 p-3 rounded-lg text-[10px] text-slate-400 font-mono shadow-lg select-none z-10 leading-normal max-w-[280px]">
-            <p className="font-bold text-yellow-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <ChevronRight size={10} /> Controles de Pinball
+          <div className="absolute bottom-4 left-4 bg-slate-900/95 border border-cyan-500/20 p-3 rounded-lg text-[10px] text-slate-400 font-mono shadow-lg select-none z-10 leading-normal max-w-[280px]">
+            <p className="font-bold text-yellow-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+              <Sparkles size={11} /> Control de Cabina
             </p>
-            <p className="mb-0.5">&bull; Pulsa <kbd className="bg-slate-800 px-1 border border-white/10 rounded">Flecha Izquierda</kbd> o <kbd className="bg-slate-800 px-1 border border-white/10 rounded">A</kbd> para activar el Flipper Izquierdo.</p>
-            <p>&bull; Pulsa <kbd className="bg-slate-800 px-1 border border-white/10 rounded">Flecha Derecha</kbd> o <kbd className="bg-slate-800 px-1 border border-white/10 rounded">D</kbd> para activar el Flipper Derecho.</p>
+            <p className="mb-0.5">&bull; Flipper Izq: <kbd className="bg-slate-800 px-1 border border-white/10 rounded">Flecha Izq</kbd> / <kbd className="bg-slate-800 px-1 border border-white/10 rounded">A</kbd></p>
+            <p>&bull; Flipper Der: <kbd className="bg-slate-800 px-1 border border-white/10 rounded">Flecha Der</kbd> / <kbd className="bg-slate-800 px-1 border border-white/10 rounded">D</kbd></p>
             <div className="flex gap-2 mt-3.5">
               <button 
-                onMouseDown={() => { keysPressedRef.current.left = true; playArcadeSound("peg"); }}
+                onMouseDown={() => { keysPressedRef.current.left = true; playArcadeSound("flipper"); }}
                 onMouseUp={() => { keysPressedRef.current.left = false; }}
-                onTouchStart={() => { keysPressedRef.current.left = true; playArcadeSound("peg"); }}
+                onTouchStart={() => { keysPressedRef.current.left = true; playArcadeSound("flipper"); }}
                 onTouchEnd={() => { keysPressedRef.current.left = false; }}
-                className="flex-1 bg-red-500/20 active:bg-red-500/40 border border-red-500/30 py-2.5 rounded text-red-300 font-bold uppercase tracking-wider text-[9px] touch-none select-none select-none"
+                className="flex-1 bg-cyan-500/20 active:bg-cyan-500/40 border border-cyan-500/30 py-2.5 rounded text-cyan-200 font-bold uppercase tracking-wider text-[9px] touch-none select-none"
               >
-                Flipper Izq
+                Izquierda
               </button>
               <button 
-                onMouseDown={() => { keysPressedRef.current.right = true; playArcadeSound("peg"); }}
+                onMouseDown={() => { keysPressedRef.current.right = true; playArcadeSound("flipper"); }}
                 onMouseUp={() => { keysPressedRef.current.right = false; }}
-                onTouchStart={() => { keysPressedRef.current.right = true; playArcadeSound("peg"); }}
+                onTouchStart={() => { keysPressedRef.current.right = true; playArcadeSound("flipper"); }}
                 onTouchEnd={() => { keysPressedRef.current.right = false; }}
-                className="flex-1 bg-red-500/20 active:bg-red-500/40 border border-red-500/30 py-2.5 rounded text-red-300 font-bold uppercase tracking-wider text-[9px] touch-none select-none select-none"
+                className="flex-1 bg-cyan-500/20 active:bg-cyan-500/40 border border-cyan-500/30 py-2.5 rounded text-cyan-200 font-bold uppercase tracking-wider text-[9px] touch-none select-none"
               >
-                Flipper Der
+                Derecha
               </button>
             </div>
           </div>
         )}
 
-        {/* Total Active Balls Info */}
-        <div className="absolute bottom-4 right-4 bg-slate-900/90 border border-white/10 px-3 py-1.5 rounded-lg font-mono text-[10px] text-slate-400 select-none shadow-md z-10">
+        <div className="absolute bottom-4 right-4 bg-slate-900/90 border border-cyan-500/10 px-3 py-1.5 rounded-lg font-mono text-[10px] text-slate-400 select-none shadow-md z-10">
           ACTIVAS: {ballCount}
         </div>
       </div>
