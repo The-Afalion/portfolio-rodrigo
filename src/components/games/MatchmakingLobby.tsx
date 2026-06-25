@@ -15,13 +15,22 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
 
   useEffect(() => {
     let pollingInterval: NodeJS.Timeout;
+    const getGuestId = () => {
+      const key = "arcadeGuestId";
+      const existing = window.localStorage.getItem(key);
+      if (existing) return existing;
+      const generated = `guest-${crypto.randomUUID()}`;
+      window.localStorage.setItem(key, generated);
+      return generated;
+    };
+    const guestId = getGuestId();
 
     const joinQueue = async () => {
       try {
         const res = await fetch("/api/arcade/queue", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gameKey, action: "join" })
+          body: JSON.stringify({ gameKey, action: "join", guestId })
         });
         if (!res.ok) {
            setStatus("Servidor no disponible. Cancelando...");
@@ -46,7 +55,7 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
         const res = await fetch("/api/arcade/queue", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gameKey, action: "join" })
+          body: JSON.stringify({ gameKey, action: "join", guestId })
         });
         if (!res.ok) {
            clearInterval(pollingInterval);
@@ -70,7 +79,7 @@ export default function MatchmakingLobby({ gameKey, gameName, onMatchFound, onCa
       fetch("/api/arcade/queue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameKey, action: "leave" }),
+        body: JSON.stringify({ gameKey, action: "leave", guestId }),
         keepalive: true
       });
     };

@@ -8,9 +8,9 @@ import { ArrowLeft, Expand, Shrink } from 'lucide-react';
 const SandboxScene = dynamic(() => import('./SandboxScene'), {
   ssr: false,
   loading: () => (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.2),_rgba(2,6,23,0.96)_55%,_rgba(2,6,23,1)_100%)] text-white">
-      <div className="rounded-[28px] border border-cyan-400/25 bg-slate-950/70 px-8 py-6 text-center shadow-[0_0_60px_rgba(34,211,238,0.15)] backdrop-blur-xl">
-        <p className="font-mono text-xs uppercase tracking-[0.35em] text-cyan-300/80">Loading</p>
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(214,166,92,0.16),_rgba(8,10,14,0.96)_55%,_rgba(0,0,0,1)_100%)] text-white">
+      <div className="rounded-[28px] border border-white/10 bg-[#0b0d12]/75 px-8 py-6 text-center shadow-2xl backdrop-blur-xl">
+        <p className="font-mono text-xs uppercase tracking-[0.35em] text-[#d6a65c]/80">Loading</p>
         <p className="mt-3 text-2xl font-semibold tracking-tight">Sincronizando el sector Aurora...</p>
       </div>
     </div>
@@ -66,7 +66,7 @@ export default function SpaceSandboxPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/projects"
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/55 px-4 py-2 text-sm text-white/70 backdrop-blur-md transition-colors hover:text-white"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-4 py-2 text-sm text-white/70 backdrop-blur-md transition-colors hover:text-white"
           >
             <ArrowLeft size={16} /> Volver al hub
           </Link>
@@ -74,7 +74,7 @@ export default function SpaceSandboxPage() {
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="flex items-center gap-2 rounded-full border border-cyan-300/20 bg-slate-950/55 px-4 py-2 text-sm text-cyan-100/85 backdrop-blur-md transition-colors hover:text-white"
+            className="flex items-center gap-2 rounded-full border border-[#d6a65c]/25 bg-black/45 px-4 py-2 text-sm text-[#f8dfb6]/85 backdrop-blur-md transition-colors hover:text-white"
           >
             {isFullscreen ? <Shrink size={16} /> : <Expand size={16} />}
             {isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
@@ -88,4 +88,3 @@ export default function SpaceSandboxPage() {
     </main>
   );
 }
-

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Send, Gamepad2, Users, MessageSquare, Radio, ShieldAlert, Sparkles, Plus, Check, Play } from "lucide-react";
+import { Send, Gamepad2, Users, MessageSquare, Radio, ShieldAlert, Sparkles, Play, Trophy, BarChart3 } from "lucide-react";
 
 // Web Audio API Synthesizer for high-fidelity sci-fi sounds
 const playBeep = (freq = 800, type = "sine", duration = 0.08, volume = 0.05) => {
@@ -61,6 +61,56 @@ const AVAILABLE_GAMES = [
   { id: "sandbox", title: "Deep Space Sandbox", path: "/projects/sandbox", desc: "Explora la órbita en simulación de vuelo libre.", category: "Simulador" }
 ];
 
+type LeaderboardEntry = {
+  rank: number;
+  userId: string;
+  name: string;
+  bestScore: number;
+  attempts: number;
+};
+
+type ArcadeGameStats = {
+  gameKey: string;
+  label: string;
+  personalBest: number;
+  attempts: number;
+  leaderboard: LeaderboardEntry[];
+};
+
+const SIMULATED_RANKINGS: ArcadeGameStats[] = [
+  {
+    gameKey: "chrono-dasher",
+    label: "Chrono Dasher",
+    personalBest: 26,
+    attempts: 3,
+    leaderboard: [
+      { rank: 1, userId: "crew-2", name: "Major Tom", bestScore: 214, attempts: 18 },
+      { rank: 2, userId: "crew-3", name: "Spock", bestScore: 188, attempts: 11 },
+      { rank: 3, userId: "local", name: "Tú", bestScore: 26, attempts: 3 },
+    ],
+  },
+  {
+    gameKey: "physics-pachinko",
+    label: "Pachinko",
+    personalBest: 0,
+    attempts: 0,
+    leaderboard: [
+      { rank: 1, userId: "crew-1", name: "HAL-9000", bestScore: 7200, attempts: 9 },
+      { rank: 2, userId: "crew-5", name: "Deckard", bestScore: 5160, attempts: 14 },
+    ],
+  },
+  {
+    gameKey: "physics-pinball",
+    label: "Pinball",
+    personalBest: 0,
+    attempts: 0,
+    leaderboard: [
+      { rank: 1, userId: "crew-4", name: "R2-D2", bestScore: 18450, attempts: 22 },
+      { rank: 2, userId: "crew-1", name: "HAL-9000", bestScore: 15175, attempts: 17 },
+    ],
+  },
+];
+
 export default function ProjectsSocialClient({ currentUser, initialMessages, initialFriendships, isDbOffline }: any) {
   const router = useRouter();
   const [friends, setFriends] = useState<any[]>([]);
@@ -78,6 +128,9 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
   const [radarHovered, setRadarHovered] = useState<any>(null);
   const [isSimulatedMode, setIsSimulatedMode] = useState(isDbOffline);
   const [newFriendName, setNewFriendName] = useState("");
+  const [rankingStats, setRankingStats] = useState<ArcadeGameStats[]>(SIMULATED_RANKINGS);
+  const [rankingLoading, setRankingLoading] = useState(false);
+  const [rankingError, setRankingError] = useState("");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -428,6 +481,38 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
     }
   };
 
+  useEffect(() => {
+    if (isSimulatedMode) {
+      setRankingStats(SIMULATED_RANKINGS);
+      setRankingError("");
+      return;
+    }
+
+    let cancelled = false;
+    setRankingLoading(true);
+    setRankingError("");
+    const loadRankings = async () => {
+      try {
+        const response = await fetch("/api/arcade/scores", { cache: "no-store" });
+        if (!response.ok) throw new Error("Ranking unavailable");
+        const data = await response.json();
+        if (cancelled) return;
+        setRankingStats(data.games ?? []);
+      } catch {
+        if (cancelled) return;
+        setRankingError("No se pudo abrir el archivo de rankings. Mostrando telemetría local.");
+        setRankingStats(SIMULATED_RANKINGS);
+      } finally {
+        if (!cancelled) setRankingLoading(false);
+      }
+    };
+
+    void loadRankings();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSimulatedMode]);
+
   // Periodic random event simulation (Simulated crew sending invites)
   useEffect(() => {
     if (!isSimulatedMode) return;
@@ -677,6 +762,76 @@ export default function ProjectsSocialClient({ currentUser, initialMessages, ini
 
       {/* RIGHT COLUMN: Game Dispatch and Active Invites */}
       <div className="lg:col-span-3 flex flex-col gap-6 min-h-0">
+        {/* RANKING SUMMARY */}
+        <details
+          open
+          className="group border border-cyan-500/20 bg-black/40 rounded-xl p-4 shadow-[0_0_20px_rgba(0,0,0,0.35)] transition open:border-cyan-400/60 open:bg-cyan-500/10"
+          onToggle={() => playBeep(1180, "triangle", 0.08, 0.04)}
+        >
+          <summary className="cursor-pointer list-none text-left marker:hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase font-bold text-white tracking-widest flex items-center gap-2">
+                <Trophy size={14} className="text-amber-300" /> Ranking
+              </span>
+              <BarChart3 size={16} className="text-cyan-400/70 transition group-hover:text-cyan-200" />
+            </div>
+            <p className="mt-2 text-[10px] leading-relaxed text-cyan-500/70">
+              Récords personales, mejores pilotos y estadísticas de arcade.
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              {rankingStats.slice(0, 3).map((game) => (
+                <div key={game.gameKey} className="rounded border border-cyan-500/10 bg-black/35 px-2 py-1.5">
+                  <p className="truncate text-[8px] uppercase tracking-wider text-cyan-500/60">{game.label}</p>
+                  <p className="font-mono text-xs font-bold text-cyan-100">{game.personalBest}</p>
+                </div>
+              ))}
+            </div>
+          </summary>
+
+          <div className="mt-4 max-h-80 overflow-y-auto border-t border-cyan-500/15 pt-4">
+            {rankingLoading ? (
+              <p className="rounded border border-cyan-500/15 bg-cyan-500/5 p-3 text-[10px] uppercase tracking-[0.2em] text-cyan-300">Sincronizando rankings...</p>
+            ) : null}
+            {rankingError ? (
+              <p className="mb-3 rounded border border-amber-500/30 bg-amber-500/5 p-3 text-[11px] text-amber-300">{rankingError}</p>
+            ) : null}
+            <div className="space-y-3">
+              {rankingStats.map((game) => {
+                const champion = game.leaderboard[0];
+                return (
+                  <section key={game.gameKey} className="rounded-lg border border-cyan-500/15 bg-black/45 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-white">{game.label}</h3>
+                        <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-cyan-500/60">
+                          Tu récord: <span className="text-cyan-100">{game.personalBest}</span> · {game.attempts} intentos
+                        </p>
+                      </div>
+                      <Trophy size={15} className="text-amber-300" />
+                    </div>
+                    <div className="mt-3 rounded border border-amber-300/20 bg-amber-300/5 p-2">
+                      <p className="text-[8px] uppercase tracking-[0.18em] text-amber-200/70">Mejor actual</p>
+                      <p className="mt-1 truncate text-xs font-bold text-amber-100">{champion?.name ?? "Sin datos"}</p>
+                      <p className="font-mono text-sm text-white">{champion?.bestScore ?? 0}</p>
+                    </div>
+                    <div className="mt-3 space-y-1.5">
+                      {game.leaderboard.length === 0 ? (
+                        <p className="rounded border border-dashed border-cyan-500/15 p-2 text-center text-[10px] text-cyan-500/50">Aún no hay puntuaciones guardadas.</p>
+                      ) : (
+                        game.leaderboard.slice(0, 5).map((entry) => (
+                          <div key={`${game.gameKey}-${entry.userId}`} className="flex items-center justify-between gap-2 rounded border border-cyan-500/10 bg-cyan-500/[0.03] px-2 py-1.5">
+                            <span className="truncate text-[11px] font-bold text-cyan-100">#{entry.rank} {entry.name}</span>
+                            <span className="font-mono text-xs font-bold text-white">{entry.bestScore}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </div>
+        </details>
         
         {/* GAME DISPATCHER */}
         <div className="border border-cyan-500/20 bg-black/40 rounded-xl p-5 flex-1 flex flex-col min-h-0 shadow-[0_0_20px_rgba(0,0,0,0.4)]">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { ArrowLeft } from "lucide-react";
+import type { Friendship, LobbyMessage, Profile } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getSupabaseBrowserEnv } from "@/lib/supabase-env";
 import { createClient } from "@/utils/supabase/server";
@@ -27,8 +28,8 @@ export default async function ProjectsSocialPage() {
     ? { id: user.id, name: getUserDisplayName(user) }
     : { id: "guest-" + Math.floor(Math.random() * 10000), name: "Cadete Espacial" };
 
-  let friendships = [];
-  let lobbyMessages = [];
+  let friendships: Array<Friendship & { requester: Profile; addressee: Profile }> = [];
+  let lobbyMessages: LobbyMessage[] = [];
 
   if (user) {
     try {
@@ -86,7 +87,7 @@ export default async function ProjectsSocialPage() {
           currentUser={currentUserInfo}
           initialMessages={lobbyMessages}
           initialFriendships={friendships}
-          isDbOffline={!user || friendships.length === 0}
+          isDbOffline={!user}
         />
       </main>
     </div>

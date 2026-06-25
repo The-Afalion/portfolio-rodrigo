@@ -3,19 +3,60 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
+import { ensureMemoryArtilleryMatch, getArcadeMemoryStore, pruneArcadeMemory } from "@/lib/arcade-memory";
 
 // Unir a cola o comprobar estado de colas
 export async function POST(req: Request) {
   try {
-    const supabase = createClient(cookies());
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const { gameKey, action = "join" } = await req.json();
+    const { gameKey, action = "join", guestId } = await req.json();
 
     if (!gameKey) {
       return NextResponse.json({ error: "Falta gameKey" }, { status: 400 });
+    }
+
+    let userId = "";
+    let hasSupabaseUser = false;
+    try {
+      const supabase = createClient(cookies());
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        userId = user.id;
+        hasSupabaseUser = true;
+      }
+    } catch {
+      hasSupabaseUser = false;
+    }
+
+    if (!userId) {
+      userId = typeof guestId === "string" && guestId.length > 8 ? guestId : "";
+    }
+
+    if (!userId) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    if (!hasSupabaseUser) {
+      pruneArcadeMemory();
+      const store = getArcadeMemoryStore();
+
+      if (action === "leave") {
+        store.queue = store.queue.filter((entry) => entry.userId !== userId);
+        return NextResponse.json({ success: true, status: "left", mode: "memory" });
+      }
+
+      const myExistingQueue = store.queue.find((entry) => entry.userId === userId && entry.gameKey === gameKey);
+      if (myExistingQueue) {
+        return NextResponse.json({ status: "waiting", matched: false, mode: "memory" });
+      }
+
+      const opponent = store.queue.find((entry) => entry.gameKey === gameKey && entry.userId !== userId);
+      if (opponent) {
+        const matchId = uuidv4();
+        store.queue = store.queue.filter((entry) => entry !== opponent);
+        ensureMemoryArtilleryMatch(matchId, opponent.userId, userId, gameKey);
+        return NextResponse.json({ matchId, matched: true, role: "player2", mode: "memory" });
+      }
+
+      store.queue.push({ userId, gameKey, joinedAt: Date.now() });
+      return NextResponse.json({ status: "waiting", matched: false, mode: "memory" });
     }
 
     // Purgar colas viejas (más de 2 minutos) para evitar partidas fantasma
@@ -27,20 +68,21 @@ export async function POST(req: Request) {
     // Limpiar colas viejas de este usuario o cancelar
     if (action === "leave") {
       await prisma.arcadeQueue.deleteMany({
-        where: { userId: user.id }
+        where: { userId }
       });
       return NextResponse.json({ success: true, status: "left" });
     }
 
     // Comprobar si ya estamos en cola
     const myExistingQueue = await prisma.arcadeQueue.findFirst({
-      where: { userId: user.id, gameKey }
+      where: { userId, gameKey }
     });
 
     if (myExistingQueue) {
       if (myExistingQueue.matched) {
         // Fuimos emparejados! Borramos nuestra entrada porque ya entramos al juego
         await prisma.arcadeQueue.delete({ where: { id: myExistingQueue.id } });
+        if (myExistingQueue.matchId) ensureMemoryArtilleryMatch(myExistingQueue.matchId, userId, "pending-player2", gameKey);
         return NextResponse.json({ matchId: myExistingQueue.matchId, matched: true, role: "player1" });
       } else {
         return NextResponse.json({ status: "waiting", matched: false });
@@ -49,7 +91,7 @@ export async function POST(req: Request) {
 
     // Buscar a otro jugador esperando en este juego
     const opponent = await prisma.arcadeQueue.findFirst({
-      where: { gameKey, matched: false, userId: { not: user.id } },
+      where: { gameKey, matched: false, userId: { not: userId } },
       orderBy: { joinedAt: 'asc' }
     });
 
@@ -62,12 +104,13 @@ export async function POST(req: Request) {
         data: { matched: true, matchId }
       });
 
+      ensureMemoryArtilleryMatch(matchId, opponent.userId, userId, gameKey);
       return NextResponse.json({ matchId, matched: true, role: "player2" });
     } else {
       // Nos ponemos en la cola
       await prisma.arcadeQueue.create({
         data: {
-          userId: user.id,
+          userId,
           gameKey,
           matched: false
         }
