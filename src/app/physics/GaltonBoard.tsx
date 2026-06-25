@@ -19,11 +19,11 @@ const playArcadeSound = (type: "launch" | "peg" | "bumper" | "score" | "jackpot"
 
     if (type === "launch") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(700, now + 0.2);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+      osc.frequency.setValueAtTime(110, now);
+      osc.frequency.exponentialRampToValueAtTime(750, now + 0.25);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
       osc.start(now);
-      osc.stop(now + 0.22);
+      osc.stop(now + 0.26);
     } else if (type === "peg") {
       osc.type = "sine";
       osc.frequency.setValueAtTime(800 + Math.random() * 300, now);
@@ -32,28 +32,28 @@ const playArcadeSound = (type: "launch" | "peg" | "bumper" | "score" | "jackpot"
       osc.stop(now + 0.04);
     } else if (type === "bumper") {
       osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(250, now);
-      osc.frequency.setValueAtTime(500, now + 0.05);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      osc.frequency.setValueAtTime(280, now);
+      osc.frequency.setValueAtTime(560, now + 0.05);
+      gain.gain.setValueAtTime(0.07, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
       osc.start(now);
-      osc.stop(now + 0.25);
+      osc.stop(now + 0.28);
     } else if (type === "target") {
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(600, now);
-      osc.frequency.setValueAtTime(1000, now + 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.setValueAtTime(1050, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
       osc.start(now);
-      osc.stop(now + 0.15);
+      osc.stop(now + 0.16);
     } else if (type === "flipper") {
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(180, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+      osc.frequency.setValueAtTime(190, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
       osc.start(now);
-      osc.stop(now + 0.08);
+      osc.stop(now + 0.09);
     } else if (type === "score") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(1100, now);
+      osc.frequency.setValueAtTime(1150, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
       osc.start(now);
       osc.stop(now + 0.08);
@@ -107,7 +107,7 @@ export default function PhysicsLab() {
     const engine = Engine.create();
     engineRef.current = engine;
 
-    engine.world.gravity.y = mode === "pinball" ? 1.6 : 1.25;
+    engine.world.gravity.y = mode === "pinball" ? 1.7 : 1.25;
 
     const width = sceneRef.current.clientWidth || 700;
     const height = sceneRef.current.clientHeight || 650;
@@ -128,37 +128,40 @@ export default function PhysicsLab() {
 
     // --- MODE 1: GALTON BOARD ---
     if (mode === "galton") {
-      // Glow-themed Funnel
-      const funnelLeft = Bodies.rectangle(width / 2 - 58, 60, 120, 8, {
+      // Glow-themed Funnel with wider opening to prevent jamming
+      const funnelLeft = Bodies.rectangle(width / 2 - 62, 55, 120, 8, {
         isStatic: true,
-        angle: Math.PI / 5.5,
-        render: { fillStyle: "rgba(6, 182, 212, 0.2)", strokeStyle: "#06b6d4", lineWidth: 2 },
+        angle: Math.PI / 5.2,
+        render: { fillStyle: "rgba(6, 182, 212, 0.25)", strokeStyle: "#06b6d4", lineWidth: 2.5 },
       });
-      const funnelRight = Bodies.rectangle(width / 2 + 58, 60, 120, 8, {
+      const funnelRight = Bodies.rectangle(width / 2 + 62, 55, 120, 8, {
         isStatic: true,
-        angle: -Math.PI / 5.5,
-        render: { fillStyle: "rgba(6, 182, 212, 0.2)", strokeStyle: "#06b6d4", lineWidth: 2 },
+        angle: -Math.PI / 5.2,
+        render: { fillStyle: "rgba(6, 182, 212, 0.25)", strokeStyle: "#06b6d4", lineWidth: 2.5 },
       });
-      const neckLeft = Bodies.rectangle(width / 2 - 13, 110, 5, 40, {
+      
+      // Neck width increased to 36px (width / 2 - 18 to width / 2 + 18) for smooth flow
+      const neckLeft = Bodies.rectangle(width / 2 - 18, 110, 5, 45, {
         isStatic: true,
         render: { fillStyle: "#06b6d4" },
       });
-      const neckRight = Bodies.rectangle(width / 2 + 13, 110, 5, 40, {
+      const neckRight = Bodies.rectangle(width / 2 + 18, 110, 5, 45, {
         isStatic: true,
         render: { fillStyle: "#06b6d4" },
       });
 
       bodiesToAdd.push(funnelLeft, funnelRight, neckLeft, neckRight);
 
-      // Peg grid with neon glow coloring
-      const startY = 145;
+      // peg grid configured symmetrically starting with 1 peg at the center row
+      const startY = 155;
       for (let row = 0; row < rows; row++) {
-        const cols = row + 3;
+        // CORRECTED: Row 0 has 1 peg, Row 1 has 2 pegs... forming a perfect binomial path!
+        const cols = row + 1;
         const rowWidth = (cols - 1) * pegSpacing;
         const startX = (width - rowWidth) / 2;
         
-        // Colors mapping representing temperature probability
-        const rowColor = row < 4 ? "#38bdf8" : row < 8 ? "#a855f7" : "#ec4899";
+        // Colors mapping representing probability temperature
+        const rowColor = row < 4 ? "#22d3ee" : row < 8 ? "#a855f7" : "#ec4899";
 
         for (let col = 0; col < cols; col++) {
           const x = startX + col * pegSpacing;
@@ -166,8 +169,8 @@ export default function PhysicsLab() {
           bodiesToAdd.push(
             Bodies.circle(x, y, 3.5, {
               isStatic: true,
-              restitution: 0.62,
-              friction: 0.008,
+              restitution: 0.65,
+              friction: 0.005,
               label: "peg",
               render: { fillStyle: rowColor, strokeStyle: "#ffffff", lineWidth: 0.5 },
             })
@@ -177,8 +180,8 @@ export default function PhysicsLab() {
 
       // Colorful collecting channels
       const bucketWidth = 5;
-      const bucketHeight = 170;
-      const numBuckets = rows + 2;
+      const bucketHeight = 175;
+      const numBuckets = rows + 1;
       const totalBucketsWidth = numBuckets * pegSpacing;
       const startBucketX = (width - totalBucketsWidth) / 2;
       const bucketY = height - bucketHeight / 2;
@@ -188,7 +191,7 @@ export default function PhysicsLab() {
         bodiesToAdd.push(
           Bodies.rectangle(x, bucketY, bucketWidth, bucketHeight, {
             isStatic: true,
-            render: { fillStyle: "#1e293b", strokeStyle: "rgba(56, 189, 248, 0.2)", lineWidth: 1 },
+            render: { fillStyle: "#1e293b", strokeStyle: "rgba(56, 189, 248, 0.25)", lineWidth: 1 },
           })
         );
       }
@@ -203,7 +206,6 @@ export default function PhysicsLab() {
       const rightLauncherWall = Bodies.rectangle(width - 50, height / 2 + 50, 8, height - 100, { isStatic: true, render: { fillStyle: "#334155" } });
       const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
       
-      // Bottom plunger floor supporting launching balls
       const launcherPlungerFloor = Bodies.rectangle(width - 30, height - 15, 30, 10, {
         isStatic: true,
         render: { fillStyle: "#334155" },
@@ -283,79 +285,89 @@ export default function PhysicsLab() {
       });
     }
 
-    // --- MODE 3: NEON ADVANCED PINBALL ---
+    // --- MODE 3: NEON ADVANCED PINBALL (UPGRADED LAYOUT & CURVES) ---
     else if (mode === "pinball") {
-      // 1. Slanted Guides directing balls to flippers
-      const leftGuide = Bodies.rectangle(120, height - 120, 190, 10, {
+      // 1. Curved Top Arch segments guiding the ball from launcher around the top left
+      const topArchSegments = [
+        { x: width - 25, y: 140, w: 8, h: 100, a: 0 },
+        { x: width - 42, y: 80, w: 8, h: 70, a: -Math.PI / 12 },
+        { x: width - 85, y: 40, w: 8, h: 70, a: -Math.PI / 6 },
+        { x: width - 155, y: 20, w: 8, h: 90, a: -Math.PI / 4 },
+        { x: width / 2, y: 12, w: 8, h: 180, a: -Math.PI / 2 },
+        { x: 155, y: 20, w: 8, h: 90, a: Math.PI / 4 },
+        { x: 85, y: 40, w: 8, h: 70, a: Math.PI / 6 },
+        { x: 42, y: 80, w: 8, h: 70, a: Math.PI / 12 },
+        { x: 25, y: 140, w: 8, h: 100, a: 0 },
+      ];
+
+      topArchSegments.forEach(seg => {
+        bodiesToAdd.push(
+          Bodies.rectangle(seg.x, seg.y, seg.w, seg.h, {
+            isStatic: true,
+            angle: seg.a,
+            render: { fillStyle: "#3b82f6", strokeStyle: "#60a5fa", lineWidth: 1.5 },
+          })
+        );
+      });
+
+      // 2. Slanted Bottom Guides directing balls to flippers
+      const leftGuide = Bodies.rectangle(125, height - 120, 185, 12, {
         isStatic: true,
         angle: Math.PI / 8.5,
         render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 2 },
       });
-      const rightGuide = Bodies.rectangle(width - 180, height - 120, 190, 10, {
+      const rightGuide = Bodies.rectangle(width - 180, height - 120, 185, 12, {
         isStatic: true,
         angle: -Math.PI / 8.5,
         render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 2 },
       });
 
-      // 2. Plunger Lane Walls and Plunger Floor
+      // 3. Plunger Lane Walls and Plunger Floor
       const plungerLaneWall = Bodies.rectangle(width - 45, height / 2 + 50, 8, height - 100, {
         isStatic: true,
         render: { fillStyle: "#334155" },
       });
       const plungerFloor = Bodies.rectangle(width - 25, height - 15, 35, 12, {
         isStatic: true,
-        render: { fillStyle: "#1e293b", strokeStyle: "#475569", lineWidth: 1 },
+        render: { fillStyle: "#1e293b", strokeStyle: "#475569", lineWidth: 1.5 },
       });
 
       // Outer Cabin Boundaries
       const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
       const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
-      const topWall = Bodies.rectangle(width / 2, 10, width, 20, { isStatic: true, render: { fillStyle: "#0f172a" } });
-      
       const drainSensor = Bodies.rectangle(width / 2, height + 15, width, 10, {
         isStatic: true,
         isSensor: true,
         label: "drain",
       });
 
-      bodiesToAdd.push(leftGuide, rightGuide, plungerLaneWall, plungerFloor, leftWall, rightWall, topWall, drainSensor);
+      bodiesToAdd.push(leftGuide, rightGuide, plungerLaneWall, plungerFloor, leftWall, rightWall, drainSensor);
 
-      // Launcher launcher curved exit guide
-      const topRightAngled = Bodies.rectangle(width - 65, 50, 110, 8, {
-        isStatic: true,
-        angle: Math.PI / 4,
-        render: { fillStyle: "#3b82f6" },
-      });
-      bodiesToAdd.push(topRightAngled);
-
-      // 3. TOP ZONE: Bumpers with different properties and colors
-      const bumperLeft = Bodies.circle(width / 2 - 80, 140, 26, {
+      // 4. TOP ZONE: Bumpers with neon glow rings
+      const bumperLeft = Bodies.circle(width / 2 - 90, 150, 26, {
         isStatic: true,
         label: "bumper-emerald",
         render: { fillStyle: "#047857", strokeStyle: "#10b981", lineWidth: 4 },
       });
-      const bumperRight = Bodies.circle(width / 2 + 30, 120, 26, {
+      const bumperRight = Bodies.circle(width / 2 + 40, 130, 26, {
         isStatic: true,
         label: "bumper-emerald",
         render: { fillStyle: "#047857", strokeStyle: "#10b981", lineWidth: 4 },
       });
-      // Super bumper at bottom center (glowing pink)
-      const bumperSuper = Bodies.circle(width / 2 - 25, 230, 30, {
+      const bumperSuper = Bodies.circle(width / 2 - 25, 240, 32, {
         isStatic: true,
         label: "bumper-super",
         render: { fillStyle: "#be185d", strokeStyle: "#f43f5e", lineWidth: 5 },
       });
       bodiesToAdd.push(bumperLeft, bumperRight, bumperSuper);
 
-      // 4. MID ZONE: Slingshot kickers directly above flippers
-      // Left slingshot
+      // 5. MID ZONE: Slingshot kickers directly above flippers
       const slingshotLeft = Bodies.polygon(100, height - 240, 3, 35, {
         isStatic: true,
         angle: Math.PI / 3,
         label: "slingshot-left",
         render: { fillStyle: "#a21caf", strokeStyle: "#d946ef", lineWidth: 2 },
       });
-      // Right slingshot
       const slingshotRight = Bodies.polygon(width - 160, height - 240, 3, 35, {
         isStatic: true,
         angle: -Math.PI / 3,
@@ -364,17 +376,15 @@ export default function PhysicsLab() {
       });
       bodiesToAdd.push(slingshotLeft, slingshotRight);
 
-      // 5. UPPER ZONE: Rollover Lanes and Target Pins
-      const rollLanes = [width / 2 - 140, width / 2 - 80, width / 2, width / 2 + 60];
+      // 6. UPPER ZONE: Rollover Lanes and Target Pins
+      const rollLanes = [width / 2 - 130, width / 2 - 70, width / 2 - 10, width / 2 + 50];
       rollLanes.forEach((laneX, i) => {
-        // Drop guides separating lanes
         bodiesToAdd.push(
           Bodies.rectangle(laneX - 18, 55, 4, 30, {
             isStatic: true,
             render: { fillStyle: "#475569" },
           })
         );
-        // Rollover trigger sensor
         bodiesToAdd.push(
           Bodies.rectangle(laneX, 55, 20, 6, {
             isStatic: true,
@@ -385,33 +395,46 @@ export default function PhysicsLab() {
         );
       });
 
-      // 6. Target buttons on upper sides that add huge bonuses
-      const targetLeft = Bodies.rectangle(35, 180, 8, 30, {
+      // 7. Side Target buttons
+      const targetLeft = Bodies.rectangle(35, 200, 8, 35, {
         isStatic: true,
         label: "target-left",
         render: { fillStyle: "#e11d48", strokeStyle: "#fb7185", lineWidth: 2 },
       });
-      const targetRight = Bodies.rectangle(width - 80, 180, 8, 30, {
+      const targetRight = Bodies.rectangle(width - 80, 200, 8, 35, {
         isStatic: true,
         label: "target-right",
         render: { fillStyle: "#e11d48", strokeStyle: "#fb7185", lineWidth: 2 },
       });
       bodiesToAdd.push(targetLeft, targetRight);
 
-      // 7. Flippers (Left and Right)
-      const leftFlipper = Bodies.rectangle(width / 2 - 95, height - 72, 80, 15, {
+      // 8. Custom shapes - Neon triangular deflectors on upper mid sides
+      const deflectorLeft = Bodies.polygon(70, 320, 3, 25, {
+        isStatic: true,
+        angle: Math.PI / 4,
+        render: { fillStyle: "#1e1b4b", strokeStyle: "#818cf8", lineWidth: 1.5 },
+      });
+      const deflectorRight = Bodies.polygon(width - 120, 320, 3, 25, {
+        isStatic: true,
+        angle: -Math.PI / 4,
+        render: { fillStyle: "#1e1b4b", strokeStyle: "#818cf8", lineWidth: 1.5 },
+      });
+      bodiesToAdd.push(deflectorLeft, deflectorRight);
+
+      // 9. Flippers
+      const leftFlipper = Bodies.rectangle(width / 2 - 95, height - 72, 80, 16, {
         isStatic: true,
         label: "left-flipper",
         render: { fillStyle: "#d946ef", strokeStyle: "#fdf4ff", lineWidth: 1.5 },
       });
-      const rightFlipper = Bodies.rectangle(width / 2 + 45, height - 72, 80, 15, {
+      const rightFlipper = Bodies.rectangle(width / 2 + 45, height - 72, 80, 16, {
         isStatic: true,
         label: "right-flipper",
         render: { fillStyle: "#d946ef", strokeStyle: "#fdf4ff", lineWidth: 1.5 },
       });
       bodiesToAdd.push(leftFlipper, rightFlipper);
 
-      // Flipper physics updates
+      // Flipper angles interpolation
       let leftAngle = 0.32;
       let rightAngle = -0.32;
 
@@ -428,7 +451,7 @@ export default function PhysicsLab() {
 
     Composite.add(engine.world, bodiesToAdd);
 
-    // Collision behaviors
+    // Collisions
     Events.on(engine, "collisionStart", (event) => {
       event.pairs.forEach((pair) => {
         const bodyA = pair.bodyA;
@@ -438,7 +461,6 @@ export default function PhysicsLab() {
           playArcadeSound("peg");
         }
 
-        // Standard Emerald Bumper collision
         if (bodyA.label === "bumper-emerald" || bodyB.label === "bumper-emerald") {
           const bumper = bodyA.label === "bumper-emerald" ? bodyA : bodyB;
           const ball = bodyA.label === "bumper-emerald" ? bodyB : bodyA;
@@ -446,14 +468,13 @@ export default function PhysicsLab() {
           playArcadeSound("bumper");
           
           const forceDir = Matter.Vector.normalise(Matter.Vector.sub(ball.position, bumper.position));
-          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 16));
+          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 17)); // Higher rebound velocity
 
           bumper.render.fillStyle = "#34d399";
           setTimeout(() => { bumper.render.fillStyle = "#047857"; }, 100);
           setArcadeScore(prev => prev + 100);
         }
 
-        // Super Pink Bumper collision (high force bounce)
         if (bodyA.label === "bumper-super" || bodyB.label === "bumper-super") {
           const bumper = bodyA.label === "bumper-super" ? bodyA : bodyB;
           const ball = bodyA.label === "bumper-super" ? bodyB : bodyA;
@@ -461,30 +482,27 @@ export default function PhysicsLab() {
           playArcadeSound("jackpot");
           
           const forceDir = Matter.Vector.normalise(Matter.Vector.sub(ball.position, bumper.position));
-          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 22)); // High-intensity kick
+          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 23));
 
           bumper.render.fillStyle = "#f43f5e";
           setTimeout(() => { bumper.render.fillStyle = "#be185d"; }, 100);
           setArcadeScore(prev => prev + 250);
         }
 
-        // Slingshot kicker collisions
         if (bodyA.label?.startsWith("slingshot") || bodyB.label?.startsWith("slingshot")) {
           const slingshot = bodyA.label?.startsWith("slingshot") ? bodyA : bodyB;
           const ball = bodyA.label?.startsWith("slingshot") ? bodyB : bodyA;
 
           playArcadeSound("bumper");
 
-          // Bounce ball horizontally outwards
           const xKickDir = slingshot.label.endsWith("left") ? 1 : -1;
-          Matter.Body.setVelocity(ball, { x: xKickDir * 12, y: -8 });
+          Matter.Body.setVelocity(ball, { x: xKickDir * 14, y: -9 });
 
           slingshot.render.fillStyle = "#f472b6";
           setTimeout(() => { slingshot.render.fillStyle = "#a21caf"; }, 100);
           setArcadeScore(prev => prev + 50);
         }
 
-        // Rollover lane collision trigger
         if (bodyA.label?.startsWith("rollover-") || bodyB.label?.startsWith("rollover-")) {
           const sensor = bodyA.label?.startsWith("rollover-") ? bodyA : bodyB;
           playArcadeSound("target");
@@ -494,7 +512,6 @@ export default function PhysicsLab() {
           setArcadeScore(prev => prev + 150);
         }
 
-        // Side Target hits
         if (bodyA.label?.startsWith("target-") || bodyB.label?.startsWith("target-")) {
           const target = bodyA.label?.startsWith("target-") ? bodyA : bodyB;
           playArcadeSound("target");
@@ -504,7 +521,6 @@ export default function PhysicsLab() {
           setArcadeScore(prev => prev + 300);
         }
 
-        // Pachinko scoring buckets
         if (bodyA.label?.startsWith("cup-") || bodyB.label?.startsWith("cup-")) {
           const cup = bodyA.label?.startsWith("cup-") ? bodyA : bodyB;
           const ball = bodyA.label?.startsWith("cup-") ? bodyB : bodyA;
@@ -521,7 +537,6 @@ export default function PhysicsLab() {
           setArcadeScore(prev => prev + scoreVal);
         }
 
-        // Drain sensor (Pinball)
         if (bodyA.label === "drain" || bodyB.label === "drain") {
           const ball = bodyA.label === "drain" ? bodyB : bodyA;
           Matter.Composite.remove(engine.world, ball);
@@ -548,7 +563,7 @@ export default function PhysicsLab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Flipper key event triggers
+  // Flipper key binds
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (activeMode !== "pinball") return;
@@ -595,10 +610,9 @@ export default function PhysicsLab() {
     playArcadeSound("launch");
 
     if (activeMode === "galton") {
-      // Fancy randomized neon balls for Galton board
-      const colors = ["#ef4444", "#ec4899", "#f59e0b", "#10b981", "#06b6d4"];
+      const colors = ["#22d3ee", "#ec4899", "#f59e0b", "#10b981", "#a855f7"];
       for (let i = 0; i < count; i++) {
-        const x = width / 2 + (Math.random() - 0.5) * 50;
+        const x = width / 2 + (Math.random() - 0.5) * 45;
         const y = 20 - i * 15;
         const ball = Matter.Bodies.circle(x, y, 6, {
           restitution: 0.4,
@@ -611,8 +625,8 @@ export default function PhysicsLab() {
       setBallCount(c => c + count);
     } 
     else if (activeMode === "pachinko") {
+      // Pachinko now launches only 1 ball per click for clean control
       for (let i = 0; i < count; i++) {
-        // Shoot balls correctly in right lane
         const x = width - 30 + (Math.random() - 0.5) * 4;
         const y = height - 45 - i * 20;
         const ball = Matter.Bodies.circle(x, y, 6, {
@@ -627,7 +641,6 @@ export default function PhysicsLab() {
       setBallCount(c => c + count);
     }
     else if (activeMode === "pinball") {
-      // CORRECTED: Spawns the steel ball safely above plunger floor to avoid instant drain
       const x = width - 26;
       const y = height - 45;
       const ball = Matter.Bodies.circle(x, y, 7.5, {
@@ -637,8 +650,8 @@ export default function PhysicsLab() {
         render: { fillStyle: "#facc15", strokeStyle: "#ffffff", lineWidth: 1 },
       });
       
-      // Plunger push velocity
-      Matter.Body.setVelocity(ball, { x: 0, y: -23 });
+      // Plunger push velocity increased to -29 so it goes all the way around the top arch!
+      Matter.Body.setVelocity(ball, { x: 0, y: -29 });
       Matter.Composite.add(engineRef.current.world, ball);
       setBallCount(c => c + 1);
     }
@@ -657,7 +670,8 @@ export default function PhysicsLab() {
     setIsPaused(!isPaused);
   };
 
-  const numBuckets = rows + 2;
+  // Gaussian probability path data matching rows symmetrically
+  const numBuckets = rows + 1;
   const mean = numBuckets / 2;
   const stdDev = Math.sqrt(rows * 0.5 * 0.5);
   const pathData = Array.from({ length: 100 }).map((_, i) => {
@@ -670,7 +684,7 @@ export default function PhysicsLab() {
     const width = sceneRef.current?.clientWidth || 700;
     const totalBucketsWidth = numBuckets * pegSpacing;
     const startBucketX = (width - totalBucketsWidth) / 2;
-    return `${startBucketX + p.x * pegSpacing},${390 - (p.y / maxGaussianY) * 125}`;
+    return `${startBucketX + p.x * pegSpacing},${395 - (p.y / maxGaussianY) * 125}`;
   }).join(" L ");
 
   return (
@@ -761,10 +775,10 @@ export default function PhysicsLab() {
           </button>
           
           <button 
-            onClick={() => addBalls(activeMode === "pinball" ? 1 : 25)} 
+            onClick={() => addBalls(1)} 
             className="px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-500/30 hover:border-cyan-400/50 rounded-lg text-cyan-200 transition-colors shadow-md flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider"
           >
-            <Plus size={14} /> {activeMode === "pinball" ? "Lanzar Bola" : "25 Bolas"}
+            <Plus size={14} /> Lanzar Bola
           </button>
           {activeMode === "galton" && (
             <button 
