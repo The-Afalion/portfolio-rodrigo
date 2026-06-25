@@ -19,41 +19,41 @@ const playArcadeSound = (type: "launch" | "peg" | "bumper" | "score" | "jackpot"
 
     if (type === "launch") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(110, now);
-      osc.frequency.exponentialRampToValueAtTime(750, now + 0.25);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
+      osc.frequency.setValueAtTime(100, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
       osc.start(now);
-      osc.stop(now + 0.26);
+      osc.stop(now + 0.32);
     } else if (type === "peg") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(800 + Math.random() * 300, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+      osc.frequency.setValueAtTime(700 + Math.random() * 400, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
       osc.start(now);
-      osc.stop(now + 0.04);
+      osc.stop(now + 0.05);
     } else if (type === "bumper") {
       osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(280, now);
-      osc.frequency.setValueAtTime(560, now + 0.05);
-      gain.gain.setValueAtTime(0.07, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.setValueAtTime(440, now + 0.06);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
       osc.start(now);
-      osc.stop(now + 0.28);
+      osc.stop(now + 0.3);
     } else if (type === "target") {
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(650, now);
-      osc.frequency.setValueAtTime(1050, now + 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      osc.frequency.setValueAtTime(550, now);
+      osc.frequency.setValueAtTime(950, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
       osc.start(now);
-      osc.stop(now + 0.16);
+      osc.stop(now + 0.18);
     } else if (type === "flipper") {
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(190, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+      osc.frequency.setValueAtTime(160, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
       osc.start(now);
-      osc.stop(now + 0.09);
+      osc.stop(now + 0.1);
     } else if (type === "score") {
       osc.type = "sine";
-      osc.frequency.setValueAtTime(1150, now);
+      osc.frequency.setValueAtTime(1000, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
       osc.start(now);
       osc.stop(now + 0.08);
@@ -64,10 +64,10 @@ const playArcadeSound = (type: "launch" | "peg" | "bumper" | "score" | "jackpot"
       osc.frequency.setValueAtTime(783.99, now + 0.16);
       osc.frequency.setValueAtTime(1046.50, now + 0.24);
       osc.frequency.setValueAtTime(1318.51, now + 0.32);
-      gain.gain.setValueAtTime(0.07, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
       osc.start(now);
-      osc.stop(now + 0.5);
+      osc.stop(now + 0.6);
     }
   } catch (e) {}
 };
@@ -76,8 +76,25 @@ function gaussian(x: number, mean: number, std: number) {
   return (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
 }
 
-const rows = 12;
-const pegSpacing = 40;
+// Generador de puntos sobre una curva Bezier cuadrática para crear curvas perfectas físicas
+const getBezierPoints = (
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  steps = 20
+) => {
+  const points = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const x = Math.pow(1 - t, 2) * p0.x + 2 * (1 - t) * t * p1.x + Math.pow(t, 2) * p2.x;
+    const y = Math.pow(1 - t, 2) * p0.y + 2 * (1 - t) * t * p1.y + Math.pow(t, 2) * p2.y;
+    points.push({ x, y });
+  }
+  return points;
+};
+
+const rows = 11;
+const pegSpacing = 34;
 
 export default function PhysicsLab() {
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -107,7 +124,7 @@ export default function PhysicsLab() {
     const engine = Engine.create();
     engineRef.current = engine;
 
-    engine.world.gravity.y = mode === "pinball" ? 1.7 : 1.25;
+    engine.world.gravity.y = mode === "pinball" ? 1.75 : 1.3;
 
     const width = sceneRef.current.clientWidth || 700;
     const height = sceneRef.current.clientHeight || 650;
@@ -128,49 +145,74 @@ export default function PhysicsLab() {
 
     // --- MODE 1: GALTON BOARD ---
     if (mode === "galton") {
-      // Glow-themed Funnel with wider opening to prevent jamming
-      const funnelLeft = Bodies.rectangle(width / 2 - 62, 55, 120, 8, {
-        isStatic: true,
-        angle: Math.PI / 5.2,
-        render: { fillStyle: "rgba(6, 182, 212, 0.25)", strokeStyle: "#06b6d4", lineWidth: 2.5 },
+      // 1. EMBUDO CURVO DE ALTA PRECISIÓN (Bezier) para evitar atascos y guiar las bolas al centro
+      const funnelLeftPoints = getBezierPoints(
+        { x: width / 2 - 130, y: 15 },
+        { x: width / 2 - 80, y: 35 },
+        { x: width / 2 - 8, y: 110 },
+        20
+      );
+      const funnelRightPoints = getBezierPoints(
+        { x: width / 2 + 130, y: 15 },
+        { x: width / 2 + 80, y: 35 },
+        { x: width / 2 + 8, y: 110 },
+        20
+      );
+
+      // Crear las paredes del embudo usando pequeños círculos solapados (física de curva real y fluida)
+      funnelLeftPoints.forEach(p => {
+        bodiesToAdd.push(
+          Bodies.circle(p.x, p.y, 4, {
+            isStatic: true,
+            friction: 0,
+            render: { fillStyle: "#0891b2", strokeStyle: "#06b6d4", lineWidth: 1 }
+          })
+        );
       });
-      const funnelRight = Bodies.rectangle(width / 2 + 62, 55, 120, 8, {
-        isStatic: true,
-        angle: -Math.PI / 5.2,
-        render: { fillStyle: "rgba(6, 182, 212, 0.25)", strokeStyle: "#06b6d4", lineWidth: 2.5 },
-      });
-      
-      // Neck width increased to 36px (width / 2 - 18 to width / 2 + 18) for smooth flow
-      const neckLeft = Bodies.rectangle(width / 2 - 18, 110, 5, 45, {
-        isStatic: true,
-        render: { fillStyle: "#06b6d4" },
-      });
-      const neckRight = Bodies.rectangle(width / 2 + 18, 110, 5, 45, {
-        isStatic: true,
-        render: { fillStyle: "#06b6d4" },
+      funnelRightPoints.forEach(p => {
+        bodiesToAdd.push(
+          Bodies.circle(p.x, p.y, 4, {
+            isStatic: true,
+            friction: 0,
+            render: { fillStyle: "#0891b2", strokeStyle: "#06b6d4", lineWidth: 1 }
+          })
+        );
       });
 
-      bodiesToAdd.push(funnelLeft, funnelRight, neckLeft, neckRight);
+      // Cuello vertical ultra-estrecho (16px de ancho total) para alinear las bolas exactamente en el centro
+      // De esta forma la dispersión inicial es nula y choca perfectamente en el vértice del primer peg.
+      const neckLeft = Bodies.rectangle(width / 2 - 9, 130, 3, 40, {
+        isStatic: true,
+        friction: 0,
+        render: { fillStyle: "#06b6d4" },
+      });
+      const neckRight = Bodies.rectangle(width / 2 + 9, 130, 3, 40, {
+        isStatic: true,
+        friction: 0,
+        render: { fillStyle: "#06b6d4" },
+      });
+      bodiesToAdd.push(neckLeft, neckRight);
 
-      // peg grid configured symmetrically starting with 1 peg at the center row
-      const startY = 155;
+      // 2. REJILLA DE PEGS COMPACTA (Distancia vertical reducida a 26px para evitar botes violentos)
+      const startY = 175;
+      const verticalSpacing = 26;
+
       for (let row = 0; row < rows; row++) {
-        // CORRECTED: Row 0 has 1 peg, Row 1 has 2 pegs... forming a perfect binomial path!
         const cols = row + 1;
         const rowWidth = (cols - 1) * pegSpacing;
         const startX = (width - rowWidth) / 2;
         
-        // Colors mapping representing probability temperature
-        const rowColor = row < 4 ? "#22d3ee" : row < 8 ? "#a855f7" : "#ec4899";
+        // Colores de neón degradados según la profundidad
+        const rowColor = row < 3 ? "#22d3ee" : row < 7 ? "#a855f7" : "#ec4899";
 
         for (let col = 0; col < cols; col++) {
           const x = startX + col * pegSpacing;
-          const y = startY + row * pegSpacing;
+          const y = startY + row * verticalSpacing;
           bodiesToAdd.push(
-            Bodies.circle(x, y, 3.5, {
+            Bodies.circle(x, y, 2.5, {
               isStatic: true,
-              restitution: 0.65,
-              friction: 0.005,
+              restitution: 0.05, // Muy baja elasticidad para amortiguar botes caóticos
+              friction: 0.02,
               label: "peg",
               render: { fillStyle: rowColor, strokeStyle: "#ffffff", lineWidth: 0.5 },
             })
@@ -178,20 +220,35 @@ export default function PhysicsLab() {
         }
       }
 
-      // Colorful collecting channels
-      const bucketWidth = 5;
-      const bucketHeight = 175;
+      // 3. COMPARTIMENTOS INFERIORES DE ALINEACIÓN COHERENTE (Buckets)
+      const lastRowY = startY + (rows - 1) * verticalSpacing;
+      const bucketStartY = lastRowY + 22; // Justo debajo del último peg
+      const bucketHeight = height - bucketStartY - 5;
       const numBuckets = rows + 1;
-      const totalBucketsWidth = numBuckets * pegSpacing;
-      const startBucketX = (width - totalBucketsWidth) / 2;
-      const bucketY = height - bucketHeight / 2;
+
+      // Usar startX de la última fila para alinear los canales perfectamente
+      const lastRowCols = rows;
+      const lastRowWidth = (lastRowCols - 1) * pegSpacing;
+      const lastRowStartX = (width - lastRowWidth) / 2;
 
       for (let i = 0; i <= numBuckets; i++) {
-        const x = startBucketX + i * pegSpacing;
+        // La divisoria del canal está exactamente debajo de los pegs de la última fila (las internas) y de los bordes (las externas)
+        const x = lastRowStartX - pegSpacing + i * pegSpacing;
+        const y = bucketStartY + bucketHeight / 2;
+
+        // Pared del compartimento
         bodiesToAdd.push(
-          Bodies.rectangle(x, bucketY, bucketWidth, bucketHeight, {
+          Bodies.rectangle(x, y, 3, bucketHeight, {
             isStatic: true,
-            render: { fillStyle: "#1e293b", strokeStyle: "rgba(56, 189, 248, 0.25)", lineWidth: 1 },
+            render: { fillStyle: "#1e293b", strokeStyle: "rgba(6, 182, 212, 0.2)" },
+          })
+        );
+
+        // Pequeño círculo redondeado en la punta superior del divisor para evitar que la bola se quede equilibrada
+        bodiesToAdd.push(
+          Bodies.circle(x, bucketStartY, 2, {
+            isStatic: true,
+            render: { fillStyle: "#0891b2" },
           })
         );
       }
@@ -203,8 +260,13 @@ export default function PhysicsLab() {
     // --- MODE 2: PACHINKO GAME ---
     else if (mode === "pachinko") {
       const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
-      const rightLauncherWall = Bodies.rectangle(width - 50, height / 2 + 50, 8, height - 100, { isStatic: true, render: { fillStyle: "#334155" } });
       const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
+      
+      // Canal del launcher a la derecha
+      const rightLauncherWall = Bodies.rectangle(width - 50, height / 2 + 50, 8, height - 100, { 
+        isStatic: true, 
+        render: { fillStyle: "#334155" } 
+      });
       
       const launcherPlungerFloor = Bodies.rectangle(width - 30, height - 15, 30, 10, {
         isStatic: true,
@@ -214,12 +276,27 @@ export default function PhysicsLab() {
       const ground = Bodies.rectangle(width / 2, height + 10, width, 20, { isStatic: true });
       bodiesToAdd.push(leftWall, rightLauncherWall, rightWall, launcherPlungerFloor, ground);
 
-      const upperRightGuide = Bodies.rectangle(width - 60, 45, 110, 8, {
-        isStatic: true,
-        angle: Math.PI / 4,
-        render: { fillStyle: "#d946ef", strokeStyle: "#f472b6", lineWidth: 1 },
+      // Cúpula superior curva de Bezier (curva física real de neón rosa)
+      const leftDomePoints = getBezierPoints({ x: 15, y: 180 }, { x: 15, y: 30 }, { x: width / 2, y: 30 }, 20);
+      const rightDomePoints = getBezierPoints({ x: width / 2, y: 30 }, { x: width - 15, y: 30 }, { x: width - 15, y: 90 }, 20);
+      
+      [...leftDomePoints, ...rightDomePoints].forEach(p => {
+        bodiesToAdd.push(
+          Bodies.circle(p.x, p.y, 7, {
+            isStatic: true,
+            restitution: 0.6,
+            render: { fillStyle: "#1e1b4b", strokeStyle: "#ec4899", lineWidth: 1.5 }
+          })
+        );
       });
-      bodiesToAdd.push(upperRightGuide);
+
+      // Deflector de salida (cuña inclinada a la izquierda) para evitar caídas de vuelta en el canal del launcher
+      const laneDeflector = Bodies.rectangle(width - 65, 125, 8, 45, {
+        isStatic: true,
+        angle: -Math.PI / 4,
+        render: { fillStyle: "#334155", strokeStyle: "#ec4899", lineWidth: 1 }
+      });
+      bodiesToAdd.push(laneDeflector);
 
       // Pins layout
       const startX = 35;
@@ -245,7 +322,6 @@ export default function PhysicsLab() {
         }
       }
 
-      // Animating rotating windmills
       const spinner1 = Bodies.rectangle(width / 2 - 80, height / 2 - 20, 65, 6, {
         isStatic: true,
         label: "spinner",
@@ -258,7 +334,6 @@ export default function PhysicsLab() {
       });
       bodiesToAdd.push(spinner1, spinner2);
 
-      // Catch cups with different scores
       const scoreCups = [
         { x: 60, width: 75, label: "cup-20", score: 20, fill: "rgba(51, 65, 85, 0.6)" },
         { x: 145, width: 75, label: "cup-100", score: 100, fill: "rgba(245, 158, 11, 0.25)" },
@@ -285,45 +360,96 @@ export default function PhysicsLab() {
       });
     }
 
-    // --- MODE 3: NEON ADVANCED PINBALL (UPGRADED LAYOUT & CURVES) ---
+    // --- MODE 3: NEON ADVANCED PINBALL (CURVED ARCH & ADVANCED ZONES) ---
     else if (mode === "pinball") {
-      // 1. Curved Top Arch segments guiding the ball from launcher around the top left
-      const topArchSegments = [
-        { x: width - 25, y: 140, w: 8, h: 100, a: 0 },
-        { x: width - 42, y: 80, w: 8, h: 70, a: -Math.PI / 12 },
-        { x: width - 85, y: 40, w: 8, h: 70, a: -Math.PI / 6 },
-        { x: width - 155, y: 20, w: 8, h: 90, a: -Math.PI / 4 },
-        { x: width / 2, y: 12, w: 8, h: 180, a: -Math.PI / 2 },
-        { x: 155, y: 20, w: 8, h: 90, a: Math.PI / 4 },
-        { x: 85, y: 40, w: 8, h: 70, a: Math.PI / 6 },
-        { x: 42, y: 80, w: 8, h: 70, a: Math.PI / 12 },
-        { x: 25, y: 140, w: 8, h: 100, a: 0 },
-      ];
-
-      topArchSegments.forEach(seg => {
+      // 1. CÚPULA SUPERIOR CURVA REAL ASIMÉTRICA (Bezier)
+      // La curva izquierda va desde la pared izquierda (15, 180) hasta el centro superior (330, 30)
+      const leftDomePoints = getBezierPoints({ x: 15, y: 180 }, { x: 15, y: 30 }, { x: 330, y: 30 }, 20);
+      // La curva derecha va desde el centro superior (330, 30) hasta el canal derecho (width - 15, 90)
+      const rightDomePoints = getBezierPoints({ x: 330, y: 30 }, { x: width - 15, y: 30 }, { x: width - 15, y: 90 }, 20);
+      
+      // Crear los cuerpos del arco superior con círculos pequeños de neón cian (curvas físicas e interactivos fluidos)
+      [...leftDomePoints, ...rightDomePoints].forEach(p => {
         bodiesToAdd.push(
-          Bodies.rectangle(seg.x, seg.y, seg.w, seg.h, {
+          Bodies.circle(p.x, p.y, 7, {
             isStatic: true,
-            angle: seg.a,
-            render: { fillStyle: "#3b82f6", strokeStyle: "#60a5fa", lineWidth: 1.5 },
+            restitution: 0.65,
+            render: { fillStyle: "#1e1b4b", strokeStyle: "#06b6d4", lineWidth: 1.5 }
           })
         );
       });
 
-      // 2. Slanted Bottom Guides directing balls to flippers
-      const leftGuide = Bodies.rectangle(125, height - 120, 185, 12, {
-        isStatic: true,
-        angle: Math.PI / 8.5,
-        render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 2 },
+      // 2. GUIAS DE RETORNO INFERIORES CURVAS (Cóncavas hacia arriba, llevando la bola a los flippers)
+      const leftGuidePoints = getBezierPoints(
+        { x: 15, y: height - 160 },
+        { x: 75, y: height - 145 },
+        { x: width / 2 - 120, y: height - 90 },
+        15
+      );
+      const rightGuidePoints = getBezierPoints(
+        { x: width - 55, y: height - 160 },
+        { x: width - 115, y: height - 145 },
+        { x: width / 2 + 70, y: height - 90 },
+        15
+      );
+
+      leftGuidePoints.forEach(p => {
+        bodiesToAdd.push(
+          Bodies.circle(p.x, p.y, 5, {
+            isStatic: true,
+            restitution: 0.2,
+            render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 1.5 }
+          })
+        );
       });
-      const rightGuide = Bodies.rectangle(width - 180, height - 120, 185, 12, {
-        isStatic: true,
-        angle: -Math.PI / 8.5,
-        render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 2 },
+      rightGuidePoints.forEach(p => {
+        bodiesToAdd.push(
+          Bodies.circle(p.x, p.y, 5, {
+            isStatic: true,
+            restitution: 0.2,
+            render: { fillStyle: "#1e3a8a", strokeStyle: "#3b82f6", lineWidth: 1.5 }
+          })
+        );
       });
 
-      // 3. Plunger Lane Walls and Plunger Floor
-      const plungerLaneWall = Bodies.rectangle(width - 45, height / 2 + 50, 8, height - 100, {
+      // 3. RAMPA CURVA DE NEÓN NARANJA (Atraviesa el centro)
+      const centerRampPoints = getBezierPoints(
+        { x: width / 2 + 80, y: 150 },
+        { x: width / 2 - 90, y: 220 },
+        { x: 95, y: height - 260 },
+        25
+      );
+      
+      // Creamos dos rieles desplazados horizontalmente para guiar la bola
+      centerRampPoints.forEach(p => {
+        // Riel izquierdo
+        bodiesToAdd.push(
+          Bodies.circle(p.x - 12, p.y, 3, {
+            isStatic: true,
+            render: { fillStyle: "#7c2d12", strokeStyle: "#f97316", lineWidth: 1 }
+          })
+        );
+        // Riel derecho
+        bodiesToAdd.push(
+          Bodies.circle(p.x + 12, p.y, 3, {
+            isStatic: true,
+            render: { fillStyle: "#7c2d12", strokeStyle: "#f97316", lineWidth: 1 }
+          })
+        );
+      });
+
+      // Sensor en medio de la rampa para detectar el paso de la bola (Rampa Jackpot!)
+      const midRampPoint = centerRampPoints[Math.floor(centerRampPoints.length / 2)];
+      const rampSensor = Bodies.circle(midRampPoint.x, midRampPoint.y, 16, {
+        isStatic: true,
+        isSensor: true,
+        label: "ramp-sensor",
+        render: { visible: false } // Invisible, solo detecta colisión
+      });
+      bodiesToAdd.push(rampSensor);
+
+      // 4. CANAL DE LANZAMIENTO (Plunger Lane)
+      const plungerLaneWall = Bodies.rectangle(width - 45, height / 2 + 75, 8, height - 150, {
         isStatic: true,
         render: { fillStyle: "#334155" },
       });
@@ -331,8 +457,15 @@ export default function PhysicsLab() {
         isStatic: true,
         render: { fillStyle: "#1e293b", strokeStyle: "#475569", lineWidth: 1.5 },
       });
+      
+      // Deflector antirretorno superior (cuña estática) para guiar la bola hacia el tablero al caer
+      const laneDeflector = Bodies.rectangle(width - 65, 135, 8, 45, {
+        isStatic: true,
+        angle: -Math.PI / 4,
+        render: { fillStyle: "#334155", strokeStyle: "#06b6d4", lineWidth: 1 }
+      });
 
-      // Outer Cabin Boundaries
+      // Límites de la cabina
       const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
       const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: "#0f172a" } });
       const drainSensor = Bodies.rectangle(width / 2, height + 15, width, 10, {
@@ -341,9 +474,9 @@ export default function PhysicsLab() {
         label: "drain",
       });
 
-      bodiesToAdd.push(leftGuide, rightGuide, plungerLaneWall, plungerFloor, leftWall, rightWall, drainSensor);
+      bodiesToAdd.push(plungerLaneWall, plungerFloor, laneDeflector, leftWall, rightWall, drainSensor);
 
-      // 4. TOP ZONE: Bumpers with neon glow rings
+      // 5. ZONA DE BUMPERS REDONDEADOS
       const bumperLeft = Bodies.circle(width / 2 - 90, 150, 26, {
         isStatic: true,
         label: "bumper-emerald",
@@ -361,7 +494,7 @@ export default function PhysicsLab() {
       });
       bodiesToAdd.push(bumperLeft, bumperRight, bumperSuper);
 
-      // 5. MID ZONE: Slingshot kickers directly above flippers
+      // 6. SLINGSHOTS CON FUERZAS DE RETROCESO (Triángulos elásticos sobre flippers)
       const slingshotLeft = Bodies.polygon(100, height - 240, 3, 35, {
         isStatic: true,
         angle: Math.PI / 3,
@@ -376,7 +509,7 @@ export default function PhysicsLab() {
       });
       bodiesToAdd.push(slingshotLeft, slingshotRight);
 
-      // 6. UPPER ZONE: Rollover Lanes and Target Pins
+      // 7. ROLLOVERS (Líneas de sensores superiores)
       const rollLanes = [width / 2 - 130, width / 2 - 70, width / 2 - 10, width / 2 + 50];
       rollLanes.forEach((laneX, i) => {
         bodiesToAdd.push(
@@ -395,7 +528,7 @@ export default function PhysicsLab() {
         );
       });
 
-      // 7. Side Target buttons
+      // 8. DIANAS LATERALES (Targets)
       const targetLeft = Bodies.rectangle(35, 200, 8, 35, {
         isStatic: true,
         label: "target-left",
@@ -408,7 +541,7 @@ export default function PhysicsLab() {
       });
       bodiesToAdd.push(targetLeft, targetRight);
 
-      // 8. Custom shapes - Neon triangular deflectors on upper mid sides
+      // 9. DEFLECTORES DE DESVÍO CURVOS
       const deflectorLeft = Bodies.polygon(70, 320, 3, 25, {
         isStatic: true,
         angle: Math.PI / 4,
@@ -421,31 +554,61 @@ export default function PhysicsLab() {
       });
       bodiesToAdd.push(deflectorLeft, deflectorRight);
 
-      // 9. Flippers
-      const leftFlipper = Bodies.rectangle(width / 2 - 95, height - 72, 80, 16, {
+      // 10. FLIPPERS CON PIVOTE EXTREMO REALISTA Y VELOCIDAD DE GOLPE
+      const leftFlipper = Bodies.rectangle(width / 2 - 90, height - 80, 80, 16, {
         isStatic: true,
         label: "left-flipper",
         render: { fillStyle: "#d946ef", strokeStyle: "#fdf4ff", lineWidth: 1.5 },
       });
-      const rightFlipper = Bodies.rectangle(width / 2 + 45, height - 72, 80, 16, {
+      const rightFlipper = Bodies.rectangle(width / 2 + 40, height - 80, 80, 16, {
         isStatic: true,
         label: "right-flipper",
         render: { fillStyle: "#d946ef", strokeStyle: "#fdf4ff", lineWidth: 1.5 },
       });
       bodiesToAdd.push(leftFlipper, rightFlipper);
 
-      // Flipper angles interpolation
-      let leftAngle = 0.32;
-      let rightAngle = -0.32;
+      // Ángulos iniciales y de rotación
+      let leftAngle = 0.28;
+      let rightAngle = -0.28;
 
       Events.on(engine, "beforeUpdate", () => {
-        const leftTarget = keysPressedRef.current.left ? -0.42 : 0.32;
-        leftAngle += (leftTarget - leftAngle) * 0.38;
-        Body.setAngle(leftFlipper, leftAngle);
+        // Rotar flipper izquierdo sobre su extremo izquierdo (Pivot)
+        const leftTarget = keysPressedRef.current.left ? -0.38 : 0.28;
+        const prevLeftAngle = leftFlipper.angle;
+        leftAngle += (leftTarget - leftAngle) * 0.42;
 
-        const rightTarget = keysPressedRef.current.right ? 0.42 : -0.32;
-        rightAngle += (rightTarget - rightAngle) * 0.38;
+        const leftPivotX = width / 2 - 130;
+        const leftPivotY = height - 80;
+        Body.setAngle(leftFlipper, leftAngle);
+        Body.setPosition(leftFlipper, {
+          x: leftPivotX + 40 * Math.cos(leftAngle),
+          y: leftPivotY + 40 * Math.sin(leftAngle)
+        });
+        // Asignar velocidad física angular y lineal para golpear la bola de verdad
+        Body.setAngularVelocity(leftFlipper, leftAngle - prevLeftAngle);
+        Body.setVelocity(leftFlipper, {
+          x: -40 * Math.sin(leftAngle) * (leftAngle - prevLeftAngle),
+          y: 40 * Math.cos(leftAngle) * (leftAngle - prevLeftAngle)
+        });
+
+        // Rotar flipper derecho sobre su extremo derecho (Pivot)
+        const rightTarget = keysPressedRef.current.right ? 0.38 : -0.28;
+        const prevRightAngle = rightFlipper.angle;
+        rightAngle += (rightTarget - rightAngle) * 0.42;
+
+        const rightPivotX = width / 2 + 80;
+        const rightPivotY = height - 80;
         Body.setAngle(rightFlipper, rightAngle);
+        Body.setPosition(rightFlipper, {
+          x: rightPivotX - 40 * Math.cos(rightAngle),
+          y: rightPivotY - 40 * Math.sin(rightAngle)
+        });
+        // Asignar velocidad física angular y lineal
+        Body.setAngularVelocity(rightFlipper, rightAngle - prevRightAngle);
+        Body.setVelocity(rightFlipper, {
+          x: 40 * Math.sin(rightAngle) * (rightAngle - prevRightAngle),
+          y: -40 * Math.cos(rightAngle) * (rightAngle - prevRightAngle)
+        });
       });
     }
 
@@ -468,7 +631,7 @@ export default function PhysicsLab() {
           playArcadeSound("bumper");
           
           const forceDir = Matter.Vector.normalise(Matter.Vector.sub(ball.position, bumper.position));
-          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 17)); // Higher rebound velocity
+          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 18)); // Extra speed
 
           bumper.render.fillStyle = "#34d399";
           setTimeout(() => { bumper.render.fillStyle = "#047857"; }, 100);
@@ -482,7 +645,7 @@ export default function PhysicsLab() {
           playArcadeSound("jackpot");
           
           const forceDir = Matter.Vector.normalise(Matter.Vector.sub(ball.position, bumper.position));
-          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 23));
+          Matter.Body.setVelocity(ball, Matter.Vector.mult(forceDir, 24)); // Super bounce force
 
           bumper.render.fillStyle = "#f43f5e";
           setTimeout(() => { bumper.render.fillStyle = "#be185d"; }, 100);
@@ -519,6 +682,11 @@ export default function PhysicsLab() {
           target.render.fillStyle = "#fda4af";
           setTimeout(() => { target.render.fillStyle = "#e11d48"; }, 100);
           setArcadeScore(prev => prev + 300);
+        }
+
+        if (bodyA.label === "ramp-sensor" || bodyB.label === "ramp-sensor") {
+          playArcadeSound("jackpot");
+          setArcadeScore(prev => prev + 500);
         }
 
         if (bodyA.label?.startsWith("cup-") || bodyB.label?.startsWith("cup-")) {
@@ -601,7 +769,7 @@ export default function PhysicsLab() {
     }
   }, [arcadeScore, highScore]);
 
-  // Launches balls correctly and resolves plunger floor positioning
+  // Launches balls correctly with adjusted frictionAir to keep momentum
   const addBalls = (count: number) => {
     if (!engineRef.current || !sceneRef.current) return;
     const width = sceneRef.current.clientWidth || 700;
@@ -612,12 +780,14 @@ export default function PhysicsLab() {
     if (activeMode === "galton") {
       const colors = ["#22d3ee", "#ec4899", "#f59e0b", "#10b981", "#a855f7"];
       for (let i = 0; i < count; i++) {
-        const x = width / 2 + (Math.random() - 0.5) * 45;
-        const y = 20 - i * 15;
-        const ball = Matter.Bodies.circle(x, y, 6, {
-          restitution: 0.4,
-          friction: 0.006,
-          density: 0.0012,
+        // Reducido el esparcimiento horizontal para que entren perfectamente alineadas por el cuello de 16px
+        const x = width / 2 + (Math.random() - 0.5) * 4;
+        const y = 30 - i * 14;
+        const ball = Matter.Bodies.circle(x, y, 5, {
+          restitution: 0.05, // Symmetrical low bounciness matching grid settings
+          friction: 0.001,
+          frictionAir: 0.001,
+          density: 0.001,
           render: { fillStyle: colors[i % colors.length] },
         });
         Matter.Composite.add(engineRef.current.world, ball);
@@ -627,31 +797,35 @@ export default function PhysicsLab() {
     else if (activeMode === "pachinko") {
       // Pachinko now launches only 1 ball per click for clean control
       for (let i = 0; i < count; i++) {
-        const x = width - 30 + (Math.random() - 0.5) * 4;
-        const y = height - 45 - i * 20;
-        const ball = Matter.Bodies.circle(x, y, 6, {
+        const x = width - 30;
+        const y = height - 45;
+        const ball = Matter.Bodies.circle(x, y, 6.5, {
           restitution: 0.5,
-          friction: 0.005,
+          friction: 0.002,
           density: 0.001,
+          frictionAir: 0.0002, // Mínima resistencia al aire
           render: { fillStyle: "#38bdf8" },
         });
-        Matter.Body.setVelocity(ball, { x: 0, y: -16 });
+        // Fuerza de lanzamiento aumentada a -32 para que suba holgadamente hasta arriba
+        Matter.Body.setVelocity(ball, { x: 0, y: -32 });
         Matter.Composite.add(engineRef.current.world, ball);
       }
       setBallCount(c => c + count);
     }
     else if (activeMode === "pinball") {
-      const x = width - 26;
+      // La bola se lanza en x = width - 20 (centro del canal)
+      const x = width - 20;
       const y = height - 45;
       const ball = Matter.Bodies.circle(x, y, 7.5, {
         restitution: 0.45,
-        friction: 0.001,
-        density: 0.0025,
+        friction: 0.0005,
+        density: 0.002,
+        frictionAir: 0.0002, // Mínimo roce para conservar momento en curvas y rampas
         render: { fillStyle: "#facc15", strokeStyle: "#ffffff", lineWidth: 1 },
       });
       
-      // Plunger push velocity increased to -29 so it goes all the way around the top arch!
-      Matter.Body.setVelocity(ball, { x: 0, y: -29 });
+      // Lanzamiento de alta potencia (-42) para asegurar que supere la cúpula superior
+      Matter.Body.setVelocity(ball, { x: 0, y: -42 });
       Matter.Composite.add(engineRef.current.world, ball);
       setBallCount(c => c + 1);
     }
@@ -670,7 +844,7 @@ export default function PhysicsLab() {
     setIsPaused(!isPaused);
   };
 
-  // Gaussian probability path data matching rows symmetrically
+  // Gaussian probability path
   const numBuckets = rows + 1;
   const mean = numBuckets / 2;
   const stdDev = Math.sqrt(rows * 0.5 * 0.5);
@@ -682,9 +856,10 @@ export default function PhysicsLab() {
   const maxGaussianY = gaussian(mean, mean, stdDev);
   const svgPath = pathData.map(p => {
     const width = sceneRef.current?.clientWidth || 700;
+    const height = sceneRef.current?.clientHeight || 650;
     const totalBucketsWidth = numBuckets * pegSpacing;
     const startBucketX = (width - totalBucketsWidth) / 2;
-    return `${startBucketX + p.x * pegSpacing},${395 - (p.y / maxGaussianY) * 125}`;
+    return `${startBucketX + p.x * pegSpacing},${height - 10 - (p.y / maxGaussianY) * 165}`;
   }).join(" L ");
 
   return (
